@@ -1,0 +1,25 @@
+{
+  "name": "local-distro-ui",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "tsc -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lachlancresswell/local-distro-ui.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lachlancresswell/local-distro-ui/issues"
+  },
+  "homepage": "https://github.com/lachlancresswell/local-distro-ui#readme",
+  "dependencies": {
+    "@types/express": "^4.17.13",
+    "express": "^4.17.1",
+    "typescript": "^4.4.4"
+  }
+}
