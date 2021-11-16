@@ -4,7 +4,7 @@
     --l3-color: blue;
 
     --details-font-size: 3em;
-    --minor-font-size: 2em;
+    --minor-font-size: 2.05em;
     --adv-font-size: 2em;
     
     --text-colour: white;
@@ -72,7 +72,14 @@ body {
     flex-wrap: wrap;
 }
 
-.details-voltage, #details-l1-voltage, .details-amperage, #pf, #kva {
+.details-voltage, .details-amperage {
+  flex-basis: 50%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: right;
+}
+
+#details-l1-voltage, #details-l1-amperage, #pf, #kva {
     flex-basis: 100%;
     display: flex;
     align-items: flex-end;
@@ -185,19 +192,33 @@ body {
 
 #container {
   display: flex;
+  justify-content: space-evenly;
   font-size: var(--adv-font-size);
 }
 
+#subcontainer-1, #subcontainer-2 {
+  width: 40%;
+  justify-content: right;
+  display: flex;
+  
+}
+
 #adv-col-1,
-#adv-col-2,
-#adv-col-3,
-#adv-col-4 {
+#adv-col-3 {
   display: flex;
   flex-direction: column;
   flex-basis: 25%;
 }
 
+#adv-col-2,
+#adv-col-4 {
+  display: flex;
+  flex-direction: column;
+  flex-basis: 20%;
+}
+
 .value-container {
+  font-weight: bolder;
   text-align: right;
   margin-right: 0.2em;
   flex-basis: 100%;
