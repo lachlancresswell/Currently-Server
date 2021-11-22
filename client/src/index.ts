@@ -4,6 +4,9 @@ import * as influx from 'influx';
 const Influx = new influx.InfluxDB({
     host: '192.168.8.151',
     database: 'influx',
+    path: '/influx',
+    port: 8080,
+    protocol: 'https',
     schema: [
         {
             measurement: 'modbus',
@@ -59,16 +62,22 @@ function sleep(ms: number) {
                 const gridFreq = (Math.round(res[res.length - 1]["Grid Frequency"] * 10) / 10).toFixed(1);
                 const powerFactor = (Math.round(res[res.length - 1]["Power Factor"])).toString();
                 const apparentPower = (Math.round(res[res.length - 1]["Total Apparent Power"])).toString();
+                const l1CurrentRound = (Math.round(res[res.length - 1]["L1 Current"])).toString();
+                const l2CurrentRound = (Math.round(res[res.length - 1]["L2 Current"])).toString();
+                const l3CurrentRound = (Math.round(res[res.length - 1]["L3 Current"])).toString();
 
-                (document.getElementById("l1-voltage") as HTMLDivElement).innerText = l1Voltage;
-                (document.getElementById("l1-amperage") as HTMLDivElement).innerText = l1Current;
-                (document.getElementById("l2-voltage") as HTMLDivElement).innerText = l2Voltage;
-                (document.getElementById("l2-amperage") as HTMLDivElement).innerText = l2Current;
-                (document.getElementById("l3-voltage") as HTMLDivElement).innerText = l3Voltage;
-                (document.getElementById("l3-amperage") as HTMLDivElement).innerText = l3Current;
-                (document.getElementById("grid-freq") as HTMLDivElement).innerText = gridFreq;
-                (document.getElementById("power-factor") as HTMLDivElement).innerText = powerFactor;
-                (document.getElementById("apparent-power") as HTMLDivElement).innerText = apparentPower;
+                if (document.getElementById("l1-voltage") != null) (document.getElementById("l1-voltage") as HTMLDivElement).innerText = l1Voltage;
+                if (document.getElementById("l1-amperage") != null) (document.getElementById("l1-amperage") as HTMLDivElement).innerText = l1Current;
+                if (document.getElementById("l2-voltage") != null) (document.getElementById("l2-voltage") as HTMLDivElement).innerText = l2Voltage;
+                if (document.getElementById("l2-amperage") != null) (document.getElementById("l2-amperage") as HTMLDivElement).innerText = l2Current;
+                if (document.getElementById("l3-voltage") != null) (document.getElementById("l3-voltage") as HTMLDivElement).innerText = l3Voltage;
+                if (document.getElementById("l3-amperage") != null) (document.getElementById("l3-amperage") as HTMLDivElement).innerText = l3Current;
+                if (document.getElementById("grid-freq") != null) (document.getElementById("grid-freq") as HTMLDivElement).innerText = gridFreq;
+                if (document.getElementById("power-factor") != null) (document.getElementById("power-factor") as HTMLDivElement).innerText = powerFactor;
+                if (document.getElementById("apparent-power") != null) (document.getElementById("apparent-power") as HTMLDivElement).innerText = apparentPower;
+                if (document.getElementById("l1-amperage-round") != null) (document.getElementById("l1-amperage-round") as HTMLDivElement).innerText = l1CurrentRound;
+                if (document.getElementById("l2-amperage-round") != null) (document.getElementById("l2-amperage-round") as HTMLDivElement).innerText = l2CurrentRound;
+                if (document.getElementById("l3-amperage-round") != null) (document.getElementById("l3-amperage-round") as HTMLDivElement).innerText = l3CurrentRound;
             })
 
             await sleep(1000)
