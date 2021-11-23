@@ -8,22 +8,23 @@ WORKDIR /usr/src/app
 # where available ([email protected]+)
 COPY . .
 
-WORKDIR /usr/src/app/cert/
+# Seperate NPM installs for cache?
+WORKDIR /usr/src/app/server
+RUN npm i 
 
+WORKDIR /usr/src/app/client
+RUN npm i 
+RUN npx webpack
+
+WORKDIR /usr/src/app/cert/
 RUN apt-get update && \
     apt-get install -y openssl && \
     openssl req -x509 -nodes -days 365 \
     -subj  "/C=CA/ST=QC/O=Company Inc/CN=example.com" \
     -newkey rsa:2048 -keyout ./server-selfsigned.key \
     -out ./server-selfsigned.crt;
-RUN ls -la
 
-WORKDIR /usr/src/app/client
-RUN npm install && npx webpack
-
-EXPOSE 8080
+EXPOSE 443
 WORKDIR /usr/src/app/server
-RUN npm i && npm run build
-RUN ls -la ../cert/
-
+RUN npm run build
 CMD [ "node", "app.js" ]

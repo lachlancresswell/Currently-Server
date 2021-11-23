@@ -1,11 +1,10 @@
 import * as influx from 'influx';
-// import * as os from 'os';
 
 const Influx = new influx.InfluxDB({
-    host: '192.168.8.151',
+    host: window.location.hostname,
     database: 'influx',
     path: '/influx',
-    port: 8080,
+    port: 443,
     protocol: 'https',
     schema: [
         {

@@ -1,7 +1,7 @@
-FROM influxdb:1.8-alpine
+FROM influxdb:1.8
 
-RUN apk update && \
-    apk add --no-cache openssl && \
+RUN apt-get update && \
+    apt-get install -y openssl && \
     openssl req -x509 -nodes -days 365 \
     -subj  "/C=CA/ST=QC/O=Company Inc/CN=example.com" \
      -newkey rsa:2048 -keyout /etc/ssl/influxdb-selfsigned.key \
