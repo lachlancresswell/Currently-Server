@@ -4,8 +4,8 @@ import cors from 'cors';
 import httpProxy from 'http-proxy';
 import fs from 'fs';
 import https from 'https';
-var privateKey = fs.readFileSync('../cert/influxdb-selfsigned.key', 'utf8');
-var certificate = fs.readFileSync('../cert/influxdb-selfsigned.crt', 'utf8');
+var privateKey = fs.readFileSync('../cert/server-selfsigned.key', 'utf8');
+var certificate = fs.readFileSync('../cert/server-selfsigned.crt', 'utf8');
 var ssl = { key: privateKey, cert: certificate };
 
 // Constants
