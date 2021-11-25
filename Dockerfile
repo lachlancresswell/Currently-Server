@@ -4,11 +4,35 @@ RUN apt-get update
 
 # Create app directory
 WORKDIR /usr/src/app
+WORKDIR /usr/src/app/client
 
 # Install app dependencies
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
 # where available ([email protected]+)
-COPY . .
+WORKDIR /usr/src/app/client
+COPY ./client/package.json ./
+COPY ./client/node_modules ./
+RUN npm i
+
+WORKDIR /usr/src/app/server
+COPY ./server/package.json ./
+COPY ./server/node_modules ./
+RUN npm i 
+
+WORKDIR /usr/src/app/client/
+COPY ./client/ ./
+
+WORKDIR /usr/src/app/server/
+COPY ./server/ ./
+
+WORKDIR /usr/src/app/client
+COPY ./client .
+
+WORKDIR /usr/src/app/server
+COPY ./server .
+
+# WORKDIR /usr/src/app/client/
+# RUN npx webpack
 
 WORKDIR /usr/src/app/cert/
 RUN apt-get install -y openssl && \
@@ -19,7 +43,5 @@ RUN apt-get install -y openssl && \
 
 EXPOSE 443
 WORKDIR /usr/src/app/server
-RUN npm i && npm run build
-RUN ls -la ../cert/
-
+RUN npm run build
 CMD [ "node", "app.js" ]
