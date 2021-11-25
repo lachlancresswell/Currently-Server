@@ -9,7 +9,7 @@ var certificate = fs.readFileSync('../cert/server-selfsigned.crt', 'utf8');
 var ssl = { key: privateKey, cert: certificate };
 
 // Constants
-const PORT = 8080;
+const PORT = 443;
 
 var apiProxy = httpProxy.createProxyServer();
 var target = 'https://influxdb:8086';
@@ -25,7 +25,7 @@ app.use(cors({
 
 app.use(express.static('../client/dist/'));
 
-app.all("/influx/*", function (req, res) {
+app.all("/influx/*", function (req: any, res: any) {
     apiProxy.web(req, res, {
         ssl,
         target: target + req.url.substring(req.url.indexOf("x") + 1),
@@ -34,6 +34,10 @@ app.all("/influx/*", function (req, res) {
 });
 
 app.get('/', (req: any, res: any) => {
+    res.sendFile(path.join(__dirname, '../client/dist/basic.html'));
+});
+
+app.get("*", function (req: any, res: any) {
     res.sendFile(path.join(__dirname, '../client/dist/basic.html'));
 });
 

@@ -21,7 +21,7 @@ RUN ls -la
 WORKDIR /usr/src/app/client
 RUN npm install && npx webpack
 
-EXPOSE 8080
+EXPOSE 443
 WORKDIR /usr/src/app/server
 RUN npm i && npm run build
 RUN ls -la ../cert/
