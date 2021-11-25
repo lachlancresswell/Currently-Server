@@ -1,6 +1,7 @@
 version: '3.6'
 services:
   telegraf:
+    image: telegraf:1.18
     environment:
       - MODBUS_GATEWAY_IP=192.168.8.123
     volumes:
