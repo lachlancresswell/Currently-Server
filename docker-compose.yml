@@ -1,11 +1,9 @@
-version: '3.6'
+version: '2.1'
 services:
   telegraf:
-    image: telegraf:1.18
+    build: ./telegraf
     environment:
       - MODBUS_GATEWAY_IP=192.168.8.123
-    volumes:
-    - ./telegraf/etc/telegraf.conf:/etc/telegraf/telegraf.conf:ro
     depends_on:
       - influxdb
     links:
@@ -15,12 +13,21 @@ services:
 
   influxdb:
     build: ./influxdb
-    env_file: configuration.env
+    #env_file: configuration.env
+    environment:
+      - INFLUXDB_DB=influx
+      - INFLUXDB_ADMIN_USER=admin
+      - INFLUXDB_ADMIN_PASSWORD=admin
+      - INFLUXDB_HTTP_HTTPS_ENABLED=true
+      # The TLS or SSL certificate to use when HTTPS is enabled.
+      - INFLUXDB_HTTP_HTTPS_CERTIFICATE=/etc/ssl/influxdb-selfsigned.crt
+      # Use a separate private key location.
+      - INFLUXDB_HTTP_HTTPS_PRIVATE_KEY=/etc/ssl/influxdb-selfsigned.key
     ports:
       - '8086:8086'
-    volumes:
-      - ./:/imports
-      - influxdb_data:/var/lib/influxdb
+    # volumes:
+    #   - ./:/imports
+    #   - influxdb_data:/var/lib/influxdb
 
   # grafana:
   #   image: grafana/grafana:8.0.2
