@@ -31,8 +31,8 @@ COPY ./client .
 WORKDIR /usr/src/app/server
 COPY ./server .
 
-# WORKDIR /usr/src/app/client/
-# RUN npx webpack
+WORKDIR /usr/src/app/client/
+RUN npx webpack
 
 WORKDIR /usr/src/app/cert/
 RUN apt-get install -y openssl && \
