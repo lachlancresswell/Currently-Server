@@ -26,6 +26,7 @@ app.use(cors({
 app.use(express.static('../client/dist/'));
 
 app.all("/influx/*", function (req: any, res: any) {
+    console.log('Proxying to influx')
     apiProxy.web(req, res, {
         ssl,
         target: target + req.url.substring(req.url.indexOf("x") + 1),
