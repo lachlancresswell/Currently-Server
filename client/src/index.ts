@@ -197,7 +197,7 @@ function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-let res: {
+let dbData: {
     "l1-voltage": string,
     "l1-amperage": string,
     "l2-voltage": string,
@@ -221,8 +221,8 @@ let res: {
             order by time desc
             limit 10
           `).then((res: any) => {
-                console.log(res[res.length - 1]['L1 Voltage']);
-                res = {
+                console.log(res[res.length - 1]);
+                dbData = {
                     "l1-voltage": (Math.round(res[res.length - 1]["L1 Voltage"])).toString(),
                     "l1-amperage": (Math.ceil(res[res.length - 1]["L1 Current"] * 10) / 10).toFixed(1),
                     "l2-voltage": (Math.round(res[res.length - 1]["L2 Voltage"])).toString(),
@@ -249,9 +249,9 @@ let res: {
 })();
 
 const updateDisplay = () => {
-    if (res && res != undefined) {
+    if (dbData && dbData != undefined) {
 
-        for (const [key, value] of Object.entries(res)) {
+        for (const [key, value] of Object.entries(dbData)) {
             console.log({ key, value })
             if (document.getElementById(key) != null) (document.getElementById(key) as HTMLDivElement).innerText = value
         };
