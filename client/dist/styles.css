@@ -162,9 +162,9 @@ body {
     justify-content: center;
 }
 
-*:hover {
+/* *:hover {
     border: 1px solid green;
-}
+} */
 
 .button {
     display: inline;
