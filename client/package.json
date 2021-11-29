@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "npx webpack -w"
+    "watch": "npx webpack -w",
+    "build": "npx webpack"
   },
   "keywords": [],
   "author": "",
