@@ -4,35 +4,19 @@ RUN apt-get update
 
 # Create app directory
 WORKDIR /usr/src/app
-WORKDIR /usr/src/app/client
+COPY . .
 
 # Install app dependencies
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
 # where available ([email protected]+)
-WORKDIR /usr/src/app/client
-COPY ./client/package.json ./
-COPY ./client/node_modules ./
+WORKDIR /usr/src/app/client/
 RUN npm i
 
-WORKDIR /usr/src/app/server
-COPY ./server/package.json ./
-COPY ./server/node_modules ./
+WORKDIR /usr/src/app/server/
 RUN npm i 
 
 WORKDIR /usr/src/app/client/
-COPY ./client/ ./
-
-WORKDIR /usr/src/app/server/
-COPY ./server/ ./
-
-WORKDIR /usr/src/app/client
-COPY ./client .
-
-WORKDIR /usr/src/app/server
-COPY ./server .
-
-WORKDIR /usr/src/app/client/
-RUN npx webpack
+RUN npm run build
 
 WORKDIR /usr/src/app/cert/
 RUN apt-get install -y openssl && \
@@ -43,5 +27,8 @@ RUN apt-get install -y openssl && \
 
 EXPOSE 443
 WORKDIR /usr/src/app/server
-RUN npm run build
+
+# Using local tsc fails on balena ??
+RUN npm i -g typescript
+RUN tsc
 CMD [ "node", "app.js" ]
