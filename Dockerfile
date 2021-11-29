@@ -29,4 +29,5 @@ RUN apt-get install -y openssl && \
     -newkey rsa:2048 -keyout ./server-selfsigned.key \
     -out ./server-selfsigned.crt;
 
+WORKDIR /usr/src/app/server/
 CMD [ "node", "app.js" ]
