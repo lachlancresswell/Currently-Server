@@ -2,8 +2,8 @@ version: '2.1'
 services:
   telegraf:
     build: ./telegraf
-    environment:
-      - MODBUS_GATEWAY_IP=192.168.8.123
+    # environment:
+    #   - MODBUS_GATEWAY_IP=192.168.8.123
     depends_on:
       - influxdb
     links:
