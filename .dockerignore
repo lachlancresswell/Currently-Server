@@ -1,0 +1,8 @@
+.vscode
+.git
+.gitignore
+.devcontainer
+*.js
+node_modules
+Dockerfile
+cert
