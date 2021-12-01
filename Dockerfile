@@ -12,6 +12,7 @@ RUN npm i
 RUN npm i -g typescript
 RUN tsc
 EXPOSE 443
+EXPOSE 80
 
 # Install app dependencies
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
