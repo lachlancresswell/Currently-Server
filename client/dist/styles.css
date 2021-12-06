@@ -40,9 +40,13 @@ body {
     flex-direction: column;
 }
 
+#devices {
+  width: 15%
+}
+
 #details, #basic-details {
     margin-top: 0;
-    width: 100%;
+    width: 80%;
     display: flex;
     flex-wrap: wrap;
 }
@@ -156,7 +160,7 @@ body {
     padding-bottom: 0.1em;
 }
 
-#menu {
+#menu, #device-menu {
   margin-top: auto;
   display: flex;
   justify-content: center;
@@ -171,7 +175,6 @@ body {
     width:100%;
     text-align: center;
     border-top: 3px solid #aa003300;
-    border: 0;
     color: var(--text-colour);
     background: none;
 
@@ -181,7 +184,7 @@ body {
     text-decoration: none;
 }
 
-.button:hover {
+.button:hover, .device-button:hover {
     background: #ffffff22;
 }
 
