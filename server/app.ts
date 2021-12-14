@@ -12,11 +12,11 @@ var certificate = fs.readFileSync('../cert/server-selfsigned.crt', 'utf8');
 var ssl = { key: privateKey, cert: certificate };
 
 
-const nets = os.networkInterfaces();
+const nets: any = os.networkInterfaces();
 let nicAddresses: { nic: string, ip: string, mask: string | null }[] = []; // Or just '{}', an empty object
 
-for (const name of Object.keys(nets)) {
-    if (nets[name]) {
+if (nets) {
+    for (const name of Object.keys(nets)) {
         for (const net of nets[name]) {
             // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
             if (net.family === 'IPv4' && !net.internal) {
@@ -36,13 +36,13 @@ interface addressObj {
 }
 let neighbours: { addresses: any[] } = { addresses: [] };
 
-mdns.on('response', function (response) {
+mdns.on('response', function (response: any) {
     console.log('got a response packet:', response)
 
     // Find if response is a loopback e.g the local device
     let local = false;
     nicAddresses.forEach((address: { nic: string, ip: string, mask: string | null }) => {
-        if (address.ip === response.answers[2].data && (response.answers[0].data.port === HTTPS_PORT || response.answers[0].data.port === HTTP_PORT)) local = true;
+        if (address.ip === response.answers[2].data && (response.answers[0].data.port === HTTPS_PORT || response.answers[0].data.port.toString === HTTP_PORT)) local = true;
     })
 
     neighbours.addresses.filter((address: { ip: string, local: boolean }) => (address.ip === (response.answers[2].data as string) + ':' + response.answers[1].data.port && address.local === local)).length
@@ -99,8 +99,8 @@ mdns.query({
 })
 
 // Constants
-const HTTP_PORT = process.env.HTTP_PORT || 8081;
-const HTTPS_PORT = process.env.HTTPS_PORT || 4430;
+const HTTP_PORT: number = parseInt(process.env.HTTP_PORT as string) || 80;
+const HTTPS_PORT: number = parseInt(process.env.HTTPS_PORT as string) || 443;
 const INFLUX_PORT = 8086;
 const HTTP_MDNS_SERVICE_NAME = 'http-my-service'
 const HTTPS_MDNS_SERVICE_NAME = 'https-my-service'
