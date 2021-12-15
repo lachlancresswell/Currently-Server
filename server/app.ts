@@ -42,7 +42,7 @@ mdns.on('response', function (response: any) {
     // Find if response is a loopback e.g the local device
     let local = false;
     nicAddresses.forEach((address: { nic: string, ip: string, mask: string | null }) => {
-        if (address.ip === response.answers[2].data && (response.answers[0].data.port === HTTPS_PORT || response.answers[0].data.port.toString === HTTP_PORT)) local = true;
+        if (response.answers.length > 2 && response.answers[2].data && address.ip === response.answers[2].data && (response.answers[0].data.port === HTTPS_PORT || response.answers[0].data.port.toString === HTTP_PORT)) local = true;
     })
 
     neighbours.addresses.filter((address: { ip: string, local: boolean }) => (address.ip === (response.answers[2].data as string) + ':' + response.answers[1].data.port && address.local === local)).length
@@ -50,8 +50,9 @@ mdns.on('response', function (response: any) {
     if (response.answers[0]
         && response.answers[0].type === 'SRV'
         && (response.answers[0].name === HTTP_MDNS_SERVICE_NAME || response.answers[0].name === HTTPS_MDNS_SERVICE_NAME)
-        && !neighbours.addresses.filter((address: { ip: string, local: boolean }) => (address.ip === (response.answers[2].data as string) + ':' + response.answers[1].data.port && address.local === local)).length)
+        && !neighbours.addresses.filter((address: { ip: string, local: boolean }) => (address.ip === (response.answers[2].data as string) + ':' + response.answers[1].data.port && address.local === local)).length) {
         neighbours.addresses.push({ ip: (response.answers[2].data as string) + ':' + response.answers[1].data.port, local })
+    }
 })
 
 mdns.on('query', function (query) {

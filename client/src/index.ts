@@ -2,7 +2,7 @@ import * as influx from 'influx';
 
 // GLOBALS
 const dbs: { influx: influx.InfluxDB, address: string, local: boolean }[] = [];
-let devButtons: HTMLAnchorElement[] = [];
+let devButtons: HTMLOptionElement[] = [];
 let curDevice = 0;
 const devMenu = document.getElementById("device-menu") as HTMLDivElement
 
@@ -189,13 +189,14 @@ const getDatabases = () => {
 }
 
 // const devButton = (id: string, name: string, selected: boolean) => `<a class="button ${selected ? 'button-selected' : ''}" id="${id}">${name}</a>`
-const devElement = (id: string, name: string, selected: boolean, onclick: any): HTMLAnchorElement => {
-    const elem = document.createElement("a");
-    elem.classList.add("button")
-    if (selected) elem.classList.add("button-selected")
+const devElement = (id: string, name: string, selected: boolean, onclick: any): HTMLOptionElement => {
+    const elem = document.createElement("option");
+    // elem.classList.add("button")
+    // if (selected) elem.classList.add("button-selected")
     elem.id = id;
+    elem.value = id;
     elem.innerText = name;
-    elem.onclick = onclick;
+    // elem.onclick = onclick;
     return elem;
 }
 
@@ -203,7 +204,7 @@ const deviceButtonHandler = (event: MouseEvent) => {
     const target = event.target as HTMLAnchorElement;
     const id = target.id;
     curDevice = parseInt(id.split(":")[0])
-    devButtons.forEach((button: HTMLAnchorElement) => {
+    devButtons.forEach((button: HTMLOptionElement) => {
         if (button.id === id) {
             button.classList.add('button-selected')
         } else {
@@ -234,13 +235,17 @@ getDatabases().addresses.forEach((address: { ip: string, local: boolean }) => {
     })
 });
 
-dbs.forEach((db: { influx: influx.InfluxDB, address: string, local: boolean }, i: number) => {
-    const id = i + ':' + db.address
-    const e = devElement(id, db.local ? "Local" : db.address.split('.')[3], (i === curDevice), deviceButtonHandler)
-    devMenu.appendChild(e)
-    devButtons.push(e)
-    console.log({ id })
-});
+if (dbs.length > 1) {
+    dbs.forEach((db: { influx: influx.InfluxDB, address: string, local: boolean }, i: number) => {
+        const id = i + ':' + db.address
+        const e = devElement(id, db.local ? "Local" : db.address.split('.')[3], (i === curDevice), deviceButtonHandler)
+        devMenu.appendChild(e)
+        devButtons.push(e)
+        console.log({ id })
+    });
+} else {
+    devMenu.style.visibility = "hidden";
+}
 
 let dbData: {
     "l1-voltage": string,
