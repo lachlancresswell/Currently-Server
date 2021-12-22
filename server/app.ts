@@ -51,6 +51,8 @@ mdns.on('response', function (response: any) {
         && response.answers[0].type === 'SRV'
         && (response.answers[0].name === HTTP_MDNS_SERVICE_NAME || response.answers[0].name === HTTPS_MDNS_SERVICE_NAME)
         && !neighbours.addresses.filter((address: { ip: string, local: boolean }) => (address.ip === (response.answers[2].data as string) + ':' + response.answers[1].data.port && address.local === local)).length) {
+        console.log("RESPONSEEEE")
+        console.log(response)
         neighbours.addresses.push({ ip: (response.answers[2].data as string) + ':' + response.answers[1].data.port, local })
     }
 })

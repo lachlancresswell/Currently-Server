@@ -9,7 +9,7 @@ services:
     links:
       - influxdb
     ports:
-    - '8125:8125/udp'
+      - '8125:8125/udp'
 
   influxdb:
     build: ./influxdb
@@ -29,26 +29,66 @@ services:
     #   - ./:/imports
     #   - influxdb_data:/var/lib/influxdb
 
-  # grafana:
-  #   image: grafana/grafana:8.0.2
-  #   depends_on:
-  #     - influxdb
-  #   env_file: configuration.env
-  #   links:
-  #     - influxdb
-  #   ports:
-  #     - '3000:3000'
-  #   volumes:
-  #     - grafana_data:/var/lib/grafana
-  #     - ./grafana/provisioning/:/etc/grafana/provisioning/
-  #     - ./grafana/dashboards/:/var/lib/grafana/dashboards/
-  
+    # grafana:
+    #   image: grafana/grafana:8.0.2
+    #   depends_on:
+    #     - influxdb
+    #   env_file: configuration.env
+    #   links:
+    #     - influxdb
+    #   ports:
+    #     - '3000:3000'
+    #   volumes:
+    #     - grafana_data:/var/lib/grafana
+    #     - ./grafana/provisioning/:/etc/grafana/provisioning/
+    #     - ./grafana/dashboards/:/var/lib/grafana/dashboards/
+
   ui:
     build: .
+    environment:
+      - HTTP_PORT=80
+      - HTTPS_PORT=443
     ports:
       - "80:80"
       - "443:443"
+    networks: 
+      container_2:
+        ipv4_address: 192.168.8.251
+    # volumes:
+    #   - ./:/usr/src/app/
+  
+  ui-2:
+    build: .
+    environment:
+      - HTTP_PORT=80
+      - HTTPS_PORT=443
+    ports:
+      - "80:80"
+      - "443:443"
+    networks: 
+      container_2:
+        ipv4_address: 192.168.8.250
+
+  ui_2:
+    build: .
+    environment:
+      - HTTP_PORT=7080
+      - HTTPS_PORT=7443
+    ports:
+      - "7080:7080"
+      - "7443:7443"
 
 volumes:
   grafana_data: {}
   influxdb_data: {}
+
+networks:
+  container_2:
+    driver: macvlan
+    driver_opts:
+      parent: enp0s3
+    ipam:
+      config:
+        - subnet: 192.168.8.0/24
+          gateway: 192.168.8.1
+
