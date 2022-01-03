@@ -170,6 +170,16 @@ body {
   justify-content: center;
 }
 
+select {
+  font-size: 0.8em;
+  background: none;
+  color: white;
+  border: none;
+  width: auto;
+  display: inline-block;
+  margin: auto auto 0 auto;
+}
+
 /* *:hover {
     border: 1px solid green;
 
