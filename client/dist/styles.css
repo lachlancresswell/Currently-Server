@@ -30,8 +30,7 @@ body {
 #view {
     border: 1px solid grey;
     width: 90%;
-    height: 75%;
-    min-height: 16em;
+    min-height: 17em;
     padding: 0 1em;
 
     max-width: 20em;
@@ -175,9 +174,7 @@ select {
   background: none;
   color: white;
   border: none;
-  width: auto;
-  display: inline-block;
-  margin: auto auto 0 auto;
+  margin: 0.5em auto 0 auto !important;
 }
 
 /* *:hover {
