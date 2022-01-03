@@ -21,10 +21,27 @@ services:
     links:
       - influxdb
     ports:
-    - '8125:8125/udp'
+      - '8125:8125/udp'
 
   ui:
     build: .
+    environment:
+      - HTTP_PORT=80
+      - HTTPS_PORT=443
+    ports:
+      - "80:80"
+      - "443:443"
+    networks: 
+      container_2:
+        ipv4_address: 192.168.8.251
+    # volumes:
+    #   - ./:/usr/src/app/
+  
+  ui-2:
+    build: .
+    environment:
+      - HTTP_PORT=80
+      - HTTPS_PORT=443
     ports:
       - "80:80"
       - "443:443"

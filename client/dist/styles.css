@@ -30,14 +30,17 @@ body {
 #view {
     border: 1px solid grey;
     width: 90%;
-    height: 75%;
-    min-height: 16em;
+    min-height: 17em;
     padding: 0 1em;
 
     max-width: 20em;
 
     display: flex;
     flex-direction: column;
+}
+
+#devices {
+  width: 15%
 }
 
 #details, #basic-details {
@@ -70,6 +73,10 @@ body {
 #details-minor {
     font-size: var(--minor-font-size);
     flex-wrap: wrap;
+}
+
+.details-amperage {
+  margin-right: 0.2em
 }
 
 .details-voltage, .details-amperage {
@@ -156,22 +163,28 @@ body {
     padding-bottom: 0.1em;
 }
 
-#menu {
+#menu, #device-menu {
   margin-top: auto;
   display: flex;
   justify-content: center;
 }
 
+select {
+  font-size: 0.8em;
+  background: none;
+  color: white;
+  border: none;
+  margin: 0.5em auto 0 auto !important;
+}
+
 /* *:hover {
     border: 1px solid green;
-} */
-
+*/
 .button {
     display: inline;
     width:100%;
     text-align: center;
     border-top: 3px solid #aa003300;
-    border: 0;
     color: var(--text-colour);
     background: none;
 
@@ -181,7 +194,7 @@ body {
     text-decoration: none;
 }
 
-.button:hover {
+.button:hover, .device-button:hover {
     background: #ffffff22;
 }
 
