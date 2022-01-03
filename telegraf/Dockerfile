@@ -1,4 +1,4 @@
-FROM telegraf:1.18
+FROM telegraf:latest
 
 WORKDIR /etc/telegraf/
 COPY ./etc .

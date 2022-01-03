@@ -1,9 +1,21 @@
 version: '2.1'
 services:
+  influxdb:
+    build: ./influxdb
+    volumes:
+      # Mount for influxdb data directory and configuration
+      - ./influx-data:/var/lib/influxdb2:rw
+    env_file:
+      - ./influx.env
+    ports:
+      - "8086:8086"
+
   telegraf:
     build: ./telegraf
-    # environment:
-    #   - MODBUS_GATEWAY_IP=192.168.8.123
+    environment:
+      - MODBUS_GATEWAY_IP=192.168.8.123
+    env_file:
+      - ./influx.env
     depends_on:
       - influxdb
     links:
@@ -11,44 +23,8 @@ services:
     ports:
     - '8125:8125/udp'
 
-  influxdb:
-    build: ./influxdb
-    #env_file: configuration.env
-    environment:
-      - INFLUXDB_DB=influx
-      - INFLUXDB_ADMIN_USER=admin
-      - INFLUXDB_ADMIN_PASSWORD=admin
-      - INFLUXDB_HTTP_HTTPS_ENABLED=true
-      # The TLS or SSL certificate to use when HTTPS is enabled.
-      - INFLUXDB_HTTP_HTTPS_CERTIFICATE=/etc/ssl/influxdb-selfsigned.crt
-      # Use a separate private key location.
-      - INFLUXDB_HTTP_HTTPS_PRIVATE_KEY=/etc/ssl/influxdb-selfsigned.key
-    ports:
-      - '8086:8086'
-    # volumes:
-    #   - ./:/imports
-    #   - influxdb_data:/var/lib/influxdb
-
-  # grafana:
-  #   image: grafana/grafana:8.0.2
-  #   depends_on:
-  #     - influxdb
-  #   env_file: configuration.env
-  #   links:
-  #     - influxdb
-  #   ports:
-  #     - '3000:3000'
-  #   volumes:
-  #     - grafana_data:/var/lib/grafana
-  #     - ./grafana/provisioning/:/etc/grafana/provisioning/
-  #     - ./grafana/dashboards/:/var/lib/grafana/dashboards/
-  
   ui:
     build: .
     ports:
       - "80:80"
       - "443:443"
-
-volumes:
-  grafana_data: {}
-  influxdb_data: {}
