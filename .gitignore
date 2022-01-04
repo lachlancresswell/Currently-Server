@@ -3,3 +3,5 @@ bundle.js.LICENSE.txt
 *.js
 *.crt
 *.key
+influx-data
+*.map

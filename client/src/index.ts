@@ -217,11 +217,11 @@ const deviceButtonHandler = (event: MouseEvent) => {
 getDatabases().addresses.forEach((address: { ip: string, local: boolean }) => {
     dbs.push({
         influx: new influx.InfluxDB({
-            host: address.ip,
+            host: window.location.hostname,
             database: 'influx',
-            path: '/influx',
-            port: 443,
-            protocol: 'https',
+            path: `/${(address.ip).replace(':', '/')}/influx`,
+            port: parseInt(window.location.port),
+            protocol: window.location.protocol.indexOf("https") >= 0 ? "https" : "http",
             schema: [
                 {
                     measurement: 'modbus',
