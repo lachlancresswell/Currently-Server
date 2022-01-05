@@ -50,8 +50,18 @@ mdns.on('response', function (response: any) {
 
         if (response.answers[0]
             && (response.answers[0].name === HTTP_MDNS_SERVICE_NAME || response.answers[0].name === HTTPS_MDNS_SERVICE_NAME)
-            && !neighbours.addresses.filter((address: { ip: string, local: boolean }) => (address.ip === (response.answers[2].data as string) + ':' + response.answers[1].data.port && address.local === local)).length)
+            && !neighbours.addresses.filter((address: { ip: string, local: boolean }) => (address.ip === (response.answers[2].data as string) + ':' + response.answers[1].data.port && address.local === local)).length) {
             neighbours.addresses.push({ ip: (response.answers[2].data as string) + ':' + response.answers[1].data.port, local })
+            let uri = ((response.answers[2].data as string) + ':' + response.answers[1].data.port).replace(':', '/');
+            app.get(`/${uri}/*`, function (req: any, res: any) {
+                console.log('Proxying to external influx')
+                apiProxy.web(req, res, {
+                    //ssl,
+                    target: "http://" + (req.url.substring(req.url.indexOf("/") + 1).replace("/", ':')),
+                    secure: false // Prevents errors with self-signed certß
+                });
+            });
+        }
 
         neighbours.addresses.sort((a, b) => b - a);
     }
@@ -122,11 +132,11 @@ app.use(cors({
 
 app.use(express.static('../client/dist/'));
 
-app.all("/influx/*", function (req: any, res: any) {
+app.all("/influx/*", function (req: express.Request, res: any) {
     console.log('Proxying to influx')
     apiProxy.web(req, res, {
         ssl,
-        target: target + req.url.substring(req.url.indexOf("x") + 1),
+        target: 'https://' + req.hostname + ':8086' + req.url.substring(req.url.indexOf("x") + 1);,
         secure: false // Prevents errors with self-signed certß
     });
 });
@@ -139,9 +149,9 @@ app.get('/', (req: any, res: any) => {
     res.sendFile(path.join(__dirname, '../client/dist/index.html'));
 });
 
-app.get("*", function (req: any, res: any) {
-    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-});
+// app.get("*", function (req: any, res: any) {
+//     res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+// });
 
 const httpServer = http.createServer(app);
 httpServer.listen(HTTP_PORT, () => {
