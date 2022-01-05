@@ -196,7 +196,7 @@ const devElement = (id: string, name: string, selected: boolean, onclick: any): 
     elem.id = id;
     elem.value = id;
     elem.innerText = name;
-    // elem.onclick = onclick;
+    elem.onclick = onclick;
     return elem;
 }
 
@@ -215,12 +215,14 @@ const deviceButtonHandler = (event: MouseEvent) => {
 
 // START
 getDatabases().addresses.forEach((address: { ip: string, local: boolean }) => {
+    console.log(window.location.protocol)
+    console.log(window.location.port)
     dbs.push({
         influx: new influx.InfluxDB({
             host: window.location.hostname,
             database: 'influx',
             path: `/${(address.ip).replace(':', '/')}/influx`,
-            port: parseInt(window.location.port),
+            port: parseInt(window.location.port) || (window.location.protocol.indexOf("https") >= 0 ? 443 : 80),
             protocol: window.location.protocol.indexOf("https") >= 0 ? "https" : "http",
             schema: [
                 {
@@ -238,10 +240,9 @@ getDatabases().addresses.forEach((address: { ip: string, local: boolean }) => {
 if (dbs.length > 1) {
     dbs.forEach((db: { influx: influx.InfluxDB, address: string, local: boolean }, i: number) => {
         const id = i + ':' + db.address
-        const e = devElement(id, db.local ? "Local" : db.address.split('.')[3], (i === curDevice), deviceButtonHandler)
+        const e = devElement(id, db.local ? "Local" : db.address, (i === curDevice), deviceButtonHandler)
         devMenu.appendChild(e)
         devButtons.push(e)
-        console.log({ id })
     });
 } else {
     devMenu.style.visibility = "hidden";

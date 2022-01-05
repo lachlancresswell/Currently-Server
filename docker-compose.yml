@@ -2,8 +2,12 @@ version: '2.1'
 services:
   telegraf:
     build: ./telegraf
-    # environment:
-    #   - MODBUS_GATEWAY_IP=192.168.8.123
+    environment:
+       - INFLUX_ADDRESS=influxdb:8086
+       - MODBUS_GATEWAY_IP=192.168.8.123
+       - L1_NAME=L1
+       - L2_NAME=L2
+       - L3_NAME=L3
     depends_on:
       - influxdb
     links:
@@ -25,70 +29,92 @@ services:
       - INFLUXDB_HTTP_HTTPS_PRIVATE_KEY=/etc/ssl/influxdb-selfsigned.key
     ports:
       - '8086:8086'
+
+  telegraf_l2:
+    build: ./telegraf
+    environment:
+       - INFLUX_ADDRESS=influxdb_l2:8086
+       - MODBUS_GATEWAY_IP=192.168.8.123
+       - L1_NAME=L2
+       - L2_NAME=L1
+       - L3_NAME=L3
+    depends_on:
+      - influxdb_l2
+    links:
+      - influxdb_l2
+    ports:
+      - '2125:8125/udp'
+
+  influxdb_l2:
+    build: ./influxdb
+    #env_file: configuration.env
+    environment:
+      - INFLUXDB_DB=influx
+      - INFLUXDB_ADMIN_USER=admin
+      - INFLUXDB_ADMIN_PASSWORD=admin
+      - INFLUXDB_HTTP_HTTPS_ENABLED=true
+      # The TLS or SSL certificate to use when HTTPS is enabled.
+      - INFLUXDB_HTTP_HTTPS_CERTIFICATE=/etc/ssl/influxdb-selfsigned.crt
+      # Use a separate private key location.
+      - INFLUXDB_HTTP_HTTPS_PRIVATE_KEY=/etc/ssl/influxdb-selfsigned.key
+    ports:
+      - '2086:8086'
+
+  telegraf_l3:
+    build: ./telegraf
+    environment:
+       - INFLUX_ADDRESS=influxdb_l3:8086
+       - MODBUS_GATEWAY_IP=192.168.8.123
+       - L1_NAME=L3
+       - L2_NAME=L2
+       - L3_NAME=L1
+    depends_on:
+      - influxdb_l3
+    links:
+      - influxdb_l3
+    ports:
+      - '3125:8125/udp'
+
+  influxdb_l3:
+    build: ./influxdb
+    #env_file: configuration.env
+    environment:
+      - INFLUXDB_DB=influx
+      - INFLUXDB_ADMIN_USER=admin
+      - INFLUXDB_ADMIN_PASSWORD=admin
+      - INFLUXDB_HTTP_HTTPS_ENABLED=true
+      # The TLS or SSL certificate to use when HTTPS is enabled.
+      - INFLUXDB_HTTP_HTTPS_CERTIFICATE=/etc/ssl/influxdb-selfsigned.crt
+      # Use a separate private key location.
+      - INFLUXDB_HTTP_HTTPS_PRIVATE_KEY=/etc/ssl/influxdb-selfsigned.key
+    ports:
+      - '3086:8086'
     # volumes:
     #   - ./:/imports
     #   - influxdb_data:/var/lib/influxdb
-
-    # grafana:
-    #   image: grafana/grafana:8.0.2
-    #   depends_on:
-    #     - influxdb
-    #   env_file: configuration.env
-    #   links:
-    #     - influxdb
-    #   ports:
-    #     - '3000:3000'
-    #   volumes:
-    #     - grafana_data:/var/lib/grafana
-    #     - ./grafana/provisioning/:/etc/grafana/provisioning/
-    #     - ./grafana/dashboards/:/var/lib/grafana/dashboards/
 
   ui:
     build: .
     environment:
       - HTTP_PORT=80
       - HTTPS_PORT=443
-    ports:
-      - "80:80"
-      - "443:443"
-    networks: 
-      container_2:
-        ipv4_address: 192.168.8.251
-    # volumes:
-    #   - ./:/usr/src/app/
+    network_mode: "host"
   
-  ui-2:
+  ui_l2:
     build: .
     environment:
-      - HTTP_PORT=80
-      - HTTPS_PORT=443
-    ports:
-      - "80:80"
-      - "443:443"
-    networks: 
-      container_2:
-        ipv4_address: 192.168.8.250
+      - HTTP_PORT=2080
+      - HTTPS_PORT=2443
+      - INFLUX_PORT=2086
+    network_mode: "host"
 
-  ui_2:
+  ui_l3:
     build: .
     environment:
-      - HTTP_PORT=7080
-      - HTTPS_PORT=7443
-    ports:
-      - "7080:7080"
-      - "7443:7443"
+      - HTTP_PORT=3080
+      - HTTPS_PORT=3443
+      - INFLUX_PORT=3086
+    network_mode: "host"
 
 volumes:
-  grafana_data: {}
   influxdb_data: {}
-
-networks:
-  container_2:
-    driver: macvlan
-    driver_opts:
-      parent: enp0s3
-    ipam:
-      config:
-        - subnet: 192.168.8.0/24
-          gateway: 192.168.8.1
-

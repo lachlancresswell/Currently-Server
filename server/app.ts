@@ -37,8 +37,6 @@ interface addressObj {
 let neighbours: { addresses: any[] } = { addresses: [] };
 
 mdns.on('response', function (response: any) {
-    console.log('got a response packet:', response)
-
     if (response.answers[0].type === 'SRV' && (response.answers[0].name === HTTP_MDNS_SERVICE_NAME || response.answers[0].name === HTTPS_MDNS_SERVICE_NAME)) {
         // Find if response is a loopback e.g the local device
         let local = false;
@@ -54,11 +52,14 @@ mdns.on('response', function (response: any) {
             neighbours.addresses.push({ ip: (response.answers[2].data as string) + ':' + response.answers[1].data.port, local })
             let uri = ((response.answers[2].data as string) + ':' + response.answers[1].data.port).replace(':', '/');
             app.get(`/${uri}/*`, function (req: any, res: any) {
-                console.log('Proxying to external influx')
+                const target = "http://" + (req.url.substring(req.url.indexOf("/") + 1).replace("/", ':'));
+                console.log('Proxying to external influx - ' + target.substring(0, 30) + '...')
                 apiProxy.web(req, res, {
                     //ssl,
-                    target: "http://" + (req.url.substring(req.url.indexOf("/") + 1).replace("/", ':')),
+                    target,
                     secure: false // Prevents errors with self-signed certß
+                }, (e: Error) => {
+                    console.log(e)
                 });
             });
         }
@@ -114,7 +115,7 @@ mdns.query({
 // Constants
 const HTTP_PORT: number = parseInt(process.env.HTTP_PORT as string) || 80;
 const HTTPS_PORT: number = parseInt(process.env.HTTPS_PORT as string) || 443;
-const INFLUX_PORT = 8086;
+const INFLUX_PORT = parseInt(process.env.INFLUX_PORT as string) || 8086;
 const HTTP_MDNS_SERVICE_NAME = 'http-my-service'
 const HTTPS_MDNS_SERVICE_NAME = 'https-my-service'
 
@@ -133,11 +134,14 @@ app.use(cors({
 app.use(express.static('../client/dist/'));
 
 app.all("/influx/*", function (req: express.Request, res: any) {
-    console.log('Proxying to influx')
+    const target = 'https://' + req.hostname + ':' + INFLUX_PORT + req.url.substring(req.url.indexOf("x") + 1);
+    console.log('Proxying to influx - ' + target.substring(0, 30))
     apiProxy.web(req, res, {
         ssl,
-        target: 'https://' + req.hostname + ':8086' + req.url.substring(req.url.indexOf("x") + 1);,
+        target,
         secure: false // Prevents errors with self-signed certß
+    }, (e: Error) => {
+        console.log(e)
     });
 });
 
