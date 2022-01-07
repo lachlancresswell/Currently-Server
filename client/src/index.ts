@@ -19,18 +19,6 @@ const getDatabases = () => {
     return JSON.parse(xmlHttp.responseText)
 }
 
-// const devButton = (id: string, name: string, selected: boolean) => `<a class="button ${selected ? 'button-selected' : ''}" id="${id}">${name}</a>`
-const devElement = (id: string, name: string, selected: boolean, onclick: any): HTMLOptionElement => {
-    const elem = document.createElement("option");
-    // elem.classList.add("button")
-    // if (selected) elem.classList.add("button-selected")
-    elem.id = id;
-    elem.value = id;
-    elem.innerText = name;
-    elem.onclick = onclick;
-    return elem;
-}
-
 const deviceButtonHandler = (event: MouseEvent) => {
     const target = event.target as HTMLAnchorElement;
     const id = target.id;
@@ -71,7 +59,7 @@ getDatabases().addresses.forEach((address: { ip: string, local: boolean }) => {
 if (dbs.length > 1) {
     dbs.forEach((db: { influx: influx.InfluxDB, address: string, local: boolean }, i: number) => {
         const id = i + ':' + db.address
-        const e = devElement(id, db.local ? "Local" : db.address, (i === curDevice), deviceButtonHandler)
+        const e = HTML.devElement(id, db.local ? "Local" : db.address, (i === curDevice), deviceButtonHandler)
         devMenu.appendChild(e)
         devButtons.push(e)
     });

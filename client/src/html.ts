@@ -1,3 +1,7 @@
+/**
+ * Basic HTML page
+ * @returns Page HTML contents
+ */
 export const pageBasic = () => '<div id="basic-details"> <div class="details-phase" id="details-l1">' +
     '                <div class="details-voltage">' +
     '                    <div id="l1-voltage" class="details-value">' +
@@ -53,6 +57,11 @@ export const pageBasic = () => '<div id="basic-details"> <div class="details-pha
     '                </div>' +
     '            </div></div>';
 
+/**
+ * Phase HTML page
+ * @param phase Phase number used for IDs
+ * @returns Page HTML contents
+ */
 export const pagePhase = (phase: number) =>
     `<div id="details">
                     <div class="phase-info" id="details-l${phase}">
@@ -94,6 +103,10 @@ export const pagePhase = (phase: number) =>
                 </div>`;
 
 
+/**
+ * Advanced HTML page
+ * @returns Page HTML contents
+ */
 export const pageAdv = () =>
     `<div id="container"><div id="subcontainer-1">
                     <div id="adv-col-1">
@@ -167,3 +180,20 @@ export const pageAdv = () =>
                         </div>
                     </div>
                 </div></div>`;
+
+/**
+ * Creates an option element for the device browser/dropdown
+ * @param id HTML id
+ * @param name HTML name
+ * @param selected Whether the option starts as selected or not
+ * @param onclick Callback for clicking of element in list
+ * @returns HTML option element
+ */
+export const devElement = (id: string, name: string, selected: boolean, onclick: any): HTMLOptionElement => {
+    const elem = document.createElement("option");
+    elem.id = id;
+    elem.value = id;
+    elem.innerText = name;
+    elem.onclick = onclick;
+    return elem;
+}
