@@ -12,13 +12,7 @@ interface addressInfo {
 interface neighbourAPI {
     addresses: addressInfo[]
 }
-
-// GLOBALS
-const neighbours: neighbourInfo[] = [];
-let devButtons: HTMLOptionElement[] = [];
-let curDevice = 0;
-const devMenu = document.getElementById("device-menu") as HTMLDivElement
-let dbData: {
+interface dbResponse {
     "l1-voltage": string,
     "l1-amperage": string,
     "l2-voltage": string,
@@ -32,6 +26,14 @@ let dbData: {
     "l2-amperage-round": string,
     "l3-amperage-round": string,
 }
+
+// GLOBALS
+const neighbours: neighbourInfo[] = [];
+let devButtons: HTMLOptionElement[] = [];
+let curDevice = 0;
+const devMenu = document.getElementById("device-menu") as HTMLDivElement
+let dbData: dbResponse;
+
 let buttons = {
     "button-basic": document.getElementById("button-basic") as HTMLAnchorElement,
     "button-l1": document.getElementById("button-l1") as HTMLAnchorElement,
@@ -101,9 +103,12 @@ if (neighbours.length > 1) {
     devMenu.style.visibility = "hidden";
 }
 
-
-const pollServer = (): Promise<any> => {
-    return neighbours[curDevice].influx.query(`
+/**
+ * Requests data from Influx database and updates UI
+ * @returns Never ending promise loop
+ */
+const pollServer = () => new Promise<dbResponse>(async (resolve: any, reject: any) => {
+    neighbours[curDevice].influx.query(`
     select "L1 Voltage", "L1 Current", "L2 Voltage", "L2 Current", "L3 Voltage", "L3 Current", "Grid Frequency", "Power Factor", "Total Apparent Power" from modbus
     order by time desc
     limit 10
@@ -124,20 +129,29 @@ const pollServer = (): Promise<any> => {
                 "l2-amperage-round": (Math.round(res[res.length - 1]["L2 Current"])).toString(),
                 "l3-amperage-round": (Math.round(res[res.length - 1]["L3 Current"])).toString(),
             }
-            updateDisplay();
+            return resolve(dbData)
+        } else {
+            return reject('Influx response length < 1')
         }
+    })
+})
+
+const mainLoop = () => {
+    pollServer().then(async (data: dbResponse) => {
+        dbData = data;
+        updateReadout(data);
 
         await sleep(1000)
 
-        return pollServer()
-    }, async (rej: any) => pollServer())
+        return mainLoop()
+    }, async (rej: any) => mainLoop());
 }
 
-pollServer();
+mainLoop()
 
-const updateDisplay = () => {
-    if (dbData && dbData != undefined) {
-        for (const [key, value] of Object.entries(dbData)) {
+const updateReadout = (data: dbResponse) => {
+    if (data && data != undefined) {
+        for (const [key, value] of Object.entries(data)) {
             if (document.getElementById(key) != null) (document.getElementById(key) as HTMLDivElement).innerText = value
         };
     }
@@ -147,7 +161,7 @@ const buttonHandler = (button: string, contents: any) => {
     const details = document.getElementById("single-page") as HTMLDivElement;
     details.style.visibility = "hidden";
     details.innerHTML = contents;
-    updateDisplay();
+    updateReadout(dbData);
     details.style.visibility = "visible";
 
     for (const [key, value] of Object.entries(buttons)) {
