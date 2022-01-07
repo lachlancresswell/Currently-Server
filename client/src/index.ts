@@ -102,46 +102,38 @@ if (neighbours.length > 1) {
 }
 
 
-(async () => {
-    try {
-        while (1) {
-            if (neighbours && neighbours[curDevice]) {
-                const db = neighbours[curDevice]
-
-                db.influx.query(`
-            select "L1 Voltage", "L1 Current", "L2 Voltage", "L2 Current", "L3 Voltage", "L3 Current", "Grid Frequency", "Power Factor", "Total Apparent Power" from modbus
-            order by time desc
-            limit 10
-          `).then((res: any) => {
-                    if (res && res.length) {
-                        console.log(res[res.length - 1]);
-                        dbData = {
-                            "l1-voltage": (Math.round(res[res.length - 1]["L1 Voltage"])).toString(),
-                            "l1-amperage": (Math.ceil(res[res.length - 1]["L1 Current"] * 10) / 10).toFixed(1),
-                            "l2-voltage": (Math.round(res[res.length - 1]["L2 Voltage"])).toString(),
-                            "l2-amperage": (Math.ceil(res[res.length - 1]["L2 Current"] * 10) / 10).toFixed(1),
-                            "l3-voltage": (Math.round(res[res.length - 1]["L3 Voltage"])).toString(),
-                            "l3-amperage": (Math.ceil(res[res.length - 1]["L3 Current"] * 10) / 10).toFixed(1),
-                            "grid-freq": (Math.round(res[res.length - 1]["Grid Frequency"] * 10) / 10).toFixed(1),
-                            "power-factor": (Math.round(res[res.length - 1]["Power Factor"])).toString(),
-                            "apparent-power": (Math.round(res[res.length - 1]["Total Apparent Power"])).toString(),
-                            "l1-amperage-round": (Math.round(res[res.length - 1]["L1 Current"])).toString(),
-                            "l2-amperage-round": (Math.round(res[res.length - 1]["L2 Current"])).toString(),
-                            "l3-amperage-round": (Math.round(res[res.length - 1]["L3 Current"])).toString(),
-                        }
-
-                        updateDisplay();
-                    }
-                })
+const pollServer = (): Promise<any> => {
+    return neighbours[curDevice].influx.query(`
+    select "L1 Voltage", "L1 Current", "L2 Voltage", "L2 Current", "L3 Voltage", "L3 Current", "Grid Frequency", "Power Factor", "Total Apparent Power" from modbus
+    order by time desc
+    limit 10
+    `).then(async (res: any) => {
+        if (res && res.length) {
+            console.log(res[res.length - 1]);
+            dbData = {
+                "l1-voltage": (Math.round(res[res.length - 1]["L1 Voltage"])).toString(),
+                "l1-amperage": (Math.ceil(res[res.length - 1]["L1 Current"] * 10) / 10).toFixed(1),
+                "l2-voltage": (Math.round(res[res.length - 1]["L2 Voltage"])).toString(),
+                "l2-amperage": (Math.ceil(res[res.length - 1]["L2 Current"] * 10) / 10).toFixed(1),
+                "l3-voltage": (Math.round(res[res.length - 1]["L3 Voltage"])).toString(),
+                "l3-amperage": (Math.ceil(res[res.length - 1]["L3 Current"] * 10) / 10).toFixed(1),
+                "grid-freq": (Math.round(res[res.length - 1]["Grid Frequency"] * 10) / 10).toFixed(1),
+                "power-factor": (Math.round(res[res.length - 1]["Power Factor"])).toString(),
+                "apparent-power": (Math.round(res[res.length - 1]["Total Apparent Power"])).toString(),
+                "l1-amperage-round": (Math.round(res[res.length - 1]["L1 Current"])).toString(),
+                "l2-amperage-round": (Math.round(res[res.length - 1]["L2 Current"])).toString(),
+                "l3-amperage-round": (Math.round(res[res.length - 1]["L3 Current"])).toString(),
             }
-
-            await sleep(1000)
+            updateDisplay();
         }
 
-    } catch (e) {
-        // Deal with the fact the chain failed
-    }
-})();
+        await sleep(1000)
+
+        return pollServer()
+    }, async (rej: any) => pollServer())
+}
+
+pollServer();
 
 const updateDisplay = () => {
     if (dbData && dbData != undefined) {
