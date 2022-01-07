@@ -1,22 +1,36 @@
 import * as influx from 'influx';
 import * as HTML from './html'
 
+//INTERFACES
+interface neighbourInfo {
+    influx: influx.InfluxDB,
+    address: addressInfo
+}
+interface addressInfo {
+    ip: string, local: boolean
+}
+interface neighbourAPI {
+    addresses: addressInfo[]
+}
+
 // GLOBALS
-const dbs: { influx: influx.InfluxDB, address: string, local: boolean }[] = [];
+const neighbours: neighbourInfo[] = [];
 let devButtons: HTMLOptionElement[] = [];
 let curDevice = 0;
 const devMenu = document.getElementById("device-menu") as HTMLDivElement
 
-// CONSTS
-
 // FUNCTIONS
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-const getDatabases = () => {
+/**
+ * Pulls list of discover neighbouring servers from the server
+ * @returns Neighbouring server addresses whether they are local (match the current server address) or not
+ */
+const getNeighbourAddresses = (): neighbourAPI => {
     var xmlHttp = new XMLHttpRequest();
     xmlHttp.open("GET", window.location.href + "neighbours", false); // false for synchronous request
     xmlHttp.send(null);
-    return JSON.parse(xmlHttp.responseText)
+    return (JSON.parse(xmlHttp.responseText) as neighbourAPI)
 }
 
 const deviceButtonHandler = (event: MouseEvent) => {
@@ -33,10 +47,8 @@ const deviceButtonHandler = (event: MouseEvent) => {
 }
 
 // START
-getDatabases().addresses.forEach((address: { ip: string, local: boolean }) => {
-    console.log(window.location.protocol)
-    console.log(window.location.port)
-    dbs.push({
+getNeighbourAddresses().addresses.forEach((address: addressInfo) => {
+    neighbours.push({
         influx: new influx.InfluxDB({
             host: window.location.hostname,
             database: 'influx',
@@ -52,14 +64,14 @@ getDatabases().addresses.forEach((address: { ip: string, local: boolean }) => {
                     tags: ['host']
                 }
             ]
-        }), address: address.ip, local: address.local
+        }), address
     })
 });
 
-if (dbs.length > 1) {
-    dbs.forEach((db: { influx: influx.InfluxDB, address: string, local: boolean }, i: number) => {
-        const id = i + ':' + db.address
-        const e = HTML.devElement(id, db.local ? "Local" : db.address, (i === curDevice), deviceButtonHandler)
+if (neighbours.length > 1) {
+    neighbours.forEach((db: neighbourInfo, i: number) => {
+        const id = i + ':' + db.address.ip
+        const e = HTML.devElement(id, db.address.local ? "Local" : db.address.ip, (i === curDevice), deviceButtonHandler)
         devMenu.appendChild(e)
         devButtons.push(e)
     });
@@ -85,8 +97,8 @@ let dbData: {
 (async () => {
     try {
         while (1) {
-            if (dbs && dbs[curDevice]) {
-                const db = dbs[curDevice]
+            if (neighbours && neighbours[curDevice]) {
+                const db = neighbours[curDevice]
 
                 db.influx.query(`
             select "L1 Voltage", "L1 Current", "L2 Voltage", "L2 Current", "L3 Voltage", "L3 Current", "Grid Frequency", "Power Factor", "Total Apparent Power" from modbus
