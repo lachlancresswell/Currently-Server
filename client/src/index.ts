@@ -85,40 +85,6 @@ const deviceButtonHandler = (event: MouseEvent) => {
     })
 }
 
-// START
-getNeighbourAddresses().addresses.forEach((address: addressInfo) => {
-    neighbours.push({
-        influx: new influx.InfluxDB({
-            host: window.location.hostname,
-            database: 'influx',
-            path: `/${(address.ip).replace(':', '/')}/influx`,
-            port: parseInt(window.location.port) || (window.location.protocol.indexOf("https") >= 0 ? 443 : 80),
-            protocol: window.location.protocol.indexOf("https") >= 0 ? "https" : "http",
-            schema: [
-                {
-                    measurement: 'modbus',
-                    fields: {
-                        current: influx.FieldType.FLOAT,
-                    },
-                    tags: ['host']
-                }
-            ]
-        }), address
-    })
-});
-
-// Create device dropdown
-if (neighbours.length > 1) {
-    neighbours.forEach((db: neighbourInfo, i: number) => {
-        const id = i + ':' + db.address.ip
-        const e = HTML.devElement(id, db.address.local ? "Local" : db.address.ip, (i === curDevice), deviceButtonHandler)
-        devMenu.appendChild(e)
-        devButtons.push(e)
-    });
-} else {
-    devMenu.style.visibility = "hidden";
-}
-
 /**
  * Pulls data from Influx database
  * @returns Resolves with database response or rejects with error message
@@ -219,5 +185,38 @@ buttons["button-l2"].onclick = buttonHandler;
 buttons["button-l3"].onclick = buttonHandler;
 buttons["button-adv"].onclick = buttonHandler;
 
+// START
+getNeighbourAddresses().addresses.forEach((address: addressInfo) => {
+    neighbours.push({
+        influx: new influx.InfluxDB({
+            host: window.location.hostname,
+            database: 'influx',
+            path: `/${(address.ip).replace(':', '/')}/influx`,
+            port: parseInt(window.location.port) || (window.location.protocol.indexOf("https") >= 0 ? 443 : 80),
+            protocol: window.location.protocol.indexOf("https") >= 0 ? "https" : "http",
+            schema: [
+                {
+                    measurement: 'modbus',
+                    fields: {
+                        current: influx.FieldType.FLOAT,
+                    },
+                    tags: ['host']
+                }
+            ]
+        }), address
+    })
+});
+
+// Create device dropdown
+if (neighbours.length > 1) {
+    neighbours.forEach((db: neighbourInfo, i: number) => {
+        const id = i + ':' + db.address.ip
+        const e = HTML.devElement(id, db.address.local ? "Local" : db.address.ip, (i === curDevice), deviceButtonHandler)
+        devMenu.appendChild(e)
+        devButtons.push(e)
+    });
+} else {
+    devMenu.style.visibility = "hidden";
+}
 mainLoop()
 setCurrentPage(buttonHTML["button-basic"])
