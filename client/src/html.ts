@@ -181,6 +181,8 @@ export const pageAdv = () =>
                     </div>
                 </div></div>`;
 
+export const pageChart = () => `<canvas id="myChart" width="100%" height="70%"></canvas>`;
+
 /**
  * Creates an option element for the device browser/dropdown
  * @param id HTML id
