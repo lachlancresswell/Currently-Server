@@ -18,6 +18,27 @@ const neighbours: neighbourInfo[] = [];
 let devButtons: HTMLOptionElement[] = [];
 let curDevice = 0;
 const devMenu = document.getElementById("device-menu") as HTMLDivElement
+let dbData: {
+    "l1-voltage": string,
+    "l1-amperage": string,
+    "l2-voltage": string,
+    "l2-amperage": string,
+    "l3-voltage": string,
+    "l3-amperage": string,
+    "grid-freq": string,
+    "power-factor": string,
+    "apparent-power": string,
+    "l1-amperage-round": string,
+    "l2-amperage-round": string,
+    "l3-amperage-round": string,
+}
+let buttons = {
+    "button-basic": document.getElementById("button-basic") as HTMLAnchorElement,
+    "button-l1": document.getElementById("button-l1") as HTMLAnchorElement,
+    "button-l2": document.getElementById("button-l2") as HTMLAnchorElement,
+    "button-l3": document.getElementById("button-l3") as HTMLAnchorElement,
+    "button-adv": document.getElementById("button-adv") as HTMLAnchorElement,
+}
 
 // FUNCTIONS
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -68,6 +89,7 @@ getNeighbourAddresses().addresses.forEach((address: addressInfo) => {
     })
 });
 
+// Create device dropdown
 if (neighbours.length > 1) {
     neighbours.forEach((db: neighbourInfo, i: number) => {
         const id = i + ':' + db.address.ip
@@ -79,20 +101,6 @@ if (neighbours.length > 1) {
     devMenu.style.visibility = "hidden";
 }
 
-let dbData: {
-    "l1-voltage": string,
-    "l1-amperage": string,
-    "l2-voltage": string,
-    "l2-amperage": string,
-    "l3-voltage": string,
-    "l3-amperage": string,
-    "grid-freq": string,
-    "power-factor": string,
-    "apparent-power": string,
-    "l1-amperage-round": string,
-    "l2-amperage-round": string,
-    "l3-amperage-round": string,
-}
 
 (async () => {
     try {
@@ -141,14 +149,6 @@ const updateDisplay = () => {
             if (document.getElementById(key) != null) (document.getElementById(key) as HTMLDivElement).innerText = value
         };
     }
-}
-
-let buttons = {
-    "button-basic": document.getElementById("button-basic") as HTMLAnchorElement,
-    "button-l1": document.getElementById("button-l1") as HTMLAnchorElement,
-    "button-l2": document.getElementById("button-l2") as HTMLAnchorElement,
-    "button-l3": document.getElementById("button-l3") as HTMLAnchorElement,
-    "button-adv": document.getElementById("button-adv") as HTMLAnchorElement,
 }
 
 const buttonHandler = (button: string, contents: any) => {
