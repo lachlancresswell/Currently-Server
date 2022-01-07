@@ -27,6 +27,14 @@ interface dbResponse {
     "l3-amperage-round": string,
 }
 
+interface buttonCollection {
+    "button-basic": HTMLAnchorElement,
+    "button-l1": HTMLAnchorElement,
+    "button-l2": HTMLAnchorElement,
+    "button-l3": HTMLAnchorElement,
+    "button-adv": HTMLAnchorElement,
+}
+
 // GLOBALS
 const neighbours: neighbourInfo[] = [];
 let devButtons: HTMLOptionElement[] = [];
@@ -34,12 +42,20 @@ let curDevice = 0;
 const devMenu = document.getElementById("device-menu") as HTMLDivElement
 let dbData: dbResponse;
 
-let buttons = {
+let buttons: buttonCollection = {
     "button-basic": document.getElementById("button-basic") as HTMLAnchorElement,
     "button-l1": document.getElementById("button-l1") as HTMLAnchorElement,
     "button-l2": document.getElementById("button-l2") as HTMLAnchorElement,
     "button-l3": document.getElementById("button-l3") as HTMLAnchorElement,
     "button-adv": document.getElementById("button-adv") as HTMLAnchorElement,
+}
+
+const buttonHTML: { [key: string]: string } = {
+    "button-basic": HTML.pageBasic(),
+    "button-l1": HTML.pagePhase(1),
+    "button-l2": HTML.pagePhase(2),
+    "button-l3": HTML.pagePhase(3),
+    "button-adv": HTML.pageAdv(),
 }
 
 // FUNCTIONS
@@ -104,8 +120,8 @@ if (neighbours.length > 1) {
 }
 
 /**
- * Requests data from Influx database and updates UI
- * @returns Never ending promise loop
+ * Pulls data from Influx database
+ * @returns Resolves with database response or rejects with error message
  */
 const pollServer = () => new Promise<dbResponse>(async (resolve: any, reject: any) => {
     neighbours[curDevice].influx.query(`
@@ -136,6 +152,9 @@ const pollServer = () => new Promise<dbResponse>(async (resolve: any, reject: an
     })
 })
 
+/**
+ * Creates a promise loop
+ */
 const mainLoop = () => {
     pollServer().then(async (data: dbResponse) => {
         dbData = data;
@@ -147,8 +166,10 @@ const mainLoop = () => {
     }, async (rej: any) => mainLoop());
 }
 
-mainLoop()
-
+/**
+ * Updates UI with database values
+ * @param data Influx database data
+ */
 const updateReadout = (data: dbResponse) => {
     if (data && data != undefined) {
         for (const [key, value] of Object.entries(data)) {
@@ -157,22 +178,46 @@ const updateReadout = (data: dbResponse) => {
     }
 }
 
-const buttonHandler = (button: string, contents: any) => {
-    const details = document.getElementById("single-page") as HTMLDivElement;
-    details.style.visibility = "hidden";
-    details.innerHTML = contents;
-    updateReadout(dbData);
-    details.style.visibility = "visible";
+/**
+ * Events to run on button press
+ * @param ev Button event handler
+ */
+const buttonHandler = (ev: MouseEvent) => {
+    const buttonID: string = (<HTMLButtonElement>ev.target).id;
+    setCurrentPage(buttonHTML[buttonID])
+    setButtonAsSelected(buttons, buttonID)
+}
 
+/**
+ * Sets UI for a selected button
+ * @param buttons Array of HTMLButtonElements
+ * @param buttonID ID of button to set as selected
+ */
+const setButtonAsSelected = (buttons: buttonCollection, buttonID: string) => {
     for (const [key, value] of Object.entries(buttons)) {
-        if (key === button) value.classList.add('button-selected')
+        if (key === buttonID) value.classList.add('button-selected')
         else value.classList.remove('button-selected')
     }
 }
 
-buttonHandler("button-basic", HTML.pageBasic())
-buttons["button-basic"].onclick = () => buttonHandler("button-basic", HTML.pageBasic())
-buttons["button-l1"].onclick = () => buttonHandler("button-l1", HTML.pagePhase(1))
-buttons["button-l2"].onclick = () => buttonHandler("button-l2", HTML.pagePhase(2))
-buttons["button-l3"].onclick = () => buttonHandler("button-l3", HTML.pagePhase(3))
-buttons["button-adv"].onclick = () => buttonHandler("button-adv", HTML.pageAdv())
+/**
+ * Updates screen with provided HTML    
+ * @param html HTML to place on current screen
+ */
+const setCurrentPage = (html: string) => {
+    const details = document.getElementById("single-page") as HTMLDivElement;
+    details.style.visibility = "hidden";
+    details.innerHTML = html;
+    updateReadout(dbData);
+    details.style.visibility = "visible";
+}
+
+// Attach button handlers
+buttons["button-basic"].onclick = buttonHandler;
+buttons["button-l1"].onclick = buttonHandler;
+buttons["button-l2"].onclick = buttonHandler;
+buttons["button-l3"].onclick = buttonHandler;
+buttons["button-adv"].onclick = buttonHandler;
+
+mainLoop()
+setCurrentPage(buttonHTML["button-basic"])
