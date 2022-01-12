@@ -74,8 +74,7 @@ export const getOrCreateLegendList = (chart: Chart, id: string) => {
 
         const parentContainer = document.getElementById(parent.id);
         const backButton = document.createElement('a');
-        backButton.href = '#';
-        backButton.className = 'previous round'
+        backButton.className = 'button previous'
         backButton.innerHTML = '&#8249;'
         backButton.id = 'backButton';
         parentContainer?.appendChild(backButton)
