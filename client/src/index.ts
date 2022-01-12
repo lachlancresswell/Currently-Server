@@ -1,59 +1,6 @@
 import * as influx from 'influx';
 import * as HTML from './html'
-import 'chartjs-adapter-moment';
-import {
-    Chart,
-    ArcElement,
-    LineElement,
-    BarElement,
-    PointElement,
-    BarController,
-    BubbleController,
-    DoughnutController,
-    LineController,
-    PieController,
-    PolarAreaController,
-    RadarController,
-    ScatterController,
-    CategoryScale,
-    LinearScale,
-    LogarithmicScale,
-    RadialLinearScale,
-    TimeScale,
-    TimeSeriesScale,
-    Decimation,
-    Filler,
-    Legend,
-    Title,
-    Tooltip,
-    SubTitle
-} from 'chart.js';
-Chart.register(
-    ArcElement,
-    LineElement,
-    BarElement,
-    PointElement,
-    BarController,
-    BubbleController,
-    DoughnutController,
-    LineController,
-    PieController,
-    PolarAreaController,
-    RadarController,
-    ScatterController,
-    CategoryScale,
-    LinearScale,
-    LogarithmicScale,
-    RadialLinearScale,
-    TimeScale,
-    TimeSeriesScale,
-    Decimation,
-    Filler,
-    Legend,
-    Title,
-    Tooltip,
-    SubTitle
-);
+import * as Graph from './graph'
 
 //INTERFACES
 interface neighbourInfo {
@@ -262,7 +209,12 @@ const updateReadout = (data: dbResponse) => {
  * @param ev Button event handler
  */
 const buttonHandler = (ev: MouseEvent) => {
-    const buttonID: string = (<HTMLButtonElement>ev.target).id;
+    let buttonID: string = (<HTMLButtonElement>ev.target).id;
+    if (buttonID === 'backButton') {
+        buttonID = 'button-basic'
+        document.getElementById("menu")!.style.display = "flex";
+        document.getElementById("device-menu")!.style.display = "flex";
+    }
     setCurrentPage(buttonHTML[buttonID])
     setButtonAsSelected(buttons, buttonID)
 }
@@ -299,97 +251,32 @@ const chartButtonHandler = (ev: MouseEvent) => {
 }
 
 const updateChart = () => {
-    pollServer2().then((res) => {
-        console.log(res)
+    //pollServer2().then((res) => {
+    document.getElementById("menu")!.style.display = "none";
+    document.getElementById("device-menu")!.style.display = "none";
 
-        const ctx = (document.getElementById('myChart') as HTMLCanvasElement).getContext('2d');
+    const ctx = (document.getElementById('myChart') as HTMLCanvasElement).getContext('2d');
 
-        const dataset = "l1-voltage"
-        const dataset2 = "l1-amperage"
+    const dataset = "l1-voltage"
+    const dataset2 = "l1-amperage"
 
-        let d: { x: Date, y: string }[] = [];
-        res[dataset].forEach((v: string, i: number) => {
-            d.push({ y: v, x: res["time"][i] })
-        });
 
-        let d2: { x: Date, y: string }[] = [];
-        res[dataset2].forEach((v: string, i: number) => {
-            d2.push({ y: v, x: res["time"][i] })
-        });
 
-        const data = {
-            labels: res["time"],
-            datasets: [
-                {
-                    label: dataset,
-                    data: d,
-                    borderColor: 'rgba(255, 159, 64, 0.5)',
-                    backgroundColor: 'rgba(255, 159, 64, 0.2)',
-                    yAxisID: 'y',
-                    pointRadius: 0,
-                },
-                {
-                    label: dataset2,
-                    data: d2,
-                    borderColor: 'rgba(159, 255, 64, 0.5)',
-                    backgroundColor: 'rgba(159, 255, 64, 0.2)',
-                    yAxisID: 'y1',
-                    pointRadius: 0,
-                },
-            ]
-        };
+    // res[dataset].forEach((v: string, i: number) => {
+    //     d.push({ y: v, x: res["time"][i] })
+    // });
 
-        const myChart = new Chart(ctx!, {
-            type: 'line',
-            data,
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    title: {
-                        display: false,
-                    },
-                    decimation: {
-                        algorithm: 'min-max',
-                        enabled: true
-                    }
-                },
-                scales: {
-                    x: {
-                        type: 'time',
-                        time: {
-                            // Luxon format string
-                            tooltipFormat: 'DD T'
-                        },
-                        title: {
-                            display: false,
-                        }
-                    },
-                    y: {
-                        min: 225,
-                        max: 250,
-                        type: 'linear',
-                        display: true,
-                        position: 'left',
-                    },
-                    y1: {
-                        min: 0,
-                        max: 10.0,
-                        type: 'linear',
-                        display: true,
-                        position: 'right',
+    // let d2: { x: Date, y: string }[] = [];
+    // res[dataset2].forEach((v: string, i: number) => {
+    //     d2.push({ y: v, x: res["time"][i] })
+    // });
 
-                        // grid line settings
-                        grid: {
-                            drawOnChartArea: false, // only want the grid lines for one axis to show up
-                        },
-                    },
-                }
-            }
-        });
-    });
+
+
+    Graph.newChart(ctx, Graph.config(Graph.sampleData) as any);
+    const backButton = document.getElementById('backButton') as HTMLAnchorElement;
+    backButton.onclick = buttonHandler
+    //});
 }
 
 // Attach button handlers
@@ -433,6 +320,6 @@ if (neighbours.length > 1) {
 } else {
     devMenu.style.visibility = "hidden";
 }
+
 mainLoop()
-setCurrentPage(buttonHTML["button-chart"])
-updateChart()
+setCurrentPage(buttonHTML["button-basic"])
