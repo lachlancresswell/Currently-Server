@@ -251,32 +251,46 @@ const chartButtonHandler = (ev: MouseEvent) => {
 }
 
 const updateChart = () => {
-    //pollServer2().then((res) => {
     document.getElementById("menu")!.style.display = "none";
     document.getElementById("device-menu")!.style.display = "none";
 
     const ctx = (document.getElementById('myChart') as HTMLCanvasElement).getContext('2d');
 
-    const dataset = "l1-voltage"
-    const dataset2 = "l1-amperage"
-
-
-
-    // res[dataset].forEach((v: string, i: number) => {
-    //     d.push({ y: v, x: res["time"][i] })
-    // });
-
-    // let d2: { x: Date, y: string }[] = [];
-    // res[dataset2].forEach((v: string, i: number) => {
-    //     d2.push({ y: v, x: res["time"][i] })
-    // });
-
-
-
-    Graph.newChart(ctx, Graph.config(Graph.sampleData) as any);
+    const chart = Graph.newChart(ctx, Graph.config() as any);
     const backButton = document.getElementById('backButton') as HTMLAnchorElement;
     backButton.onclick = buttonHandler
-    //});
+
+
+    pollServer2().then((res) => {
+        const keys = [
+            'l1-voltage',
+            'l1-amperage',
+            'l2-voltage',
+            'l2-amperage',
+            'l3-voltage',
+            'l3-amperage',
+        ]
+
+        interface responseKeys {
+            'l1-voltage': { x: Date, y: string }[],
+            'l1-amperage': { x: Date, y: string }[],
+            'l2-voltage': { x: Date, y: string }[],
+            'l2-amperage': { x: Date, y: string }[],
+            'l3-voltage': { x: Date, y: string }[],
+            'l3-amperage': { x: Date, y: string }[],
+        };
+
+        let data = <responseKeys>{}
+
+        keys.forEach((k: string) => {
+            data[k as keyof (typeof data)] = [];
+            res[k as keyof dbResponse2].forEach((v: string, i: number) => {
+                data[k as keyof (typeof data)].push({ y: v, x: res["time"][i] })
+            });
+        })
+        chart.data = Graph.config(data).data as any
+        chart.update();
+    });
 }
 
 // Attach button handlers

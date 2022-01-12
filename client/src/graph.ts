@@ -79,7 +79,6 @@ export const getOrCreateLegendList = (chart: Chart, id: string) => {
         backButton.innerHTML = '&#8249;'
         backButton.id = 'backButton';
         parentContainer?.appendChild(backButton)
-        //<a href="#" class="previous round">&#8249;</a>
 
         for (let i = 0; i < 3; i += 1) {
             let child = document.createElement('ul');
@@ -95,6 +94,8 @@ export const getOrCreateLegendList = (chart: Chart, id: string) => {
         parent.childNodes.forEach((c: any) => {
             children.push(c)
         })
+
+        children.shift()
     }
 
     return children;
@@ -185,75 +186,88 @@ for (let i = 0; i < 100; i += 1) {
 export const newChart = (ctx: any, config: ChartConfiguration) => new Chart(ctx!, config);
 
 export const sampleData = {
-    //labels: res["time"],
-    datasets: [
-        {
-            label: "L1 Voltage",
-            data: l1v,
-            borderColor: 'rgba(255, 0, 0, 1.0)',
-            backgroundColor: 'rgba(255, 0, 0, 1.0)',
-            yAxisID: 'y',
-            pointRadius: 0,
-            pointStyle: 'rectRot',
-            pointBorderColor: 'rgb(255, 0, 0)'
-        },
-        {
-            label: "L1 Current",
-            data: l1c,
-            borderColor: 'rgba(255, 0, 0, 1.0)',
-            backgroundColor: 'rgba(255, 0, 0, 1.0)',
-            yAxisID: 'y1',
-            pointRadius: 0,
-            pointStyle: 'rectRot',
-            pointBorderColor: 'rgb(0, 255, 0)'
-        },
-        {
-            label: "L2 Voltage",
-            data: l2v,
-            borderColor: 'rgba(255, 255, 255, 1.0)',
-            backgroundColor: 'rgba(255, 255, 255, 1.0)',
-            yAxisID: 'y',
-            pointRadius: 0,
-            pointStyle: 'rectRot',
-            pointBorderColor: 'rgb(255, 0, 0)'
-        },
-        {
-            label: "L2 Current",
-            data: l2c,
-            borderColor: 'rgba(255, 255, 255, 1.0)',
-            backgroundColor: 'rgba(255, 255, 255, 1.0)',
-            yAxisID: 'y1',
-            pointRadius: 0,
-            pointStyle: 'rectRot',
-            pointBorderColor: 'rgb(0, 255, 0)'
-        },
-        {
-            label: "L3 Voltage",
-            data: l3v,
-            borderColor: 'rgba(0, 0, 255, 1.0)',
-            backgroundColor: 'rgba(0, 0, 255, 1.0)',
-            yAxisID: 'y',
-            pointRadius: 0,
-            pointStyle: 'rectRot',
-            pointBorderColor: 'rgb(255, 0, 0)'
-        },
-        {
-            label: "L3 Current",
-            data: l3c,
-            borderColor: 'rgba(0, 0, 255, 1.0)',
-            backgroundColor: 'rgba(0, 0, 255, 1.0)',
-            yAxisID: 'y1',
-            pointRadius: 0,
-            pointStyle: 'rectRot',
-            pointBorderColor: 'rgb(0, 255, 0)'
-        },
-    ]
+    'l1-voltage': l1v,
+    'l1-amperage': l1c,
+    'l2-voltage': l2v,
+    'l2-amperage': l2c,
+    'l3-voltage': l3v,
+    'l3-amperage': l3c,
 };
 
-export const config = (data: any) => {
+export const config = (data?: {
+    'l1-voltage': { x: Date, y: string }[],
+    'l1-amperage': { x: Date, y: string }[],
+    'l2-voltage': { x: Date, y: string }[],
+    'l2-amperage': { x: Date, y: string }[],
+    'l3-voltage': { x: Date, y: string }[],
+    'l3-amperage': { x: Date, y: string }[],
+}) => {
     return {
         type: 'line',
-        data,
+        data: {
+            datasets: [
+                {
+                    label: "L1 Voltage",
+                    data: data ? data['l1-voltage'] : {},
+                    borderColor: 'rgba(255, 0, 0, 1.0)',
+                    backgroundColor: 'rgba(255, 0, 0, 1.0)',
+                    yAxisID: 'y',
+                    pointRadius: 0,
+                    pointStyle: 'rectRot',
+                    pointBorderColor: 'rgb(255, 0, 0)'
+                },
+                {
+                    label: "L1 Current",
+                    data: data ? data['l1-amperage'] : {},
+                    borderColor: 'rgba(255, 0, 0, 1.0)',
+                    backgroundColor: 'rgba(255, 0, 0, 1.0)',
+                    yAxisID: 'y1',
+                    pointRadius: 0,
+                    pointStyle: 'rectRot',
+                    pointBorderColor: 'rgb(0, 255, 0)'
+                },
+                {
+                    label: "L2 Voltage",
+                    data: data ? data['l2-voltage'] : {},
+                    borderColor: 'rgba(255, 255, 255, 1.0)',
+                    backgroundColor: 'rgba(255, 255, 255, 1.0)',
+                    yAxisID: 'y',
+                    pointRadius: 0,
+                    pointStyle: 'rectRot',
+                    pointBorderColor: 'rgb(255, 0, 0)'
+                },
+                {
+                    label: "L2 Current",
+                    data: data ? data['l2-amperage'] : {},
+                    borderColor: 'rgba(255, 255, 255, 1.0)',
+                    backgroundColor: 'rgba(255, 255, 255, 1.0)',
+                    yAxisID: 'y1',
+                    pointRadius: 0,
+                    pointStyle: 'rectRot',
+                    pointBorderColor: 'rgb(0, 255, 0)'
+                },
+                {
+                    label: "L3 Voltage",
+                    data: data ? data['l3-voltage'] : {},
+                    borderColor: 'rgba(0, 0, 255, 1.0)',
+                    backgroundColor: 'rgba(0, 0, 255, 1.0)',
+                    yAxisID: 'y',
+                    pointRadius: 0,
+                    pointStyle: 'rectRot',
+                    pointBorderColor: 'rgb(255, 0, 0)'
+                },
+                {
+                    label: "L3 Current",
+                    data: data ? data['l3-amperage'] : {},
+                    borderColor: 'rgba(0, 0, 255, 1.0)',
+                    backgroundColor: 'rgba(0, 0, 255, 1.0)',
+                    yAxisID: 'y1',
+                    pointRadius: 0,
+                    pointStyle: 'rectRot',
+                    pointBorderColor: 'rgb(0, 255, 0)'
+                },
+            ]
+        },
         plugins: [htmlLegendPlugin],
         options: {
             responsive: true,
