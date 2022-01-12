@@ -104,13 +104,20 @@ mdns.on('query', function (query) {
     }
 })
 
-// lets query for an A record for 'brunhilde.local'
-mdns.query({
-    questions: [{
-        name: 'DCA',
-        type: 'SRV'
-    }]
-})
+const discoveryLoop = (ms: number) => {
+    neighbours = { addresses: [] };
+    mdns.query({
+        questions: [{
+            name: 'DCA',
+            type: 'SRV'
+        }]
+    })
+    setTimeout(() => {
+        discoveryLoop(ms);
+    }, ms)
+}
+
+discoveryLoop(30000);
 
 // Constants
 const HTTP_PORT: number = parseInt(process.env.HTTP_PORT as string) || 80;
