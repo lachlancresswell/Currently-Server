@@ -55,7 +55,7 @@ interface buttonCollection {
 }
 
 // GLOBALS
-const neighbours: neighbourInfo[] = [];
+let neighbours: neighbourInfo[] = [];
 let devButtons: HTMLOptionElement[] = [];
 let curDevice = 0;
 const devMenu = document.getElementById("device-menu") as HTMLDivElement
@@ -150,7 +150,7 @@ const pollServer = () => new Promise<dbResponse>(async (resolve: any, reject: an
 })
 
 const pollServer2 = () => new Promise<dbResponse2>(async (resolve: any, reject: any) => {
-    neighbours[0].influx.query(`
+    neighbours[curDevice].influx.query(`
     select * from modbus
     WHERE time > now() - 12h
     order by time asc
@@ -321,7 +321,12 @@ getNeighbourAddresses().addresses.forEach((address: addressInfo) => {
             ]
         }), address
     })
+    //neighbours = neighbours.sort()
 });
+
+neighbours = neighbours.sort((a: neighbourInfo, b: neighbourInfo) => {
+    return b.address.local ? 1 : 0;
+})
 
 // Create device dropdown
 if (neighbours.length > 1) {
