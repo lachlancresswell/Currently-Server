@@ -2,7 +2,7 @@
 .git
 .gitignore
 .devcontainer
-*.js
+*.ts
 node_modules
 Dockerfile
 cert

@@ -11,10 +11,20 @@
     --text-colour: white;
   }
 
+  option {
+    background-color: grey;
+  }
+
 html {
   height: 100%;
 }
 
+#single-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
 body {
     font-family: "Montserrat", sans-serif;
     background: #000;
@@ -22,7 +32,6 @@ body {
     display: flex;
     font-size: 5vmin;
     margin: 0;
-    max-height: 4em;
 
     justify-content: center;
 

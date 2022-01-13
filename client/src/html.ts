@@ -181,7 +181,7 @@ export const pageAdv = () =>
                     </div>
                 </div></div>`;
 
-export const pageChart = () => `<div id="htmlLegend" style="height: 15%"></div><canvas id="myChart" width="100%"  height="72%"></canvas>`;
+export const pageChart = () => `<canvas id="myChart" width="100%"  height="70%" style="margin-top: 0.2em"></canvas><div id="htmlLegend" style="height: 15%"></div>`;
 
 /**
  * Creates an option element for the device browser/dropdown
