@@ -186,11 +186,11 @@ export const pageChart = () => `<canvas id="myChart" width="100%"  height="70%" 
 export const pageConfig = () => `<div id="container">
 <div style="display: flex; flex-direction: column; justify-content: center;">
     <h3 style="color: var(--text-colour); text-align: center; width: 100%;">Device Name</h3>
-    <input style="width: 100%; font-size: var(--config-font-size); text-align: center;"></input>
+    <input id="input-name" style="width: 100%; font-size: var(--config-font-size); text-align: center;"></input>
     <div style="display: flex; flex-direction: row justify-content: space-around;">
-    <button style="margin: 0.2em auto; font-size: calc(1em/2); color: darkgreen; background-color: black; border: 4px solid grey; ">
+    <button id="button-save" style="margin: 0.2em auto; font-size: calc(1em/2); color: darkgreen; background-color: black; border: 4px solid grey; ">
         SAVE</button>
-    <button style="margin: 0.2em auto; font-size: calc(1em/2); color: darkred; background-color: black; border: 4px solid grey; ">
+    <button id="button-clear" style="margin: 0.2em auto; font-size: calc(1em/2); color: darkred; background-color: black; border: 4px solid grey; ">
         CLEAR</button>
         </div>
 </div>
