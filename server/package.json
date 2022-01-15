@@ -7,7 +7,7 @@
     "start": "node ./src/app.js",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "tsc -w & nodemon --inspect=0.0.0.0:9229 --ignore '/config/' ./src/app.js"
+    "watch": "tsc -w & nodemon --inspect=0.0.0.0:9229 --ignore '*.json' ./src/app.js"
   },
   "repository": {
     "type": "git",

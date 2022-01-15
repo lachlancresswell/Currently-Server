@@ -8,7 +8,7 @@ interface neighbourInfo {
     address: addressInfo
 }
 interface addressInfo {
-    ip: string, local: boolean
+    ip: string, local: boolean, name: string
 }
 interface neighbourAPI {
     addresses: addressInfo[]
@@ -88,21 +88,37 @@ const configButtonHandler = (ev: MouseEvent) => {
     const saveButton = document.getElementById("button-save") as HTMLButtonElement;
     const clearButton = document.getElementById("button-clear") as HTMLButtonElement;
     const textBox = document.getElementById("input-name") as HTMLInputElement
+    const device = neighbours[curDevice]
+    textBox.value = device.address.name;
+
     clearButton.onclick = () => {
-        textBox!.value = "";
+        const device = neighbours[curDevice]
+        if (confirm(`Clear the device name for ${device.address.name}?`)) {
+
+            saveDeviceName(device, "");
+            const oldDevName = device.address.name;
+            const devName = getDeviceName(device);
+            updateDevList(oldDevName, devName)
+            textBox!.value = devName;
+            neighbours[curDevice].address.name = devName;
+        }
     }
 
-    saveButton.onclick = async () => {
-        var xmlHttp = new XMLHttpRequest();
-        xmlHttp.open("POST", window.location.href + "device-name", false); // false for synchronous request
-        xmlHttp.setRequestHeader("device-name", textBox.value);
-        xmlHttp.send(null);
-
-        const e = devButtons.find((e) => e.innerText === devName)
-        devName = getDeviceName();
-        e!.innerText = devName;
+    saveButton.onclick = () => {
+        const device = neighbours[curDevice];
+        saveDeviceName(device, textBox.value)
+        const oldDevName = device.address.name;
+        const devName = getDeviceName(neighbours[curDevice]);
+        updateDevList(oldDevName, devName)
+        neighbours[curDevice].address.name = devName;
     }
 
+}
+
+const updateDevList = (oldName: string, newName: string) => {
+    const e = devButtons.find((e) => e.innerText === oldName)
+    e!.innerText = newName;
+    return e;
 }
 
 let buttons: buttonCollection = {
@@ -147,15 +163,6 @@ Object.keys(buttons).forEach((key) => {
     buttons[key].elem.onclick = buttons[key].cb;
 })
 
-const getDeviceName = (): string => {
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("GET", window.location.href + "device-name", false); // false for synchronous request
-    xmlHttp.send(null);
-    return (JSON.parse(xmlHttp.responseText))
-}
-
-let devName = getDeviceName();
-
 // FUNCTIONS
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -169,6 +176,30 @@ const getNeighbourAddresses = (): neighbourAPI => {
     xmlHttp.open("GET", window.location.href + "neighbours", false); // false for synchronous request
     xmlHttp.send(null);
     return (JSON.parse(xmlHttp.responseText) as neighbourAPI)
+}
+
+/**
+ * Finds the name of a device
+ * @returns Name of device
+ */
+const getDeviceName = (device: neighbourInfo): string => {
+    const path = window.location.href + `${(device.address.ip).replace(':', '/')}/device-name`;
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("GET", path, false); // false for synchronous request
+    xmlHttp.send(null);
+    return (JSON.parse(xmlHttp.responseText))
+}
+
+/**
+ * Saves a name to the server  
+ * @param name Name of device to save
+ */
+const saveDeviceName = (device: neighbourInfo, name: string) => {
+    const path = window.location.href + `${(device.address.ip).replace(':', '/')}/device-name`;
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("POST", path, false); // false for synchronous request
+    xmlHttp.setRequestHeader("device-name", name);
+    xmlHttp.send(null);
 }
 
 const deviceButtonHandler = (event: MouseEvent) => {
@@ -371,7 +402,7 @@ neighbours = neighbours.sort((a: neighbourInfo, b: neighbourInfo) => {
 if (neighbours.length > 1) {
     neighbours.forEach((db: neighbourInfo, i: number) => {
         const id = i + ':' + db.address.ip
-        const e = HTML.devElement(id, db.address.local ? devName : db.address.ip, (i === curDevice), deviceButtonHandler)
+        const e = HTML.devElement(id, db.address.name, (i === curDevice), deviceButtonHandler)
         devMenu.appendChild(e)
         devButtons.push(e)
     });
