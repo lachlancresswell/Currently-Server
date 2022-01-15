@@ -45,14 +45,13 @@ interface dbResponse2 {
     "l3-amperage-round": string[],
 }
 
-interface buttonCollection {
-    "button-basic": HTMLAnchorElement,
-    "button-l1": HTMLAnchorElement,
-    "button-l2": HTMLAnchorElement,
-    "button-l3": HTMLAnchorElement,
-    "button-adv": HTMLAnchorElement,
-    "button-chart": HTMLAnchorElement,
+interface buttonItem {
+    elem: HTMLElement,
+    html: string,
+    cb: any,
 }
+
+interface buttonCollection { [key: string]: buttonItem }
 
 // GLOBALS
 let neighbours: neighbourInfo[] = [];
@@ -61,34 +60,75 @@ let curDevice = 0;
 const devMenu = document.getElementById("device-menu") as HTMLDivElement
 let dbData: dbResponse;
 
+/**
+ * Events to run on button press
+ * @param ev Button event handler
+ */
+const buttonHandler = (ev: MouseEvent) => {
+    let buttonID: string = (<HTMLButtonElement>ev.target).id;
+    if (buttonID === 'backButton') {
+        buttonID = 'button-basic'
+        document.getElementById("menu")!.style.display = "flex";
+        document.getElementById("upstairs")!.style.display = "flex";
+    }
+    setCurrentPage(buttons[buttonID].html)
+    setButtonAsSelected(buttons, buttonID)
+}
 
-const buttonIDs = [
-    "button-basic",
-    "button-l1",
-    "button-l2",
-    "button-l3",
-    "button-adv",
-]
+const chartButtonHandler = (ev: MouseEvent) => {
+    const buttonID: string = (<HTMLButtonElement>ev.target).id;
+    setCurrentPage(buttons[buttonID].html)
+    setButtonAsSelected(buttons, buttonID)
+    updateChart();
+}
+
+const configButtonHandler = (ev: MouseEvent) => {
+    const buttonID: string = (<HTMLButtonElement>ev.target).id;
+    setCurrentPage(buttons[buttonID].html)
+
+}
 
 let buttons: buttonCollection = {
-    "button-basic": document.getElementById("button-basic") as HTMLAnchorElement,
-    "button-l1": document.getElementById("button-l1") as HTMLAnchorElement,
-    "button-l2": document.getElementById("button-l2") as HTMLAnchorElement,
-    "button-l3": document.getElementById("button-l3") as HTMLAnchorElement,
-    "button-adv": document.getElementById("button-adv") as HTMLAnchorElement,
-    "button-chart": document.getElementById("button-chart") as HTMLAnchorElement,
-    "button-config": document.getElementById("button-config") as HTMLSpanElement,
+    "button-basic": {
+        elem: document.getElementById("button-basic") as HTMLAnchorElement,
+        html: HTML.pageBasic(),
+        cb: buttonHandler,
+    },
+    "button-l1": {
+        elem: document.getElementById("button-l1") as HTMLAnchorElement,
+        html: HTML.pagePhase(1),
+        cb: buttonHandler,
+    },
+    "button-l2": {
+        elem: document.getElementById("button-l2") as HTMLAnchorElement,
+        html: HTML.pagePhase(2),
+        cb: buttonHandler,
+    },
+    "button-l3": {
+        elem: document.getElementById("button-l3") as HTMLAnchorElement,
+        html: HTML.pagePhase(3),
+        cb: buttonHandler,
+    },
+    "button-adv": {
+        elem: document.getElementById("button-adv") as HTMLAnchorElement,
+        html: HTML.pageAdv(),
+        cb: buttonHandler,
+    },
+    "button-chart": {
+        elem: document.getElementById("button-chart") as HTMLAnchorElement,
+        html: HTML.pageChart(),
+        cb: chartButtonHandler,
+    },
+    "button-config": {
+        elem: document.getElementById("button-config") as HTMLSpanElement,
+        html: HTML.pageConfig(),
+        cb: configButtonHandler,
+    },
 }
 
-const buttonHTML: { [key: string]: string } = {
-    "button-basic": HTML.pageBasic(),
-    "button-l1": HTML.pagePhase(1),
-    "button-l2": HTML.pagePhase(2),
-    "button-l3": HTML.pagePhase(3),
-    "button-adv": HTML.pageAdv(),
-    "button-chart": HTML.pageChart(),
-    "button-config": HTML.pageConfig(),
-}
+Object.keys(buttons).forEach((key) => {
+    buttons[key].elem.onclick = buttons[key].cb;
+})
 
 // FUNCTIONS
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -99,6 +139,7 @@ const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
  */
 const getNeighbourAddresses = (): neighbourAPI => {
     var xmlHttp = new XMLHttpRequest();
+    console.log('GET - ' + window.location.href + "neighbours")
     xmlHttp.open("GET", window.location.href + "neighbours", false); // false for synchronous request
     xmlHttp.send(null);
     return (JSON.parse(xmlHttp.responseText) as neighbourAPI)
@@ -154,7 +195,7 @@ const pollServer = () => new Promise<dbResponse>(async (resolve: any, reject: an
 const pollServer2 = () => new Promise<dbResponse2>(async (resolve: any, reject: any) => {
     neighbours[curDevice].influx.query(`
     select * from modbus
-    WHERE time > now() - 12h
+    WHERE time > now() - 8h
     order by time asc
     `).then(async (res: any) => {
         if (res && res.length) {
@@ -207,29 +248,14 @@ const updateReadout = (data: dbResponse) => {
 }
 
 /**
- * Events to run on button press
- * @param ev Button event handler
- */
-const buttonHandler = (ev: MouseEvent) => {
-    let buttonID: string = (<HTMLButtonElement>ev.target).id;
-    if (buttonID === 'backButton') {
-        buttonID = 'button-basic'
-        document.getElementById("menu")!.style.display = "flex";
-        document.getElementById("upstairs")!.style.display = "flex";
-    }
-    setCurrentPage(buttonHTML[buttonID])
-    setButtonAsSelected(buttons, buttonID)
-}
-
-/**
  * Sets UI for a selected button
  * @param buttons Array of HTMLButtonElements
  * @param buttonID ID of button to set as selected
  */
 const setButtonAsSelected = (buttons: buttonCollection, buttonID: string) => {
     for (const [key, value] of Object.entries(buttons)) {
-        if (key === buttonID) value.classList.add('button-selected')
-        else value.classList.remove('button-selected')
+        if (key === buttonID) value.elem.classList.add('button-selected')
+        else value.elem.classList.remove('button-selected')
     }
 }
 
@@ -243,19 +269,6 @@ const setCurrentPage = (html: string) => {
     details.innerHTML = html;
     updateReadout(dbData);
     details.style.visibility = "visible";
-}
-
-const chartButtonHandler = (ev: MouseEvent) => {
-    const buttonID: string = (<HTMLButtonElement>ev.target).id;
-    setCurrentPage(buttonHTML[buttonID])
-    setButtonAsSelected(buttons, buttonID)
-    updateChart();
-}
-
-const configButtonHandler = (ev: MouseEvent) => {
-    const buttonID: string = (<HTMLButtonElement>ev.target).id;
-    setCurrentPage(buttonHTML[buttonID])
-
 }
 
 const updateChart = () => {
@@ -301,15 +314,6 @@ const updateChart = () => {
     });
 }
 
-// Attach button handlers
-buttons["button-basic"].onclick = buttonHandler;
-buttons["button-l1"].onclick = buttonHandler;
-buttons["button-l2"].onclick = buttonHandler;
-buttons["button-l3"].onclick = buttonHandler;
-buttons["button-adv"].onclick = buttonHandler;
-buttons["button-chart"].onclick = chartButtonHandler;
-buttons["button-config"].onclick = configButtonHandler;
-
 // START
 getNeighbourAddresses().addresses.forEach((address: addressInfo) => {
     neighbours.push({
@@ -350,4 +354,4 @@ if (neighbours.length > 1) {
 }
 
 mainLoop()
-setCurrentPage(buttonHTML["button-basic"])
+setCurrentPage(buttons["button-config"].html)
