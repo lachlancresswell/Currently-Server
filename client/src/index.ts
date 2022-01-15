@@ -371,7 +371,7 @@ neighbours = neighbours.sort((a: neighbourInfo, b: neighbourInfo) => {
 if (neighbours.length > 1) {
     neighbours.forEach((db: neighbourInfo, i: number) => {
         const id = i + ':' + db.address.ip
-        const e = HTML.devElement(id, db.address.local ? devName + " (Local)" : db.address.ip, (i === curDevice), deviceButtonHandler)
+        const e = HTML.devElement(id, db.address.local ? devName : db.address.ip, (i === curDevice), deviceButtonHandler)
         devMenu.appendChild(e)
         devButtons.push(e)
     });

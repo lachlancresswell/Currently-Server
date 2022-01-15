@@ -2,12 +2,12 @@
   "name": "local-distro-ui",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "main": "./src/app.js",
   "scripts": {
-    "start": "node app.js",
+    "start": "node ./src/app.js",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "tsc -w & nodemon --inspect=0.0.0.0:9229"
+    "watch": "tsc -w & nodemon --inspect=0.0.0.0:9229 --ignore '/config/' ./src/app.js"
   },
   "repository": {
     "type": "git",
