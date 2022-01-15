@@ -7,6 +7,7 @@
     --minor-font-size: 2.05em;
     --adv-font-size: 2em;
     --chart-legend-font-size: 2em;
+    --config-font-size: 1em;
     
     --text-colour: white;
   }
@@ -25,6 +26,43 @@ html {
   justify-content: space-between;
   height: 100%;
 }
+
+.gear {
+  display: inline-block;
+  position: relative;
+  margin-top: 0.5em;
+  width: 1em;
+  height: 1em;
+  background: black;
+  border-radius: 50%;
+  border: 0.2857142857em solid gray;
+  box-sizing: border-box;
+}
+.gear:before, .gear:after {
+  content: '×';
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: "times new roman";
+  font-weight: bold;
+  font-size: 2.5em;
+  color: gray;
+}
+.gear:after {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+.gear:hover {
+  border-color: darkgray;
+}
+
+#upstairs {
+  display: flex;
+  flex-direction: row;
+}
+
+
 body {
     font-family: "Montserrat", sans-serif;
     background: #000;

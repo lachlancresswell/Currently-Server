@@ -77,6 +77,7 @@ let buttons: buttonCollection = {
     "button-l3": document.getElementById("button-l3") as HTMLAnchorElement,
     "button-adv": document.getElementById("button-adv") as HTMLAnchorElement,
     "button-chart": document.getElementById("button-chart") as HTMLAnchorElement,
+    "button-config": document.getElementById("button-config") as HTMLSpanElement,
 }
 
 const buttonHTML: { [key: string]: string } = {
@@ -86,6 +87,7 @@ const buttonHTML: { [key: string]: string } = {
     "button-l3": HTML.pagePhase(3),
     "button-adv": HTML.pageAdv(),
     "button-chart": HTML.pageChart(),
+    "button-config": HTML.pageConfig(),
 }
 
 // FUNCTIONS
@@ -213,7 +215,7 @@ const buttonHandler = (ev: MouseEvent) => {
     if (buttonID === 'backButton') {
         buttonID = 'button-basic'
         document.getElementById("menu")!.style.display = "flex";
-        document.getElementById("device-menu")!.style.display = "flex";
+        document.getElementById("upstairs")!.style.display = "flex";
     }
     setCurrentPage(buttonHTML[buttonID])
     setButtonAsSelected(buttons, buttonID)
@@ -250,9 +252,15 @@ const chartButtonHandler = (ev: MouseEvent) => {
     updateChart();
 }
 
+const configButtonHandler = (ev: MouseEvent) => {
+    const buttonID: string = (<HTMLButtonElement>ev.target).id;
+    setCurrentPage(buttonHTML[buttonID])
+
+}
+
 const updateChart = () => {
     document.getElementById("menu")!.style.display = "none";
-    document.getElementById("device-menu")!.style.display = "none";
+    document.getElementById("upstairs")!.style.display = "none";
 
     const ctx = (document.getElementById('myChart') as HTMLCanvasElement).getContext('2d');
 
@@ -300,6 +308,7 @@ buttons["button-l2"].onclick = buttonHandler;
 buttons["button-l3"].onclick = buttonHandler;
 buttons["button-adv"].onclick = buttonHandler;
 buttons["button-chart"].onclick = chartButtonHandler;
+buttons["button-config"].onclick = configButtonHandler;
 
 // START
 getNeighbourAddresses().addresses.forEach((address: addressInfo) => {
