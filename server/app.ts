@@ -8,6 +8,8 @@ import http from 'http';
 import https from 'https';
 import makeMdns, { Options } from 'multicast-dns';
 
+const config: { Device: { name: string } } = JSON.parse(fs.readFileSync('./config/default.json', "utf8"));
+
 // Constants
 const HTTP_PORT: number = parseInt(process.env.HTTP_PORT as string) || 80;
 const HTTPS_PORT: number = parseInt(process.env.HTTPS_PORT as string) || 443;
@@ -176,12 +178,23 @@ app.get('/neighbours', (req: any, res: any) => {
     res.send(JSON.stringify(neighbours))
 })
 
+app.get('/device-name', (req: any, res: any) => {
+    res.send(JSON.stringify(config.Device.name))
+})
+
+app.post('/device-name', (req: any, res: any) => {
+    config.Device.name = req.get("device-name");
+    console.log(config.Device.name)
+    res.send(JSON.stringify(config.Device.name))
+})
+
 /**
  * Client
  */
 app.get('/', (req: any, res: any) => {
     res.sendFile(path.join(__dirname, '../client/dist/index.html'));
 });
+
 
 discoveryLoop(5000);
 

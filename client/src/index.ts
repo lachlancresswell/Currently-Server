@@ -85,6 +85,23 @@ const chartButtonHandler = (ev: MouseEvent) => {
 const configButtonHandler = (ev: MouseEvent) => {
     const buttonID: string = (<HTMLButtonElement>ev.target).id;
     setCurrentPage(buttons[buttonID].html)
+    const saveButton = document.getElementById("button-save") as HTMLButtonElement;
+    const clearButton = document.getElementById("button-clear") as HTMLButtonElement;
+    const textBox = document.getElementById("input-name") as HTMLInputElement
+    clearButton.onclick = () => {
+        textBox!.value = "";
+    }
+
+    saveButton.onclick = async () => {
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("POST", window.location.href + "device-name", false); // false for synchronous request
+        xmlHttp.setRequestHeader("device-name", textBox.value);
+        xmlHttp.send(null);
+
+        const e = devButtons.find((e) => e.innerText === devName)
+        devName = getDeviceName();
+        e!.innerText = devName;
+    }
 
 }
 
@@ -129,6 +146,15 @@ let buttons: buttonCollection = {
 Object.keys(buttons).forEach((key) => {
     buttons[key].elem.onclick = buttons[key].cb;
 })
+
+const getDeviceName = (): string => {
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("GET", window.location.href + "device-name", false); // false for synchronous request
+    xmlHttp.send(null);
+    return (JSON.parse(xmlHttp.responseText))
+}
+
+let devName = getDeviceName();
 
 // FUNCTIONS
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -345,7 +371,7 @@ neighbours = neighbours.sort((a: neighbourInfo, b: neighbourInfo) => {
 if (neighbours.length > 1) {
     neighbours.forEach((db: neighbourInfo, i: number) => {
         const id = i + ':' + db.address.ip
-        const e = HTML.devElement(id, db.address.local ? "Local" : db.address.ip, (i === curDevice), deviceButtonHandler)
+        const e = HTML.devElement(id, db.address.local ? devName + " (Local)" : db.address.ip, (i === curDevice), deviceButtonHandler)
         devMenu.appendChild(e)
         devButtons.push(e)
     });
