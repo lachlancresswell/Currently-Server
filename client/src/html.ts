@@ -186,7 +186,7 @@ export const pageChart = () => `<canvas id="myChart" width="100%"  height="70%" 
 export const pageConfig = () => `
 <div id="config-menu">
         <h3>Device Name</h3>
-        <input id="input-name"></input>
+        <input id="input-name" maxlength="12"></input>
         <div id="config-buttons">
             <button id="button-save">
                 SAVE</button>

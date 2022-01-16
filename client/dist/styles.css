@@ -244,8 +244,9 @@ select {
     text-decoration: none;
 }
 
-.button:hover, .device-button:hover {
+.button:hover, .device-button:hover, #button-save:hover, #button-clear:hover {
     background: #ffffff22;
+    cursor: pointer;
 }
 
 .button-selected {
