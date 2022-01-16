@@ -8,3 +8,4 @@ influx-data
 .devcontainer/
 .vscode/
 *-lock.json
+*.json
