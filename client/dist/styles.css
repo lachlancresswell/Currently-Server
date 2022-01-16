@@ -321,6 +321,54 @@ select {
   font-size: var(--chart-legend-font-size)
 }
 
+/* Config Menu */
+
+#config-menu {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  height: 100%;
+}
+
+h3 {
+  margin: auto;
+  font-size: var(--config-font-size);
+  color: var(--text-colour);
+  text-align: center;
+  width: 100%;
+}
+
+#button-save {
+  margin: 0.2em auto;
+  color: darkgreen;
+  background-color: black;
+  border: 4px solid grey;
+  font-size: var(--config-font-size);
+}
+
+#config-buttons {
+  margin: auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  width: 100%;
+}
+
+#button-clear {
+  margin: 0.2em auto;
+  color: darkred;
+  background-color: black;
+  border: 4px solid grey;
+  font-size: var(--config-font-size);
+}
+
+input {
+	width: 80%;
+  margin: auto;
+	font-size: var(--config-font-size);
+	text-align: center;
+}
+
 
 /*! HTML5 Boilerplate v8.0.0 | MIT License | https://html5boilerplate.com/ */
 
