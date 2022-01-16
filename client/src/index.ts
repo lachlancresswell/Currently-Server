@@ -5,7 +5,8 @@ import * as Graph from './graph'
 //INTERFACES
 interface neighbourInfo {
     influx: influx.InfluxDB,
-    address: addressInfo
+    address: addressInfo,
+    elem: HTMLOptionElement,
 }
 interface addressInfo {
     ip: string, local: boolean, name: string
@@ -56,9 +57,13 @@ interface buttonCollection { [key: string]: buttonItem }
 // GLOBALS
 let neighbours: neighbourInfo[] = [];
 let devButtons: HTMLOptionElement[] = [];
-let curDevice = 0;
-const devMenu = document.getElementById("device-menu") as HTMLDivElement
+const devMenu = document.getElementById("device-menu") as HTMLSelectElement
 let dbData: dbResponse;
+
+devMenu.onclick = () => {
+    const textBox = document.getElementById("input-name") as HTMLInputElement
+    textBox.value = getSelectedDevice().address.name;
+}
 
 /**
  * Events to run on button press
@@ -82,42 +87,42 @@ const chartButtonHandler = (ev: MouseEvent) => {
     updateChart();
 }
 
+const getSelectedDevice = (): neighbourInfo => neighbours.find((n) => n.address.ip === devMenu.value)!;
+
 const configButtonHandler = (ev: MouseEvent) => {
     const buttonID: string = (<HTMLButtonElement>ev.target).id;
     setCurrentPage(buttons[buttonID].html)
     const saveButton = document.getElementById("button-save") as HTMLButtonElement;
     const clearButton = document.getElementById("button-clear") as HTMLButtonElement;
     const textBox = document.getElementById("input-name") as HTMLInputElement
-    const device = neighbours[curDevice]
-    textBox.value = device.address.name;
+    textBox.value = getSelectedDevice().address.name;
 
     clearButton.onclick = () => {
-        const device = neighbours[curDevice]
-        if (confirm(`Clear the device name for ${device.address.name}?`)) {
-
-            saveDeviceName(device, "");
-            const oldDevName = device.address.name;
-            const devName = getDeviceName(device);
-            updateDevList(oldDevName, devName)
-            textBox!.value = devName;
-            neighbours[curDevice].address.name = devName;
+        const curDevice = getSelectedDevice();
+        if (confirm(`Clear the device name for ${curDevice.address.name}?`)) {
+            // Save empty name to server, causing server to fallback to default
+            saveDeviceName(curDevice, "");
+            // Get new name from server
+            curDevice.address.name = getDeviceName(curDevice);
+            textBox!.value = curDevice.address.name;
+            updateDevList(curDevice.address.ip, curDevice.address.name)
         }
     }
 
     saveButton.onclick = () => {
-        const device = neighbours[curDevice];
-        saveDeviceName(device, textBox.value)
-        const oldDevName = device.address.name;
-        const devName = getDeviceName(neighbours[curDevice]);
-        updateDevList(oldDevName, devName)
-        neighbours[curDevice].address.name = devName;
+        const curDevice = getSelectedDevice();
+        // Save new name to server
+        saveDeviceName(curDevice, textBox.value);
+        // Get new name from server
+        curDevice.address.name = getDeviceName(curDevice);
+        updateDevList(curDevice.address.ip, curDevice.address.name)
     }
 
 }
 
-const updateDevList = (oldName: string, newName: string) => {
-    const e = devButtons.find((e) => e.innerText === oldName)
-    e!.innerText = newName;
+const updateDevList = (ip: string, newName: string) => {
+    const e = neighbours.find((n) => n.elem.id === ip)
+    e!.elem.innerText = newName;
     return e;
 }
 
@@ -205,7 +210,6 @@ const saveDeviceName = (device: neighbourInfo, name: string) => {
 const deviceButtonHandler = (event: MouseEvent) => {
     const target = event.target as HTMLAnchorElement;
     const id = target.id;
-    curDevice = parseInt(id.split(":")[0])
     devButtons.forEach((button: HTMLOptionElement) => {
         if (button.id === id) {
             button.classList.add('button-selected')
@@ -220,7 +224,7 @@ const deviceButtonHandler = (event: MouseEvent) => {
  * @returns Resolves with database response or rejects with error message
  */
 const pollServer = () => new Promise<dbResponse>(async (resolve: any, reject: any) => {
-    neighbours[curDevice].influx.query(`
+    getSelectedDevice().influx.query(`
     select "L1 Voltage", "L1 Current", "L2 Voltage", "L2 Current", "L3 Voltage", "L3 Current", "Grid Frequency", "Power Factor", "Total Apparent Power" from modbus
     order by time desc
     limit 2
@@ -250,7 +254,7 @@ const pollServer = () => new Promise<dbResponse>(async (resolve: any, reject: an
 })
 
 const pollServer2 = () => new Promise<dbResponse2>(async (resolve: any, reject: any) => {
-    neighbours[curDevice].influx.query(`
+    getSelectedDevice().influx.query(`
     select * from modbus
     WHERE time > now() - 8h
     order by time asc
@@ -372,43 +376,68 @@ const updateChart = () => {
 }
 
 // START
-getNeighbourAddresses().addresses.forEach((address: addressInfo) => {
-    neighbours.push({
-        influx: new influx.InfluxDB({
-            host: window.location.hostname,
-            database: 'influx',
-            path: `/${(address.ip).replace(':', '/')}/influx`,
-            port: parseInt(window.location.port) || (window.location.protocol.indexOf("https") >= 0 ? 443 : 80),
-            protocol: window.location.protocol.indexOf("https") >= 0 ? "https" : "http",
-            schema: [
-                {
-                    measurement: 'modbus',
-                    fields: {
-                        current: influx.FieldType.FLOAT,
-                    },
-                    tags: ['host']
-                }
-            ]
-        }), address
-    })
-    //neighbours = neighbours.sort()
-});
+const discoveryLoop = async () => {
+    const serverAddresses = getNeighbourAddresses().addresses;
 
-neighbours = neighbours.sort((a: neighbourInfo, b: neighbourInfo) => {
-    return b.address.local ? 1 : 0;
-})
+    const selectedDeviceIP = neighbours.find((n) => n.address.ip === devMenu.value)?.address.ip;
 
-// Create device dropdown
-if (neighbours.length > 1) {
-    neighbours.forEach((db: neighbourInfo, i: number) => {
-        const id = i + ':' + db.address.ip
-        const e = HTML.devElement(id, db.address.name, (i === curDevice), deviceButtonHandler)
-        devMenu.appendChild(e)
-        devButtons.push(e)
-    });
-} else {
-    devMenu.style.visibility = "hidden";
+    const existingNeighbourAddresses = serverAddresses.filter((incoming) => (neighbours.find(existing => (existing.address.ip === incoming.ip) && existing.address.name === incoming.name)!));
+    const newNeighboursAddresses = serverAddresses.filter((incoming) => !(neighbours.find(existing => (existing.address.ip === incoming.ip) && existing.address.name === incoming.name)!));
+    const missingNeighbourAddresses = neighbours.filter((existing) => !(serverAddresses.find(incoming => (existing.address.ip === incoming.ip) && existing.address.name === incoming.name)!));
+    const newNeighbours: neighbourInfo[] = [];
+
+    if (missingNeighbourAddresses.length) {
+        // Remove missing addresses
+        neighbours = neighbours.filter((n) => !missingNeighbourAddresses.find((e) => {
+            if (e.address.ip === n.address.ip) {
+                n.elem.remove();
+                return true;
+            }
+            return false;
+        }))
+    }
+
+    if (newNeighboursAddresses.length) {
+        // Build new address objects
+        newNeighboursAddresses.forEach(async (address: addressInfo) => {
+
+            const elem = HTML.devElement(address.ip, address.name, false, deviceButtonHandler)
+            newNeighbours.push({
+                influx: new influx.InfluxDB({
+                    host: window.location.hostname,
+                    database: 'influx',
+                    path: `/${(address.ip).replace(':', '/')}/influx`,
+                    port: parseInt(window.location.port) || (window.location.protocol.indexOf("https") >= 0 ? 443 : 80),
+                    protocol: window.location.protocol.indexOf("https") >= 0 ? "https" : "http",
+                    schema: [
+                        {
+                            measurement: 'modbus',
+                            fields: {
+                                current: influx.FieldType.FLOAT,
+                            },
+                            tags: ['host']
+                        }
+                    ]
+                }), address, elem
+            })
+        });
+
+        neighbours = neighbours.concat(newNeighbours)
+
+        neighbours = neighbours.sort((a: neighbourInfo, b: neighbourInfo) => b.address.local ? 1 : 0);
+        neighbours.forEach((n) => devMenu.appendChild(n.elem));
+
+        const newSelectedDevice = neighbours.find((n) => n.address.ip === selectedDeviceIP)
+        if (newSelectedDevice) {
+            devMenu.value = newSelectedDevice.address.ip;
+        }
+
+    }
+
+    await sleep(5000)
+    discoveryLoop()
 }
 
+discoveryLoop();
 mainLoop()
 setCurrentPage(buttons["button-config"].html)
