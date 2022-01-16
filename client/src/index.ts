@@ -41,9 +41,6 @@ interface dbResponse2 {
     "grid-freq": string[],
     "power-factor": string[],
     "apparent-power": string[],
-    "l1-amperage-round": string[],
-    "l2-amperage-round": string[],
-    "l3-amperage-round": string[],
 }
 
 interface buttonItem {
@@ -227,7 +224,7 @@ const pollServer = () => new Promise<dbResponse>(async (resolve: any, reject: an
     getSelectedDevice().influx.query(`
     select "L1 Voltage", "L1 Current", "L2 Voltage", "L2 Current", "L3 Voltage", "L3 Current", "Grid Frequency", "Power Factor", "Total Apparent Power" from modbus
     order by time desc
-    limit 2
+    limit 1
     `).then(async (res: any) => {
         if (res && res.length) {
             console.log(res[res.length - 1]);
@@ -255,26 +252,21 @@ const pollServer = () => new Promise<dbResponse>(async (resolve: any, reject: an
 
 const pollServer2 = () => new Promise<dbResponse2>(async (resolve: any, reject: any) => {
     getSelectedDevice().influx.query(`
-    select * from modbus
-    WHERE time > now() - 8h
+    select MEAN(L1 Voltage), MEAN(L1 Current), MEAN(L2 Voltage), MEAN(L2 Current), MEAN(L3 Voltage), MEAN(L3 Current), MEAN(Grid Frequency), time from modbus
+    WHERE time > now() - 8h GROUP BY time(30s)
     order by time asc
     `).then(async (res: any) => {
         if (res && res.length) {
             console.log(res[res.length - 1]);
             resolve({
                 "time": res.map((value: any) => new Date(value["time"])),
-                "l1-voltage": res.map((value: any) => value["L1 Voltage"]),
-                "l1-amperage": res.map((value: any) => value["L1 Current"]),
-                "l2-voltage": res.map((value: any) => value["L2 Voltage"]),
-                "l2-amperage": res.map((value: any) => value["L2 Current"]),
-                "l3-voltage": res.map((value: any) => value["L3 Voltage"]),
-                "l3-amperage": res.map((value: any) => value["L3 Current"]),
-                "grid-freq": res.map((value: any) => value["Grid Frequency"]),
-                "power-factor": res.map((value: any) => value["Power Factor"]),
-                "apparent-power": res.map((value: any) => value["Total Apparent Power"]),
-                "l1-amperage-round": res.map((value: any) => value["L1 Current"]),
-                "l2-amperage-round": res.map((value: any) => value["L2 Current"]),
-                "l3-amperage-round": res.map((value: any) => value["L3 Current"])
+                "l1-voltage": res.map((value: any) => value["mean_L1 Voltage"]),
+                "l1-amperage": res.map((value: any) => value["mean_L1 Current"]),
+                "l2-voltage": res.map((value: any) => value["mean_L2 Voltage"]),
+                "l2-amperage": res.map((value: any) => value["mean_L2 Current"]),
+                "l3-voltage": res.map((value: any) => value["mean_L3 Voltage"]),
+                "l3-amperage": res.map((value: any) => value["mean_L3 Current"]),
+                "grid-freq": res.map((value: any) => value["mean_Grid Frequency"]),
             })
         } else {
             return reject('Influx response length < 1')
@@ -354,12 +346,12 @@ const updateChart = () => {
         ]
 
         interface responseKeys {
-            'l1-voltage': { x: Date, y: string }[],
-            'l1-amperage': { x: Date, y: string }[],
-            'l2-voltage': { x: Date, y: string }[],
-            'l2-amperage': { x: Date, y: string }[],
-            'l3-voltage': { x: Date, y: string }[],
-            'l3-amperage': { x: Date, y: string }[],
+            'l1-voltage': { x: Date, y: number }[],
+            'l1-amperage': { x: Date, y: number }[],
+            'l2-voltage': { x: Date, y: number }[],
+            'l2-amperage': { x: Date, y: number }[],
+            'l3-voltage': { x: Date, y: number }[],
+            'l3-amperage': { x: Date, y: number }[],
         };
 
         let data = <responseKeys>{}
@@ -367,9 +359,10 @@ const updateChart = () => {
         keys.forEach((k: string) => {
             data[k as keyof (typeof data)] = [];
             res[k as keyof dbResponse2].forEach((v: string, i: number) => {
-                data[k as keyof (typeof data)].push({ y: v, x: res["time"][i] })
+                data[k as keyof (typeof data)].push({ y: parseFloat(v) ? parseFloat(v) : NaN, x: res["time"][i] })
             });
         })
+        let lol = Graph.config(data).data;
         chart.data = Graph.config(data).data as any
         chart.update();
     });

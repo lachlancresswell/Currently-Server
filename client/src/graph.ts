@@ -194,12 +194,12 @@ export const sampleData = {
 };
 
 export const config = (data?: {
-    'l1-voltage': { x: Date, y: string }[],
-    'l1-amperage': { x: Date, y: string }[],
-    'l2-voltage': { x: Date, y: string }[],
-    'l2-amperage': { x: Date, y: string }[],
-    'l3-voltage': { x: Date, y: string }[],
-    'l3-amperage': { x: Date, y: string }[],
+    'l1-voltage': { x: Date, y: number }[],
+    'l1-amperage': { x: Date, y: number }[],
+    'l2-voltage': { x: Date, y: number }[],
+    'l2-amperage': { x: Date, y: number }[],
+    'l3-voltage': { x: Date, y: number }[],
+    'l3-amperage': { x: Date, y: number }[],
 }) => {
     return {
         type: 'line',
@@ -303,15 +303,15 @@ export const config = (data?: {
                     }
                 },
                 y: {
-                    min: 200,
-                    max: 250,
+                    min: 210,
+                    max: 310,
                     type: 'linear',
                     display: true,
                     position: 'left',
                 },
                 y1: {
-                    min: 0,
-                    max: 30.0,
+                    min: -10,
+                    max: 10.0,
                     type: 'linear',
                     display: true,
                     position: 'right',
