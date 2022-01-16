@@ -101,10 +101,8 @@ mdns.on('response', function (response: any) {
     }
 })
 
-mdns.on('query', function (query) {
-    if (validMdnsPacket(query.questions)) {
-        // console.log('got a query packet:', query)
 
+const mdnsUpdate = () => {
         const type = MDNS_RECORD_TYPE;
         const weight = 0;
         const priority = 10;
@@ -138,6 +136,11 @@ mdns.on('query', function (query) {
             })
         });
         mdns.respond({ answers })
+    }
+
+mdns.on('query', function (query) {
+    if (validMdnsPacket(query.questions)) {
+        mdnsUpdate();
     }
 })
 
@@ -195,7 +198,9 @@ app.get('/neighbours', (req: any, res: any) => {
 app.post('/device-name/*', (req: express.Request, res: any) => {
     config.Device.name = req.get("device-name")!;
     if (!config.Device.name) config.Device.name = DEFAULT_DEVICE_NAME;
-    res.send(JSON.stringify(config.Device.name))
+    res.send(JSON.stringify(config.Device.name));
+    mdnsUpdate();
+    neighbours.addresses.find((n) => n.local)!.name = config.Device.name;
     saveConfig();
 })
 
