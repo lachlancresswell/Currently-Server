@@ -1,4 +1,4 @@
-FROM node:16
+FROM balenalib/raspberry-pi-debian-node
 
 RUN apt-get update 
 
@@ -32,4 +32,4 @@ EXPOSE 9229
 
 
 WORKDIR /usr/src/app/server/
-CMD [ "node", "--inspect=0.0.0.0:9229", "app.js" ]
+CMD [ "node", "--inspect=0.0.0.0:9229", "./src/app.js" ]
