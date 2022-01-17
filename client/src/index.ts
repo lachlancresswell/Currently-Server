@@ -86,6 +86,9 @@ const chartButtonHandler = (ev: MouseEvent) => {
 
 const getSelectedDevice = (): neighbourInfo => neighbours.find((n) => n.address.ip === devMenu.value)!;
 
+let averagingPeriod = "30s";
+let viewingPeriod = "5h";
+
 const configButtonHandler = (ev: MouseEvent) => {
     const buttonID: string = (<HTMLButtonElement>ev.target).id;
     setCurrentPage(buttons[buttonID].html)
@@ -113,6 +116,18 @@ const configButtonHandler = (ev: MouseEvent) => {
         // Get new name from server
         curDevice.address.name = getDeviceName(curDevice);
         updateDevList(curDevice.address.ip, curDevice.address.name)
+    }
+
+    const avPeriodMenu = document.getElementById("averaging-period") as HTMLSelectElement
+    avPeriodMenu.value = averagingPeriod;
+    avPeriodMenu.onclick = () => {
+        averagingPeriod = avPeriodMenu.value;
+    }
+
+    const viewPeriodMenu = document.getElementById("viewing-period") as HTMLSelectElement
+    viewPeriodMenu.value = viewingPeriod;
+    viewPeriodMenu.onclick = () => {
+        viewingPeriod = viewPeriodMenu.value;
     }
 
 }
@@ -251,22 +266,49 @@ const pollServer = () => new Promise<dbResponse>(async (resolve: any, reject: an
 })
 
 const pollServer2 = () => new Promise<dbResponse2>(async (resolve: any, reject: any) => {
-    getSelectedDevice().influx.query(`
-    select MEAN(L1 Voltage), MEAN(L1 Current), MEAN(L2 Voltage), MEAN(L2 Current), MEAN(L3 Voltage), MEAN(L3 Current), MEAN(Grid Frequency), time from modbus
-    WHERE time > now() - 8h GROUP BY time(30s)
+    const q = `
+    select "L1 Voltage" AS "mean", "L1 Current" AS "mean_1", "L2 Voltage" AS "mean_2", "L2 Current" AS "mean_3", "L3 Voltage" AS "mean_4", "L3 Current" AS "mean_5", time from modbus
+    WHERE time > now() - ${viewingPeriod}
     order by time asc
-    `).then(async (res: any) => {
+    `
+    const q2 = `
+    select MEAN("L1 Voltage"), MEAN("L1 Current"), MEAN("L2 Voltage"), MEAN("L2 Current"), MEAN("L3 Voltage"), MEAN("L3 Current"), time from modbus
+    WHERE time > now() - ${viewingPeriod} GROUP BY time(${averagingPeriod})
+    order by time asc
+    `
+    getSelectedDevice().influx.query((averagingPeriod === "none") ? q : q2).then(async (res: any) => {
         if (res && res.length) {
             console.log(res[res.length - 1]);
             resolve({
-                "time": res.map((value: any) => new Date(value["time"])),
-                "l1-voltage": res.map((value: any) => value["mean_L1 Voltage"]),
-                "l1-amperage": res.map((value: any) => value["mean_L1 Current"]),
-                "l2-voltage": res.map((value: any) => value["mean_L2 Voltage"]),
-                "l2-amperage": res.map((value: any) => value["mean_L2 Current"]),
-                "l3-voltage": res.map((value: any) => value["mean_L3 Voltage"]),
-                "l3-amperage": res.map((value: any) => value["mean_L3 Current"]),
-                "grid-freq": res.map((value: any) => value["mean_Grid Frequency"]),
+                "time": res.reduce((result: any[], value: any) => {
+                    // Only push if there is a voltage
+                    if (value["mean"]) result.push(new Date(value["time"]))
+                    return result;
+                }, []),
+                "l1-voltage": res.reduce((result: any[], value: any) => {
+                    if (value["mean"]) result.push(value["mean"])
+                    return result;
+                }, []),
+                "l1-amperage": res.reduce((result: any[], value: any) => {
+                    if (value["mean_1"]) result.push(value["mean_1"])
+                    return result;
+                }, []),
+                "l2-voltage": res.reduce((result: any[], value: any) => {
+                    if (value["mean_2"]) result.push(value["mean_2"])
+                    return result;
+                }, []),
+                "l2-amperage": res.reduce((result: any[], value: any) => {
+                    if (value["mean_3"]) result.push(value["mean_3"])
+                    return result;
+                }, []),
+                "l3-voltage": res.reduce((result: any[], value: any) => {
+                    if (value["mean_4"]) result.push(value["mean_4"])
+                    return result;
+                }, []),
+                "l3-amperage": res.reduce((result: any[], value: any) => {
+                    if (value["mean_5"]) result.push(value["mean_5"])
+                    return result;
+                }, []),
             })
         } else {
             return reject('Influx response length < 1')
@@ -362,7 +404,6 @@ const updateChart = () => {
                 data[k as keyof (typeof data)].push({ y: parseFloat(v) ? parseFloat(v) : NaN, x: res["time"][i] })
             });
         })
-        let lol = Graph.config(data).data;
         chart.data = Graph.config(data).data as any
         chart.update();
     });
@@ -433,4 +474,4 @@ const discoveryLoop = async () => {
 
 discoveryLoop();
 mainLoop()
-setCurrentPage(buttons["button-config"].html)
+setCurrentPage(buttons["button-basic"].html)

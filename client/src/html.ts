@@ -181,11 +181,12 @@ export const pageAdv = () =>
                     </div>
                 </div></div>`;
 
-export const pageChart = () => `<canvas id="myChart" width="100%"  height="70%" style="margin-top: 0.2em"></canvas><div id="htmlLegend" style="height: 15%"></div>`;
+export const pageChart = () => `<div id="loader"></div>
+<canvas id="myChart" width="100%"  height="65%"></canvas><div id="htmlLegend"></div>`;
 
 export const pageConfig = () => `
 <div id="config-menu">
-        <h3>Device Name</h3>
+        <div id="config-header">Device Name</div>
         <input id="input-name" maxlength="12"></input>
         <div id="config-buttons">
             <button id="button-save">
@@ -193,6 +194,26 @@ export const pageConfig = () => `
             <button id="button-clear">
                 CLEAR</button>
         </div>
+        <div id="config-header">Averaging Period</div>
+            <select id="averaging-period">
+                <option id="averging-none" value="none">None</option>
+                <option id="averging-10s" value="10s">10s</option>
+                <option id="averging-30s" value="30s">30s</option>
+                <option id="averging-1m" value="1m">1m</option>
+                <option id="averging-2m" value="2m">2m</option>
+                <option id="averging-5m" value="5m">5m</option>
+            </select>
+        <div id="config-header">View Period</div>
+        <select id="viewing-period">
+            <option id="viewing-1m" value="1m">1m</option>
+            <option id="viewing-5m" value="5m">5m</option>
+            <option id="viewing-10m" value="10m">10m</option>
+            <option id="viewing-30m" value="30m">30m</option>
+            <option id="viewing-1h" value="1h">1h</option>
+            <option id="viewing-5h" value="5h">5h</option>
+            <option id="viewing-10h" value="10h">10h</option>
+            <option id="viewing-24h" value="24h">24h</option>
+        </select>
 </div>`;
 
 /**

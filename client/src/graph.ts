@@ -213,7 +213,8 @@ export const config = (data?: {
                     yAxisID: 'y',
                     pointRadius: 0,
                     pointStyle: 'rectRot',
-                    pointBorderColor: 'rgb(255, 0, 0)'
+                    pointBorderColor: 'rgb(255, 0, 0)',
+                    spanGaps: 150000
                 },
                 {
                     label: "L1 Current",
@@ -223,7 +224,8 @@ export const config = (data?: {
                     yAxisID: 'y1',
                     pointRadius: 0,
                     pointStyle: 'rectRot',
-                    pointBorderColor: 'rgb(0, 255, 0)'
+                    pointBorderColor: 'rgb(0, 255, 0)',
+                    spanGaps: 150000
                 },
                 {
                     label: "L2 Voltage",
@@ -270,6 +272,14 @@ export const config = (data?: {
         plugins: [htmlLegendPlugin],
         options: {
             responsive: true,
+            animation: {
+                onComplete: (context: any) => {
+                    if (!context.initial) {
+                        const loader = document.getElementById('loader') as HTMLDivElement;
+                        loader.style.display = 'none';
+                    }
+                }
+            },
             plugins: {
                 htmlLegend: {
                     // ID of the container to put the legend in

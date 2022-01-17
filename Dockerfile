@@ -16,15 +16,11 @@ WORKDIR /usr/src/app/server/
 COPY ./server/package.json .
 RUN npm i 
 
-# Install app dependencies
-# A wildcard is used to ensure both package.json AND package-lock.json are copied
-# where available ([email protected]+)
 WORKDIR /usr/src/app/client/
 
 COPY ./client/ .
 
 WORKDIR /usr/src/app/server/
-RUN ls -la
 COPY ./server/ .
 EXPOSE 443
 EXPOSE 80
@@ -32,4 +28,4 @@ EXPOSE 9229
 
 
 WORKDIR /usr/src/app/server/
-CMD [ "node", "--inspect=0.0.0.0:9229", "app.js" ]
+CMD [ "node", "--inspect=0.0.0.0:9229", "./src/app.js" ]

@@ -322,21 +322,73 @@ select {
   font-size: var(--chart-legend-font-size)
 }
 
+/* Loader */
+#loader {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 1;
+  width: 3em;
+  height: 3em;
+  margin: -5em 0 0 -2em;
+  border: 16px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 16px solid #3498db;
+  -webkit-animation: spin 2s linear infinite;
+  animation: spin 2s linear infinite;
+}
+
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Add animation to "page content" */
+.animate-bottom {
+  position: relative;
+  -webkit-animation-name: animatebottom;
+  -webkit-animation-duration: 1s;
+  animation-name: animatebottom;
+  animation-duration: 1s
+}
+
+@-webkit-keyframes animatebottom {
+  from { bottom:-100px; opacity:0 } 
+  to { bottom:0px; opacity:1 }
+}
+
+@keyframes animatebottom { 
+  from{ bottom:-100px; opacity:0 } 
+  to{ bottom:0; opacity:1 }
+}
+
+#myDiv {
+  display: none;
+  text-align: center;
+}
+
 /* Config Menu */
 
 #config-menu {
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
+  justify-content: center;
+  align-items: center;
   height: 100%;
 }
 
-h3 {
-  margin: auto;
+canvas {
+  margin-top: 0.8em;
+}
+
+#config-header {
   font-size: var(--config-font-size);
   color: var(--text-colour);
-  text-align: center;
-  width: 100%;
 }
 
 #button-save {
@@ -348,11 +400,8 @@ h3 {
 }
 
 #config-buttons {
-  margin: auto;
   display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  width: 100%;
+  width: 80%;
 }
 
 #button-clear {
@@ -364,8 +413,6 @@ h3 {
 }
 
 input {
-	width: 80%;
-  margin: auto;
 	font-size: var(--config-font-size);
 	text-align: center;
 }
