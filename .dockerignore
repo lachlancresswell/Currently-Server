@@ -4,7 +4,5 @@
 .devcontainer
 *.ts
 node_modules
-Dockerfile
 cert
-docker-compose.yml
 *.json

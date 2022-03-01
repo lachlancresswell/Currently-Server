@@ -17,14 +17,12 @@ COPY ./server/package.json .
 RUN npm i 
 
 COPY ./server/ .
-RUN npm run build
 EXPOSE 443
 EXPOSE 80
 EXPOSE 9229
 
 WORKDIR /usr/src/app/client/
 COPY ./client/ .
-RUN npm run build
 
 WORKDIR /usr/src/app/server/
 CMD [ "node", "--inspect=0.0.0.0:9229", "./src/app.js" ]

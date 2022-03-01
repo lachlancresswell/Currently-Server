@@ -322,6 +322,20 @@ select {
   font-size: var(--chart-legend-font-size)
 }
 
+#notification {
+  color: white;
+  position: absolute;
+  display: none;
+margin-left: auto;
+margin-right: auto;
+left: 0;
+right: 0;
+top: 20%;
+text-align: center;
+z-index: 1;
+width: 80%;
+}
+
 /* Loader */
 #loader {
   position: absolute;
@@ -375,6 +389,7 @@ select {
 /* Config Menu */
 
 #config-menu {
+  color: var(--text-colour);
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;

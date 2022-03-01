@@ -9,7 +9,7 @@ interface neighbourInfo {
     elem: HTMLOptionElement,
 }
 interface addressInfo {
-    ip: string, local: boolean, name: string
+    ip: string, local: boolean, name: string, modbusIP: string
 }
 interface neighbourAPI {
     addresses: addressInfo[]
@@ -56,10 +56,14 @@ let neighbours: neighbourInfo[] = [];
 let devButtons: HTMLOptionElement[] = [];
 const devMenu = document.getElementById("device-menu") as HTMLSelectElement
 let dbData: dbResponse;
+let modbus = 'Not connected';
+let modbusIP = '';
+let database = 'Not connected';
+let databaseIP = '';
 
 devMenu.onclick = () => {
     const textBox = document.getElementById("input-name") as HTMLInputElement
-    textBox.value = getSelectedDevice().address.name;
+    if (textBox) textBox.value = getSelectedDevice().address.name;
 }
 
 /**
@@ -73,13 +77,13 @@ const buttonHandler = (ev: MouseEvent) => {
         document.getElementById("menu")!.style.display = "flex";
         document.getElementById("upstairs")!.style.display = "flex";
     }
-    setCurrentPage(buttons[buttonID].html)
+    setCurrentPage(buttons[buttonID].html, buttonID)
     setButtonAsSelected(buttons, buttonID)
 }
 
 const chartButtonHandler = (ev: MouseEvent) => {
     const buttonID: string = (<HTMLButtonElement>ev.target).id;
-    setCurrentPage(buttons[buttonID].html)
+    setCurrentPage(buttons[buttonID].html, buttonID)
     setButtonAsSelected(buttons, buttonID)
     updateChart();
 }
@@ -91,43 +95,51 @@ let viewingPeriod = "5h";
 
 const configButtonHandler = (ev: MouseEvent) => {
     const buttonID: string = (<HTMLButtonElement>ev.target).id;
-    setCurrentPage(buttons[buttonID].html)
-    const saveButton = document.getElementById("button-save") as HTMLButtonElement;
-    const clearButton = document.getElementById("button-clear") as HTMLButtonElement;
-    const textBox = document.getElementById("input-name") as HTMLInputElement
-    textBox.value = getSelectedDevice().address.name;
 
-    clearButton.onclick = () => {
-        const curDevice = getSelectedDevice();
-        if (confirm(`Clear the device name for ${curDevice.address.name}?`)) {
-            // Save empty name to server, causing server to fallback to default
-            saveDeviceName(curDevice, "");
+    if (currentPage != buttonID) {
+
+        setCurrentPage(buttons[buttonID].html, buttonID)
+        const saveButton = document.getElementById("button-save") as HTMLButtonElement;
+        const clearButton = document.getElementById("button-clear") as HTMLButtonElement;
+        const textBox = document.getElementById("input-name") as HTMLInputElement
+        textBox.value = getSelectedDevice().address.name;
+
+        clearButton.onclick = () => {
+            const curDevice = getSelectedDevice();
+            if (confirm(`Clear the device name for ${curDevice.address.name}?`)) {
+                // Save empty name to server, causing server to fallback to default
+                saveDeviceName(curDevice, "");
+                // Get new name from server
+                curDevice.address.name = getDeviceName(curDevice);
+                textBox!.value = curDevice.address.name;
+                updateDevList(curDevice.address.ip, curDevice.address.name)
+            }
+        }
+
+        saveButton.onclick = () => {
+            const curDevice = getSelectedDevice();
+            // Save new name to server
+            saveDeviceName(curDevice, textBox.value);
             // Get new name from server
             curDevice.address.name = getDeviceName(curDevice);
-            textBox!.value = curDevice.address.name;
             updateDevList(curDevice.address.ip, curDevice.address.name)
         }
-    }
 
-    saveButton.onclick = () => {
-        const curDevice = getSelectedDevice();
-        // Save new name to server
-        saveDeviceName(curDevice, textBox.value);
-        // Get new name from server
-        curDevice.address.name = getDeviceName(curDevice);
-        updateDevList(curDevice.address.ip, curDevice.address.name)
-    }
+        const avPeriodMenu = document.getElementById("averaging-period") as HTMLSelectElement
+        avPeriodMenu.value = averagingPeriod;
+        avPeriodMenu.onclick = () => {
+            averagingPeriod = avPeriodMenu.value;
+        }
 
-    const avPeriodMenu = document.getElementById("averaging-period") as HTMLSelectElement
-    avPeriodMenu.value = averagingPeriod;
-    avPeriodMenu.onclick = () => {
-        averagingPeriod = avPeriodMenu.value;
-    }
-
-    const viewPeriodMenu = document.getElementById("viewing-period") as HTMLSelectElement
-    viewPeriodMenu.value = viewingPeriod;
-    viewPeriodMenu.onclick = () => {
-        viewingPeriod = viewPeriodMenu.value;
+        const viewPeriodMenu = document.getElementById("viewing-period") as HTMLSelectElement
+        viewPeriodMenu.value = viewingPeriod;
+        viewPeriodMenu.onclick = () => {
+            viewingPeriod = viewPeriodMenu.value;
+        }
+    } else {
+        databaseIP = getSelectedDevice().address.ip;
+        modbusIP = getSelectedDevice().address.modbusIP;
+        setCurrentPage(HTML.pageDebug(database, modbus, databaseIP, modbusIP), 'page-config')
     }
 
 }
@@ -242,7 +254,13 @@ const pollServer = () => new Promise<dbResponse>(async (resolve: any, reject: an
     limit 1
     `).then(async (res: any) => {
         if (res && res.length) {
+            database = 'OK';
             console.log(res[res.length - 1]);
+
+            const time = new Date(res[res.length - 1]['time']);
+
+            if (((new Date) as any - (time as any)) > 5000) return reject('Old data') // time in ms
+
             dbData = {
                 "time": res[res.length - 1]["time"],
                 "l1-voltage": (Math.round(res[res.length - 1]["L1 Voltage"])).toString(),
@@ -276,58 +294,69 @@ const pollServer2 = () => new Promise<dbResponse2>(async (resolve: any, reject: 
     WHERE time > now() - ${viewingPeriod} GROUP BY time(${averagingPeriod})
     order by time asc
     `
-    getSelectedDevice().influx.query((averagingPeriod === "none") ? q : q2).then(async (res: any) => {
-        if (res && res.length) {
-            console.log(res[res.length - 1]);
-            resolve({
-                "time": res.reduce((result: any[], value: any) => {
-                    // Only push if there is a voltage
-                    if (value["mean"]) result.push(new Date(value["time"]))
-                    return result;
-                }, []),
-                "l1-voltage": res.reduce((result: any[], value: any) => {
-                    if (value["mean"]) result.push(value["mean"])
-                    return result;
-                }, []),
-                "l1-amperage": res.reduce((result: any[], value: any) => {
-                    if (value["mean_1"]) result.push(value["mean_1"])
-                    return result;
-                }, []),
-                "l2-voltage": res.reduce((result: any[], value: any) => {
-                    if (value["mean_2"]) result.push(value["mean_2"])
-                    return result;
-                }, []),
-                "l2-amperage": res.reduce((result: any[], value: any) => {
-                    if (value["mean_3"]) result.push(value["mean_3"])
-                    return result;
-                }, []),
-                "l3-voltage": res.reduce((result: any[], value: any) => {
-                    if (value["mean_4"]) result.push(value["mean_4"])
-                    return result;
-                }, []),
-                "l3-amperage": res.reduce((result: any[], value: any) => {
-                    if (value["mean_5"]) result.push(value["mean_5"])
-                    return result;
-                }, []),
-            })
-        } else {
-            return reject('Influx response length < 1')
-        }
-    })
+
+    try {
+        getSelectedDevice().influx.query((averagingPeriod === "none") ? q : q2).then(async (res: any) => {
+            if (res && res.length) {
+                database = 'OK';
+                console.log(res[res.length - 1]);
+                resolve({
+                    "time": res.reduce((result: any[], value: any) => {
+                        // Only push if there is a voltage
+                        if (value["mean"]) result.push(new Date(value["time"]))
+                        return result;
+                    }, []),
+                    "l1-voltage": res.reduce((result: any[], value: any) => {
+                        if (value["mean"]) result.push(value["mean"])
+                        return result;
+                    }, []),
+                    "l1-amperage": res.reduce((result: any[], value: any) => {
+                        if (value["mean_1"]) result.push(value["mean_1"])
+                        return result;
+                    }, []),
+                    "l2-voltage": res.reduce((result: any[], value: any) => {
+                        if (value["mean_2"]) result.push(value["mean_2"])
+                        return result;
+                    }, []),
+                    "l2-amperage": res.reduce((result: any[], value: any) => {
+                        if (value["mean_3"]) result.push(value["mean_3"])
+                        return result;
+                    }, []),
+                    "l3-voltage": res.reduce((result: any[], value: any) => {
+                        if (value["mean_4"]) result.push(value["mean_4"])
+                        return result;
+                    }, []),
+                    "l3-amperage": res.reduce((result: any[], value: any) => {
+                        if (value["mean_5"]) result.push(value["mean_5"])
+                        return result;
+                    }, []),
+                })
+            } else {
+                return reject('Influx response length < 1')
+            }
+        })
+    } catch (err: any) {
+        return reject(err)
+    }
 })
 
 /**
  * Creates a promise loop
  */
-const mainLoop = () => {
+const mainLoop = async () => {
+    await sleep(1000)
     pollServer().then(async (data: dbResponse) => {
         dbData = data;
         updateReadout(data);
+        modbus = 'OK';
 
-        await sleep(1000)
-
-        return mainLoop()
-    }, async (rej: any) => mainLoop());
+        return await mainLoop()
+    }, async (rej: any) => {
+        if (rej.indexOf('Old data') > -1) {
+            modbus = 'No connection';
+        }
+        return await mainLoop()
+    });
 }
 
 /**
@@ -354,16 +383,20 @@ const setButtonAsSelected = (buttons: buttonCollection, buttonID: string) => {
     }
 }
 
+let currentPage = '';
+
 /**
  * Updates screen with provided HTML    
  * @param html HTML to place on current screen
  */
-const setCurrentPage = (html: string) => {
+const setCurrentPage = (html: string, name?: string) => {
     const details = document.getElementById("single-page") as HTMLDivElement;
     details.style.visibility = "hidden";
     details.innerHTML = html;
     updateReadout(dbData);
     details.style.visibility = "visible";
+
+    currentPage = name || '';
 }
 
 const updateChart = () => {
@@ -401,10 +434,15 @@ const updateChart = () => {
         keys.forEach((k: string) => {
             data[k as keyof (typeof data)] = [];
             res[k as keyof dbResponse2].forEach((v: string, i: number) => {
-                data[k as keyof (typeof data)].push({ y: parseFloat(v) ? parseFloat(v) : NaN, x: res["time"][i] })
+                data[k as keyof (typeof data)].push({ y: parseFloat(v) ? parseFloat(v) : NaN, x: res["time"][i].getTime() })
             });
         })
         chart.data = Graph.config(data).data as any
+        chart.update();
+    }, (err: any) => {
+        const notification = document.getElementById('notification') as HTMLDivElement;
+        notification.textContent = `No data found in range - ${viewingPeriod}`;
+        notification.style.display = 'block';
         chart.update();
     });
 }

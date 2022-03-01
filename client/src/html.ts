@@ -5,7 +5,7 @@
 export const pageBasic = () => '<div id="basic-details"> <div class="details-phase" id="details-l1">' +
     '                <div class="details-voltage">' +
     '                    <div id="l1-voltage" class="details-value">' +
-    '                        247' +
+    '                        -' +
     '                    </div>' +
     '                    <div class="details-denominator">' +
     '                        V' +
@@ -13,7 +13,7 @@ export const pageBasic = () => '<div id="basic-details"> <div class="details-pha
     '                </div>' +
     '                <div class="details-amperage">' +
     '                    <div id="l1-amperage-round" class="details-value">' +
-    '                        0.0' +
+    '                        -' +
     '                    </div>' +
     '                    <div class="details-denominator">' +
     '                        A' +
@@ -23,7 +23,7 @@ export const pageBasic = () => '<div id="basic-details"> <div class="details-pha
     '            <div class="details-phase" id="details-l2">' +
     '                <div class="details-voltage">' +
     '                    <div id="l2-voltage" class="details-value">' +
-    '                        247' +
+    '                        -' +
     '                    </div>' +
     '                    <div class="details-denominator">' +
     '                        V' +
@@ -31,7 +31,7 @@ export const pageBasic = () => '<div id="basic-details"> <div class="details-pha
     '                </div>' +
     '                <div class="details-amperage">' +
     '                    <div id="l2-amperage-round" class="details-value">' +
-    '                        0.0' +
+    '                        -' +
     '                    </div>' +
     '                    <div class="details-denominator">' +
     '                        A' +
@@ -41,7 +41,7 @@ export const pageBasic = () => '<div id="basic-details"> <div class="details-pha
     '            <div class="details-phase" id="details-l3">' +
     '                <div class="details-voltage">' +
     '                    <div id="l3-voltage" class=" details-value">' +
-    '                        247' +
+    '                        -' +
     '                    </div>' +
     '                    <div class="details-denominator">' +
     '                        V' +
@@ -49,7 +49,7 @@ export const pageBasic = () => '<div id="basic-details"> <div class="details-pha
     '                </div>' +
     '                <div class="details-amperage">' +
     '                    <div id="l3-amperage-round" class="details-value">' +
-    '                        0.0' +
+    '                        -' +
     '                    </div>' +
     '                    <div class="details-denominator">' +
     '                        A' +
@@ -67,7 +67,7 @@ export const pagePhase = (phase: number) =>
                     <div class="phase-info" id="details-l${phase}">
                         <div id="details-l1-voltage">
                             <div id="l${phase}-voltage" class="details-value details-more-70">
-                                247
+                                -
                             </div>
                             <div class="details-denominator details-more-30">
                                 V
@@ -75,7 +75,7 @@ export const pagePhase = (phase: number) =>
                         </div>
                         <div id="details-l1-amperage">
                             <div id="l${phase}-amperage" class="details-value details-more-70">
-                                0.0
+                                -
                             </div>
                             <div class="details-denominator details-more-30">
                                 A
@@ -85,7 +85,7 @@ export const pagePhase = (phase: number) =>
                     <div id="details-minor">
                         <div class="pf" id="pf">
                             <div id="power-factor" class="details-value details-more-70">
-                                0.0
+                                -
                             </div>
                             <div class="details-denominator details-more-30">
                                 PF
@@ -93,7 +93,7 @@ export const pagePhase = (phase: number) =>
                         </div>
                         <div class="kva" id="kva">
                             <div id="apparent-power" class="details-value details-more-70">
-                                0.0
+                                -
                             </div>
                             <div class="details-denominator details-more-30">
                                 kVA
@@ -111,19 +111,19 @@ export const pageAdv = () =>
     `<div id="container"><div id="subcontainer-1">
                     <div id="adv-col-1">
                         <div id="l1-voltage" class="value-container l1">
-                            246
+                            -
                         </div>
                         <div id="l2-voltage" class="value-container l2">
-                            245
+                            -
                         </div>
                         <div id="l3-voltage" class="value-container l3">
-                            246
+                            -
                         </div>
                         <div id="power-factor" class="value-container pf">
-                            0.0
+                            -
                         </div>
                         <div id="apparent-power" class="value-container kva">
-                            0.0
+                            -
                         </div>
                     </div>
                     <div id="adv-col-2">
@@ -147,19 +147,19 @@ export const pageAdv = () =>
                 <div id="subcontainer-2">
                     <div id="adv-col-3">
                         <div id="l1-amperage" class="value-container l1">
-                            0.0
+                            -
                         </div>
                         <div id="l2-amperage" class="value-container l2">
-                            0.0
+                            -
                         </div>
                         <div id="l3-amperage" class="value-container l3">
-                            0.0
+                            -
                         </div>
                         <div class="value-container blank">
                             EMP
                         </div>
                         <div id="grid-freq" class="value-container freq">
-                            50
+                            -
                         </div>
                     </div>
                     <div id="adv-col-4">
@@ -182,6 +182,7 @@ export const pageAdv = () =>
                 </div></div>`;
 
 export const pageChart = () => `<div id="loader"></div>
+<div id="notification"></div>
 <canvas id="myChart" width="100%"  height="65%"></canvas><div id="htmlLegend"></div>`;
 
 export const pageConfig = () => `
@@ -214,6 +215,15 @@ export const pageConfig = () => `
             <option id="viewing-10h" value="10h">10h</option>
             <option id="viewing-24h" value="24h">24h</option>
         </select>
+</div>`;
+
+
+export const pageDebug = (database: string, modbus: string, databaseIP: string, modbusIP: string) => `
+<div id="config-menu">
+        <div>Database: ${database}</div>
+        <div>Database IP: ${databaseIP}</div>
+        <div>Modbus IP: ${modbusIP}</div>
+        <div>Modbus: ${modbus}</div>
 </div>`;
 
 /**

@@ -49,11 +49,11 @@ try {
     config = { Device: { name: DEFAULT_DEVICE_NAME } }
     saveConfig()
 }
-
 interface addressObj {
     ip: string,
     name: string,
-    local: boolean
+    local: boolean,
+    modbusIP: string,
 }
 let neighbours: { addresses: addressObj[] } = { addresses: [] };
 
@@ -70,6 +70,7 @@ mdns.on('response', function (response: any) {
 
         const incomingIP = formatIPandPort(response)
         let name = response.answers[2].name;
+        const modbusIP = response.answers[response.answers.length - 1].data;
         const domainLoc = name.indexOf('.local');
         if (domainLoc) name = name.substring(0, domainLoc)
         // Find if response is a loopback e.g the local device
@@ -80,7 +81,7 @@ mdns.on('response', function (response: any) {
         // Check if incoming address is new or not
         if ((!neighbours.addresses.filter((address: addressObj) => (address.ip === incomingIP && address.local === local)).length)) {
 
-            neighbours.addresses.push({ ip: incomingIP, name, local })
+            neighbours.addresses.push({ ip: incomingIP, name, local, modbusIP: (modbusIP === '0.0.0.0') ? '' : modbusIP })
             const uri = incomingIP.replace(':', '/');
 
             /**
@@ -103,40 +104,47 @@ mdns.on('response', function (response: any) {
 
 
 const mdnsUpdate = () => {
-        const type = MDNS_RECORD_TYPE;
-        const weight = 0;
-        const priority = 10;
-        let answers: any = [{
-            name: HTTPS_MDNS_SERVICE_NAME,
-            type,
-            data: {
-                port: HTTPS_PORT,
-                weight,
-                priority,
-                target: HTTPS_MDNS_SERVICE_NAME + MDNS_DOMAIN
-            }
-        },
-        {
-            name: HTTP_MDNS_SERVICE_NAME,
-            type,
-            data: {
-                port: HTTP_PORT,
-                weight,
-                priority,
-                target: HTTP_MDNS_SERVICE_NAME + MDNS_DOMAIN
-            }
-        }]
+    const type = MDNS_RECORD_TYPE;
+    const weight = 0;
+    const priority = 10;
+    let answers: any = [{
+        name: HTTPS_MDNS_SERVICE_NAME,
+        type,
+        data: {
+            port: HTTPS_PORT,
+            weight,
+            priority,
+            target: HTTPS_MDNS_SERVICE_NAME + MDNS_DOMAIN
+        }
+    },
+    {
+        name: HTTP_MDNS_SERVICE_NAME,
+        type,
+        data: {
+            port: HTTP_PORT,
+            weight,
+            priority,
+            target: HTTP_MDNS_SERVICE_NAME + MDNS_DOMAIN
+        }
+    }]
 
-        nicAddresses.forEach((address: { nic: string, ip: string, mask: string | null }) => {
-            answers.push({
-                name: config.Device.name + MDNS_DOMAIN,
-                type: 'A',
-                //   ttl: 300,
-                data: address.ip
-            })
-        });
-        mdns.respond({ answers })
-    }
+    nicAddresses.forEach((address: { nic: string, ip: string, mask: string | null }) => {
+        answers.push({
+            name: config.Device.name + MDNS_DOMAIN,
+            type: 'A',
+            //   ttl: 300,
+            data: address.ip
+        })
+    });
+
+    answers.push({
+        name: 'modbus' + MDNS_DOMAIN,
+        type: 'A',
+        data: process.env.MODBUS_GATEWAY_IP || '0.0.0.0'
+    })
+
+    mdns.respond({ answers })
+}
 
 mdns.on('query', function (query) {
     if (validMdnsPacket(query.questions)) {

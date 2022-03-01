@@ -280,6 +280,11 @@ export const config = (data?: {
                     }
                 }
             },
+            interaction: {
+                intersect: false,
+                axis: 'xy',
+                mode: 'nearest',
+            },
             plugins: {
                 htmlLegend: {
                     // ID of the container to put the legend in
@@ -318,6 +323,7 @@ export const config = (data?: {
                     type: 'linear',
                     display: true,
                     position: 'left',
+                    afterBuildTicks: (scale: any) => scale.ticks = scale.ticks.filter((t: { value: number }) => (t.value <= 250))
                 },
                 y1: {
                     min: -10,
@@ -325,7 +331,7 @@ export const config = (data?: {
                     type: 'linear',
                     display: true,
                     position: 'right',
-
+                    afterBuildTicks: (scale: any) => scale.ticks = scale.ticks.filter((t: { value: number }) => (t.value >= 0)),
                     // grid line settings
                     grid: {
                         drawOnChartArea: false, // only want the grid lines for one axis to show up
