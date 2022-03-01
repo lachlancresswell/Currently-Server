@@ -16,6 +16,23 @@ export const attachResponseHandler = (cb: any) => {
     mdns.once('response', cb);
 };
 
+export const attachQueryHandler = (cb: any) => {
+    mdns.once('query', (query) => {
+        if (validatePacket(query.questions)) {
+            cb(query);
+        }
+    });
+}
+
+export const sendQuery = (SERVICE_NAME: string, MDNS_RECORD_TYPE: any) => {
+    mdns.query({
+        questions: [{
+            name: SERVICE_NAME,
+            type: MDNS_RECORD_TYPE
+        }]
+    })
+}
+
 export const sendUpdate = (HTTP_MDNS_SERVICE_NAME: string, HTTPS_MDNS_SERVICE_NAME: string, MDNS_DOMAIN: string, HTTP_PORT: number, HTTPS_PORT: number, ips: string[], deviceName: string, MODBUS_GATEWAY_IP: string | undefined) => {
     const type = MDNS_RECORD_TYPE;
     const weight = 0;

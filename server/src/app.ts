@@ -24,16 +24,21 @@ const privateKey = fs.readFileSync('../cert/server-selfsigned.key', 'utf8');
 const certificate = fs.readFileSync('../cert/server-selfsigned.crt', 'utf8');
 const ssl = { key: privateKey, cert: certificate };
 
-
+interface NicInfo {
+    name: string,
+    ip: string,
+    mask: string
+}
+let nicAddresses: NicInfo[] = []; // Or just '{}', an empty object
 const nets: any = os.networkInterfaces();
-let nicAddresses: { nic: string, ip: string, mask: string | null }[] = []; // Or just '{}', an empty object
 
 if (nets) {
     for (const name of Object.keys(nets)) {
         for (const net of nets[name]) {
             // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
             if (net.family === 'IPv4' && !net.internal) {
-                nicAddresses.push({ nic: name, ip: net.address, mask: net.cidr });
+                const nic: NicInfo = { name: name, ip: net.address, mask: net.cidr };
+                nicAddresses.push(nic);
             }
         }
     }
@@ -59,6 +64,7 @@ interface addressObj {
 let neighbours: { addresses: addressObj[] } = { addresses: [] };
 
 const formatIPandPort = (response: { answers: any[] }) => (response.answers[2].data as string) + ':' + response.answers[1].data.port;
+
 mdns.on('response', function (response: any) {
     if (MDNS.validatePacket(response.answers) && (response.answers[0].name === HTTP_MDNS_SERVICE_NAME || response.answers[0].name === HTTPS_MDNS_SERVICE_NAME)) {
 
@@ -68,7 +74,7 @@ mdns.on('response', function (response: any) {
         const domainLoc = name.indexOf('.local');
         if (domainLoc) name = name.substring(0, domainLoc)
         // Find if response is a loopback e.g the local device
-        let local = nicAddresses.some((address: { nic: string, ip: string, mask: string | null }) => (address.ip === response.answers[2].data && (response.answers[0].data.port === HTTPS_PORT || response.answers[0].data.port.toString === HTTP_PORT)));
+        let local = nicAddresses.some((address: { name: string, ip: string, mask: string | null }) => (address.ip === response.answers[2].data && (response.answers[0].data.port === HTTPS_PORT || response.answers[0].data.port.toString === HTTP_PORT)));
 
         console.log('Response from - ' + incomingIP)
 
@@ -97,54 +103,7 @@ mdns.on('response', function (response: any) {
 })
 
 
-const mdnsUpdate = () => {
-    const type = MDNS_RECORD_TYPE;
-    const weight = 0;
-    const priority = 10;
-    let answers: any = [{
-        name: HTTPS_MDNS_SERVICE_NAME,
-        type,
-        data: {
-            port: HTTPS_PORT,
-            weight,
-            priority,
-            target: HTTPS_MDNS_SERVICE_NAME + MDNS_DOMAIN
-        }
-    },
-    {
-        name: HTTP_MDNS_SERVICE_NAME,
-        type,
-        data: {
-            port: HTTP_PORT,
-            weight,
-            priority,
-            target: HTTP_MDNS_SERVICE_NAME + MDNS_DOMAIN
-        }
-    }]
-
-    nicAddresses.forEach((address: { nic: string, ip: string, mask: string | null }) => {
-        answers.push({
-            name: config.Device.name + MDNS_DOMAIN,
-            type: 'A',
-            //   ttl: 300,
-            data: address.ip
-        })
-    });
-
-    answers.push({
-        name: 'modbus' + MDNS_DOMAIN,
-        type: 'A',
-        data: process.env.MODBUS_GATEWAY_IP || '0.0.0.0'
-    })
-
-    mdns.respond({ answers })
-}
-
-mdns.on('query', function (query) {
-    if (MDNS.validatePacket(query.questions)) {
-        mdnsUpdate();
-    }
-})
+MDNS.attachQueryHandler(() => MDNS.sendUpdate(HTTP_MDNS_SERVICE_NAME, HTTPS_MDNS_SERVICE_NAME, MDNS_DOMAIN, HTTP_PORT, HTTPS_PORT, nicAddresses.map(a => a.ip), DEFAULT_DEVICE_NAME, process.env.MODBUS_GATEWAY_IP))
 
 /**
  * Perform mdns query every ms milliseconds
@@ -152,12 +111,8 @@ mdns.on('query', function (query) {
  */
 const discoveryLoop = (ms: number) => {
     neighbours = { addresses: [] };
-    mdns.query({
-        questions: [{
-            name: 'DCA',
-            type: MDNS_RECORD_TYPE
-        }]
-    })
+
+    MDNS.sendQuery('DCA', MDNS_RECORD_TYPE)
     setTimeout(() => {
         discoveryLoop(ms);
     }, ms)
@@ -201,7 +156,7 @@ app.post('/device-name/*', (req: express.Request, res: any) => {
     config.Device.name = req.get("device-name")!;
     if (!config.Device.name) config.Device.name = DEFAULT_DEVICE_NAME;
     res.send(JSON.stringify(config.Device.name));
-    mdnsUpdate();
+    MDNS.sendUpdate(HTTP_MDNS_SERVICE_NAME, HTTPS_MDNS_SERVICE_NAME, MDNS_DOMAIN, HTTP_PORT, HTTPS_PORT, nicAddresses.map(a => a.ip), DEFAULT_DEVICE_NAME, process.env.MODBUS_GATEWAY_IP);
     neighbours.addresses.find((n) => n.local)!.name = config.Device.name;
     saveConfig();
 })
