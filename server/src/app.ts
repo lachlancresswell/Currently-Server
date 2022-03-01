@@ -7,6 +7,7 @@ import os from "os";
 import http from 'http';
 import https from 'https';
 import makeMdns, { Options } from 'multicast-dns';
+import * as MDNS from "./mdns";
 
 // Constants
 const HTTP_PORT: number = parseInt(process.env.HTTP_PORT as string) || 80;
@@ -57,16 +58,9 @@ interface addressObj {
 }
 let neighbours: { addresses: addressObj[] } = { addresses: [] };
 
-/**
- * Validates given query questions or response answers
- * @param packet Query questions or resonse answer packet
- * @returns True if a calid MDNS packet, false if else
- */
-const validMdnsPacket = (packet: { type: string, name: string }[]) => packet[0] && packet[0].type === MDNS_RECORD_TYPE;
-
 const formatIPandPort = (response: { answers: any[] }) => (response.answers[2].data as string) + ':' + response.answers[1].data.port;
 mdns.on('response', function (response: any) {
-    if (validMdnsPacket(response.answers) && (response.answers[0].name === HTTP_MDNS_SERVICE_NAME || response.answers[0].name === HTTPS_MDNS_SERVICE_NAME)) {
+    if (MDNS.validatePacket(response.answers) && (response.answers[0].name === HTTP_MDNS_SERVICE_NAME || response.answers[0].name === HTTPS_MDNS_SERVICE_NAME)) {
 
         const incomingIP = formatIPandPort(response)
         let name = response.answers[2].name;
@@ -147,7 +141,7 @@ const mdnsUpdate = () => {
 }
 
 mdns.on('query', function (query) {
-    if (validMdnsPacket(query.questions)) {
+    if (MDNS.validatePacket(query.questions)) {
         mdnsUpdate();
     }
 })
