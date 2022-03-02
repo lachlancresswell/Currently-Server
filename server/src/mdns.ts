@@ -1,7 +1,5 @@
 import makeMdns from 'multicast-dns';
 
-const MDNS_RECORD_TYPE = 'SRV';
-
 const mdns = makeMdns({ loopback: true });
 
 /**
@@ -10,15 +8,11 @@ const mdns = makeMdns({ loopback: true });
  * @returns True if a calid MDNS packet, false if else
  */
 
-export const validatePacket = (packet: { type: string }[]) => packet[0] && packet[0].type === MDNS_RECORD_TYPE;
+export const validatePacket = (packet: { type: string }[], MDNS_RECORD_TYPE: string) => packet[0] && packet[0].type === MDNS_RECORD_TYPE;
 
-export const attachResponseHandler = (cb: any) => {
-    mdns.once('response', cb);
-};
-
-export const attachQueryHandler = (cb: any) => {
+export const attachQueryHandler = (MDNS_RECORD_TYPE: string, cb: any) => {
     mdns.once('query', (query) => {
-        if (validatePacket(query.questions)) {
+        if (validatePacket(query.questions, MDNS_RECORD_TYPE)) {
             cb(query);
         }
     });
@@ -33,7 +27,21 @@ export const sendQuery = (SERVICE_NAME: string, MDNS_RECORD_TYPE: any) => {
     })
 }
 
-export const sendUpdate = (HTTP_MDNS_SERVICE_NAME: string, HTTPS_MDNS_SERVICE_NAME: string, MDNS_DOMAIN: string, HTTP_PORT: number, HTTPS_PORT: number, ips: string[], deviceName: string, MODBUS_GATEWAY_IP: string | undefined) => {
+export const end = () => {
+    mdns.destroy();
+}
+
+export const attachResponseHandler = (MDNS_RECORD_TYPE: string, HTTP_MDNS_SERVICE_NAME: string, HTTPS_MDNS_SERVICE_NAME: string, cb: any) => {
+    mdns.once('response', (response: any) => {
+        if (validatePacket(response.answers, MDNS_RECORD_TYPE) && (response.answers[0].name === HTTP_MDNS_SERVICE_NAME || response.answers[0].name === HTTPS_MDNS_SERVICE_NAME)) {
+            cb(response)
+        } else {
+            cb(-1)
+        }
+    })
+}
+
+export const sendUpdate = (HTTP_MDNS_SERVICE_NAME: string, HTTPS_MDNS_SERVICE_NAME: string, MDNS_DOMAIN: string, MDNS_RECORD_TYPE: string, HTTP_PORT: number, HTTPS_PORT: number, ips: string[], deviceName: string, MODBUS_GATEWAY_IP: string | undefined) => {
     const type = MDNS_RECORD_TYPE;
     const weight = 0;
     const priority = 10;

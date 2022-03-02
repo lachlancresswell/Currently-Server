@@ -65,8 +65,8 @@ let neighbours: { addresses: addressObj[] } = { addresses: [] };
 
 const formatIPandPort = (response: { answers: any[] }) => (response.answers[2].data as string) + ':' + response.answers[1].data.port;
 
-mdns.on('response', function (response: any) {
-    if (MDNS.validatePacket(response.answers) && (response.answers[0].name === HTTP_MDNS_SERVICE_NAME || response.answers[0].name === HTTPS_MDNS_SERVICE_NAME)) {
+MDNS.attachResponseHandler(MDNS_RECORD_TYPE, HTTP_MDNS_SERVICE_NAME, HTTPS_MDNS_SERVICE_NAME, (response: any) => {
+    if (MDNS.validatePacket(response.answers, MDNS_RECORD_TYPE) && (response.answers[0].name === HTTP_MDNS_SERVICE_NAME || response.answers[0].name === HTTPS_MDNS_SERVICE_NAME)) {
 
         const incomingIP = formatIPandPort(response)
         let name = response.answers[2].name;
@@ -103,7 +103,7 @@ mdns.on('response', function (response: any) {
 })
 
 
-MDNS.attachQueryHandler(() => MDNS.sendUpdate(HTTP_MDNS_SERVICE_NAME, HTTPS_MDNS_SERVICE_NAME, MDNS_DOMAIN, HTTP_PORT, HTTPS_PORT, nicAddresses.map(a => a.ip), DEFAULT_DEVICE_NAME, process.env.MODBUS_GATEWAY_IP))
+MDNS.attachQueryHandler(MDNS_RECORD_TYPE, () => MDNS.sendUpdate(HTTP_MDNS_SERVICE_NAME, HTTPS_MDNS_SERVICE_NAME, MDNS_DOMAIN, MDNS_RECORD_TYPE, HTTP_PORT, HTTPS_PORT, nicAddresses.map(a => a.ip), DEFAULT_DEVICE_NAME, process.env.MODBUS_GATEWAY_IP))
 
 /**
  * Perform mdns query every ms milliseconds
@@ -156,7 +156,7 @@ app.post('/device-name/*', (req: express.Request, res: any) => {
     config.Device.name = req.get("device-name")!;
     if (!config.Device.name) config.Device.name = DEFAULT_DEVICE_NAME;
     res.send(JSON.stringify(config.Device.name));
-    MDNS.sendUpdate(HTTP_MDNS_SERVICE_NAME, HTTPS_MDNS_SERVICE_NAME, MDNS_DOMAIN, HTTP_PORT, HTTPS_PORT, nicAddresses.map(a => a.ip), DEFAULT_DEVICE_NAME, process.env.MODBUS_GATEWAY_IP);
+    MDNS.sendUpdate(HTTP_MDNS_SERVICE_NAME, HTTPS_MDNS_SERVICE_NAME, MDNS_DOMAIN, MDNS_RECORD_TYPE, HTTP_PORT, HTTPS_PORT, nicAddresses.map(a => a.ip), DEFAULT_DEVICE_NAME, process.env.MODBUS_GATEWAY_IP);
     neighbours.addresses.find((n) => n.local)!.name = config.Device.name;
     saveConfig();
 })
