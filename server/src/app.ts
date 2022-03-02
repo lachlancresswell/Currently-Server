@@ -6,7 +6,6 @@ import fs from 'fs';
 import os from "os";
 import http from 'http';
 import https from 'https';
-import makeMdns, { Options } from 'multicast-dns';
 import * as MDNS from "./mdns";
 
 // Constants
@@ -44,8 +43,6 @@ if (nets) {
     }
 }
 
-const mdns = makeMdns({ loopback: true });
-
 const saveConfig = () => fs.writeFile(CONFIG_PATH, JSON.stringify(config), () => { });
 
 let config: { Device: { name: string } };
@@ -74,7 +71,7 @@ MDNS.attachResponseHandler(MDNS_RECORD_TYPE, HTTP_MDNS_SERVICE_NAME, HTTPS_MDNS_
         const domainLoc = name.indexOf('.local');
         if (domainLoc) name = name.substring(0, domainLoc)
         // Find if response is a loopback e.g the local device
-        let local = nicAddresses.some((address: { name: string, ip: string, mask: string | null }) => (address.ip === response.answers[2].data && (response.answers[0].data.port === HTTPS_PORT || response.answers[0].data.port.toString === HTTP_PORT)));
+        let local = nicAddresses.some((address: { name: string, ip: string, mask: string | null }) => (address.ip === response.answers[2].data && (response.answers[0].data.port === HTTP_PORT || response.answers[1].data.port.toString === HTTPS_PORT)));
 
         console.log('Response from - ' + incomingIP)
 
