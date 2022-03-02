@@ -66,7 +66,7 @@ let neighbours: { addresses: addressObj[] } = { addresses: [] };
 const formatIPandPort = (response: { answers: any[] }) => (response.answers[2].data as string) + ':' + response.answers[1].data.port;
 
 MDNS.attachResponseHandler(MDNS_RECORD_TYPE, HTTP_MDNS_SERVICE_NAME, HTTPS_MDNS_SERVICE_NAME, (response: any) => {
-    if (MDNS.validatePacket(response.answers, MDNS_RECORD_TYPE) && (response.answers[0].name === HTTP_MDNS_SERVICE_NAME || response.answers[0].name === HTTPS_MDNS_SERVICE_NAME)) {
+    if ((response.answers[0].name === HTTP_MDNS_SERVICE_NAME || response.answers[0].name === HTTPS_MDNS_SERVICE_NAME)) {
 
         const incomingIP = formatIPandPort(response)
         let name = response.answers[2].name;
