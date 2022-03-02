@@ -6,7 +6,7 @@ import fs from 'fs';
 import os from "os";
 import http from 'http';
 import https from 'https';
-import * as MDNS from "./mdns";
+import { Mdns } from "./mdns";
 
 // Constants
 const HTTP_PORT: number = parseInt(process.env.HTTP_PORT as string) || 80;
@@ -16,6 +16,7 @@ const HTTP_MDNS_SERVICE_NAME = 'http-my-service'
 const HTTPS_MDNS_SERVICE_NAME = 'https-my-service'
 const MDNS_RECORD_TYPE = 'SRV';
 const MDNS_DOMAIN = '.local';
+const SERVICE_NAME = 'DCA';
 const DEFAULT_DEVICE_NAME = "my-device" + HTTP_PORT
 const CONFIG_PATH = process.env.CONFIG_FILE || './default.json';
 
@@ -28,7 +29,7 @@ interface NicInfo {
     ip: string,
     mask: string
 }
-let nicAddresses: NicInfo[] = []; // Or just '{}', an empty object
+let nicAddresses: NicInfo[] = [];
 const nets: any = os.networkInterfaces();
 
 if (nets) {
@@ -62,7 +63,17 @@ let neighbours: { addresses: addressObj[] } = { addresses: [] };
 
 const formatIPandPort = (response: { answers: any[] }) => (response.answers[2].data as string) + ':' + response.answers[1].data.port;
 
-MDNS.attachResponseHandler(MDNS_RECORD_TYPE, HTTP_MDNS_SERVICE_NAME, HTTPS_MDNS_SERVICE_NAME, (response: any) => {
+var MDNS = new Mdns({
+    HTTP_PORT,
+    HTTPS_PORT,
+    HTTP_MDNS_SERVICE_NAME,
+    HTTPS_MDNS_SERVICE_NAME,
+    MDNS_RECORD_TYPE,
+    MDNS_DOMAIN,
+    SERVICE_NAME
+});
+
+MDNS.attachResponseHandler((response: any) => {
     if ((response.answers[0].name === HTTP_MDNS_SERVICE_NAME || response.answers[0].name === HTTPS_MDNS_SERVICE_NAME)) {
 
         const incomingIP = formatIPandPort(response)
@@ -100,7 +111,7 @@ MDNS.attachResponseHandler(MDNS_RECORD_TYPE, HTTP_MDNS_SERVICE_NAME, HTTPS_MDNS_
 })
 
 
-MDNS.attachQueryHandler(MDNS_RECORD_TYPE, () => MDNS.sendUpdate(HTTP_MDNS_SERVICE_NAME, HTTPS_MDNS_SERVICE_NAME, MDNS_DOMAIN, MDNS_RECORD_TYPE, HTTP_PORT, HTTPS_PORT, nicAddresses.map(a => a.ip), DEFAULT_DEVICE_NAME, process.env.MODBUS_GATEWAY_IP))
+MDNS.attachQueryHandler(() => MDNS.sendUpdate(nicAddresses.map(a => a.ip), DEFAULT_DEVICE_NAME, process.env.MODBUS_GATEWAY_IP))
 
 /**
  * Perform mdns query every ms milliseconds
@@ -109,7 +120,7 @@ MDNS.attachQueryHandler(MDNS_RECORD_TYPE, () => MDNS.sendUpdate(HTTP_MDNS_SERVIC
 const discoveryLoop = (ms: number) => {
     neighbours = { addresses: [] };
 
-    MDNS.sendQuery('DCA', MDNS_RECORD_TYPE)
+    MDNS.sendQuery()
     setTimeout(() => {
         discoveryLoop(ms);
     }, ms)
@@ -153,7 +164,7 @@ app.post('/device-name/*', (req: express.Request, res: any) => {
     config.Device.name = req.get("device-name")!;
     if (!config.Device.name) config.Device.name = DEFAULT_DEVICE_NAME;
     res.send(JSON.stringify(config.Device.name));
-    MDNS.sendUpdate(HTTP_MDNS_SERVICE_NAME, HTTPS_MDNS_SERVICE_NAME, MDNS_DOMAIN, MDNS_RECORD_TYPE, HTTP_PORT, HTTPS_PORT, nicAddresses.map(a => a.ip), DEFAULT_DEVICE_NAME, process.env.MODBUS_GATEWAY_IP);
+    MDNS.sendUpdate(nicAddresses.map(a => a.ip), DEFAULT_DEVICE_NAME, process.env.MODBUS_GATEWAY_IP);
     neighbours.addresses.find((n) => n.local)!.name = config.Device.name;
     saveConfig();
 })
