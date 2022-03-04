@@ -3,9 +3,9 @@ import path from 'path';
 import cors from 'cors';
 import httpProxy from 'http-proxy';
 import fs from 'fs';
-import os from "os";
 import http from 'http';
 import https from 'https';
+import * as NIC from './nic';
 import { Mdns } from "./mdns";
 
 // Constants
@@ -24,27 +24,9 @@ const privateKey = fs.readFileSync('../cert/server-selfsigned.key', 'utf8');
 const certificate = fs.readFileSync('../cert/server-selfsigned.crt', 'utf8');
 const ssl = { key: privateKey, cert: certificate };
 
-interface NicInfo {
-    name: string,
-    ip: string,
-    mask: string
-}
-let nicAddresses: NicInfo[] = [];
-const nets: any = os.networkInterfaces();
-
-if (nets) {
-    for (const name of Object.keys(nets)) {
-        for (const net of nets[name]) {
-            // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
-            if (net.family === 'IPv4' && !net.internal) {
-                const nic: NicInfo = { name: name, ip: net.address, mask: net.cidr };
-                nicAddresses.push(nic);
-            }
-        }
-    }
-}
-
 const saveConfig = () => fs.writeFile(CONFIG_PATH, JSON.stringify(config), () => { });
+
+const nicAddresses = NIC.getAddresses()!;
 
 let config: { Device: { name: string } };
 try {
