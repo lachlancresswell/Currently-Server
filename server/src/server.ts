@@ -1,5 +1,4 @@
 import express from 'express';
-import path from 'path';
 import cors from 'cors';
 import httpProxy from 'http-proxy';
 import fs from 'fs';
@@ -20,15 +19,11 @@ export const SERVICE_NAME = 'DCA';
 export const DEFAULT_DEVICE_NAME = "my-device" + HTTP_PORT
 export const CONFIG_PATH = process.env.CONFIG_FILE || './default.json';
 
-const privateKey = fs.readFileSync('../cert/server-selfsigned.key', 'utf8');
-const certificate = fs.readFileSync('../cert/server-selfsigned.crt', 'utf8');
-const ssl = { key: privateKey, cert: certificate };
-
 interface ServerOptions extends Options {
     CONFIG_PATH: string,
     INFLUX_PORT: number,
     DEFAULT_DEVICE_NAME: string,
-
+    ssl?: { key: string, cert: string },
 }
 
 interface addressObj {
@@ -77,10 +72,11 @@ export class Server {
          * Proxy /influx requests to influx server via HTTPS
          */
         this.app.all("/influx/*", (req: express.Request, res: any) => {
-            const target = 'https://' + 'localhost' + ':' + this.options.INFLUX_PORT + req.url.substring(req.url.indexOf("x") + 1);
+            let target = this.options.ssl ? 'https://' : 'http://';
+            target += 'localhost' + ':' + this.options.INFLUX_PORT + req.url.substring(req.url.indexOf("x") + 1);
             console.log('Proxying to influx - ' + target.substring(0, 30))
             this.apiProxy.web(req, res, {
-                ssl,
+                ssl: this.options.ssl ? this.options.ssl : undefined,
                 target,
                 secure: false // Prevents errors with self-signed certß
             }, (e: Error) => {
@@ -156,10 +152,12 @@ export class Server {
         this.discoveryLoop(30000);
 
         const httpServer = http.createServer(this.app);
-        const httpsServer = https.createServer(ssl, this.app);
-
         httpServer.listen(this.options.HTTP_PORT, () => console.log('HTTP Server running on port ' + this.options.HTTP_PORT));
-        httpsServer.listen(this.options.HTTPS_PORT, () => console.log('HTTPS Server running on port ' + this.options.HTTPS_PORT));
+
+        if (this.options.ssl) {
+            const httpsServer = https.createServer(this.options.ssl, this.app);
+            httpsServer.listen(this.options.HTTPS_PORT, () => console.log('HTTPS Server running on port ' + this.options.HTTPS_PORT));
+        }
     }
 
     /**
