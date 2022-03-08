@@ -9,3 +9,4 @@ influx-data
 .vscode/
 *-lock.json
 *.json
+coverage/
