@@ -56,15 +56,19 @@ describe("MDNS", () => {
         it("Updates should be loopedback", (done: any) => {
             let mdns = new Mdns();
 
+            const deviceName = randomString();
+
             const listener = (response: any) => {
-                expect(response.answers.length).toBe(4);
-                mdns.removeResponseListener(listener);
-                mdns.end();
-                done();
+                if (response.answers[2].name.indexOf(deviceName) >= 0) {
+                    expect(response.answers.length).toBe(4);
+                    mdns.removeResponseListener(listener);
+                    mdns.end();
+                    done();
+                }
             }
 
             mdns.attachResponseHandler(listener)
-            mdns.sendUpdate(ips, randomString(), '1821.68.34.a');
+            mdns.sendUpdate(ips, deviceName, '1821.68.34.a');
         });
 
         it("Update with default options should be recieved correctly", (done: any) => {
@@ -73,19 +77,21 @@ describe("MDNS", () => {
             const deviceName = randomString();
 
             const listener = (response: any) => {
-                expect(response.answers.length).toBe(4);
-                expect(response.answers[0].name).toBe(mdns.options.HTTP_MDNS_SERVICE_NAME);
-                expect(response.answers[0].type).toBe(mdns.options.MDNS_RECORD_TYPE);
-                expect(response.answers[1].name).toBe(mdns.options.HTTPS_MDNS_SERVICE_NAME);
-                expect(response.answers[1].type).toBe(mdns.options.MDNS_RECORD_TYPE);
-                expect(response.answers[2].name).toBe(deviceName + mdns.options.MDNS_DOMAIN);
-                expect(response.answers[2].type).toBe('A');
-                expect(response.answers[3].name).toBe('modbus' + mdns.options.MDNS_DOMAIN);
-                expect(response.answers[3].type).toBe('A');
+                if (response.answers[2].name.indexOf(deviceName) >= 0) {
+                    expect(response.answers.length).toBe(4);
+                    expect(response.answers[0].name).toBe(mdns.options.HTTP_MDNS_SERVICE_NAME);
+                    expect(response.answers[0].type).toBe(mdns.options.MDNS_RECORD_TYPE);
+                    expect(response.answers[1].name).toBe(mdns.options.HTTPS_MDNS_SERVICE_NAME);
+                    expect(response.answers[1].type).toBe(mdns.options.MDNS_RECORD_TYPE);
+                    expect(response.answers[2].name).toBe(deviceName + mdns.options.MDNS_DOMAIN);
+                    expect(response.answers[2].type).toBe('A');
+                    expect(response.answers[3].name).toBe('modbus' + mdns.options.MDNS_DOMAIN);
+                    expect(response.answers[3].type).toBe('A');
 
-                mdns.removeResponseListener(listener);
-                mdns.end()
-                done();
+                    mdns.removeResponseListener(listener);
+                    mdns.end()
+                    done();
+                }
             }
 
             mdns.attachResponseHandler(listener)
@@ -133,11 +139,13 @@ describe("MDNS", () => {
             const deviceName = randomString();
 
             const listener = (response: any) => {
-                expect(response.answers[3].data).toBe('0.0.0.0');
+                if (response.answers[2].name.indexOf(deviceName) >= 0) {
+                    expect(response.answers[3].data).toBe('0.0.0.0');
 
-                mdns.removeResponseListener(listener);
-                mdns.end();
-                done();
+                    mdns.removeResponseListener(listener);
+                    mdns.end();
+                    done();
+                }
             }
 
             mdns.attachResponseHandler(listener)
