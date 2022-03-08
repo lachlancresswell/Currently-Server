@@ -2,7 +2,7 @@ import makeMdns from 'multicast-dns';
 import { Answer } from "dns-packet";
 
 
-interface Options {
+export interface Options {
     HTTP_PORT?: number,
     HTTPS_PORT?: number,
     HTTP_MDNS_SERVICE_NAME?: string,
@@ -79,8 +79,9 @@ export class Mdns {
      * @param listener Listener function to attach 
      */
     attachResponseHandler = (listener: any) => {
+        const parent = this;
         this.mdns.on('response', (response: any) => {
-            if (this.validatePacket(response.answers)) {
+            if (parent.validatePacket(response.answers)) {
                 listener(response)
             }
         })
