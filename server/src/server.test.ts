@@ -1,5 +1,5 @@
 import fs from 'fs';
-import * as App from './app'
+import * as Server from './server'
 import fetch from 'node-fetch';
 
 //jest.setTimeout(10000)
@@ -7,32 +7,32 @@ import fetch from 'node-fetch';
 const randomString = () => (Math.random() + 1).toString(36).substring(7);
 const randomNumber = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1) + min)
 
-const server1 = new App.Server({
-    INFLUX_PORT: App.INFLUX_PORT,
-    CONFIG_PATH: App.CONFIG_PATH,
+const server1 = new Server.Server({
+    INFLUX_PORT: Server.INFLUX_PORT,
+    CONFIG_PATH: Server.CONFIG_PATH,
     DEFAULT_DEVICE_NAME: randomString(),
     HTTP_PORT: randomNumber(2000, 9000),
     HTTPS_PORT: randomNumber(2000, 9000),
-    HTTP_MDNS_SERVICE_NAME: App.HTTP_MDNS_SERVICE_NAME,
-    HTTPS_MDNS_SERVICE_NAME: App.HTTPS_MDNS_SERVICE_NAME,
-    MDNS_RECORD_TYPE: App.MDNS_RECORD_TYPE,
-    MDNS_DOMAIN: App.MDNS_DOMAIN,
-    SERVICE_NAME: App.SERVICE_NAME
+    HTTP_MDNS_SERVICE_NAME: Server.HTTP_MDNS_SERVICE_NAME,
+    HTTPS_MDNS_SERVICE_NAME: Server.HTTPS_MDNS_SERVICE_NAME,
+    MDNS_RECORD_TYPE: Server.MDNS_RECORD_TYPE,
+    MDNS_DOMAIN: Server.MDNS_DOMAIN,
+    SERVICE_NAME: Server.SERVICE_NAME
 });
 
 server1.start();
 
-const server2 = new App.Server({
-    INFLUX_PORT: App.INFLUX_PORT,
-    CONFIG_PATH: App.CONFIG_PATH + '-2.json',
+const server2 = new Server.Server({
+    INFLUX_PORT: Server.INFLUX_PORT,
+    CONFIG_PATH: Server.CONFIG_PATH + '-2.json',
     DEFAULT_DEVICE_NAME: randomString() + '-2',
     HTTP_PORT: randomNumber(2000, 9000),
     HTTPS_PORT: randomNumber(2000, 9000),
-    HTTP_MDNS_SERVICE_NAME: App.HTTP_MDNS_SERVICE_NAME,
-    HTTPS_MDNS_SERVICE_NAME: App.HTTPS_MDNS_SERVICE_NAME,
-    MDNS_RECORD_TYPE: App.MDNS_RECORD_TYPE,
-    MDNS_DOMAIN: App.MDNS_DOMAIN,
-    SERVICE_NAME: App.SERVICE_NAME
+    HTTP_MDNS_SERVICE_NAME: Server.HTTP_MDNS_SERVICE_NAME,
+    HTTPS_MDNS_SERVICE_NAME: Server.HTTPS_MDNS_SERVICE_NAME,
+    MDNS_RECORD_TYPE: Server.MDNS_RECORD_TYPE,
+    MDNS_DOMAIN: Server.MDNS_DOMAIN,
+    SERVICE_NAME: Server.SERVICE_NAME
 });
 
 describe("App", () => {
@@ -118,7 +118,7 @@ describe("App", () => {
             const CONFIG_PATH = randomString() + '.json';
 
             expect(fs.existsSync(CONFIG_PATH)).toBeFalsy()
-            const server = new App.Server({
+            const server = new Server.Server({
                 INFLUX_PORT: randomNumber(2000, 10000),
                 CONFIG_PATH,
                 DEFAULT_DEVICE_NAME: randomString(),
@@ -126,8 +126,8 @@ describe("App", () => {
                 HTTPS_PORT: randomNumber(2000, 10000),
                 HTTP_MDNS_SERVICE_NAME: randomString(),
                 HTTPS_MDNS_SERVICE_NAME: randomString(),
-                MDNS_RECORD_TYPE: App.MDNS_RECORD_TYPE,
-                MDNS_DOMAIN: App.MDNS_DOMAIN,
+                MDNS_RECORD_TYPE: Server.MDNS_RECORD_TYPE,
+                MDNS_DOMAIN: Server.MDNS_DOMAIN,
                 SERVICE_NAME: randomString()
             });
 
@@ -162,7 +162,7 @@ describe("App", () => {
         const ms = 3000;
         server1.discoveryLoop(ms);
         server2.discoveryLoop(ms);
-        const listener = (server: App.Server, otherServer: App.Server, response: any, cb: any) => {
+        const listener = (server: Server.Server, otherServer: Server.Server, response: any, cb: any) => {
             if (response.answers[2].name.indexOf(otherServer.config.Device.name) >= 0) {
                 expect(response.answers[2].name).toContain(otherServer.config.Device.name)
                 expect(response.answers.length).toBeGreaterThanOrEqual(4);
