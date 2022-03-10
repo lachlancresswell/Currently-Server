@@ -1,5 +1,5 @@
 import fs from 'fs';
-import * as Server from './server'
+import * as Server from '../server'
 import fetch from 'node-fetch';
 
 //jest.setTimeout(10000)
@@ -132,7 +132,7 @@ describe("App", () => {
             });
 
             expect(fs.existsSync(server.options.CONFIG_PATH)).toBeTruthy()
-            fs.unlinkSync(CONFIG_PATH)
+            fs.unlinkSync(CONFIG_PATH);
         })
     })
 

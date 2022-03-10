@@ -1,4 +1,4 @@
-import { Mdns } from "./mdns";
+import { Mdns } from "../mdns";
 
 const randomString = () => (Math.random() + 1).toString(36).substring(7);
 

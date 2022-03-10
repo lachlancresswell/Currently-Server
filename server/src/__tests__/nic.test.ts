@@ -1,4 +1,4 @@
-import * as NIC from './nic';
+import * as NIC from '../nic';
 
 describe("NICs", () => {
     it("Returns NIC address object", () => {
