@@ -38,7 +38,7 @@ const server2 = new Server.Server({
 describe("App", () => {
 
     describe("HTTP Requests", () => {
-        it('Gets index path', (done: any) => {
+        it('GETs index path', (done: any) => {
             const path = 'http://' + server1.nicAddresses[0].ip + ':' + server1.options.HTTP_PORT + '/';
             fetch(path).then((res: any) => {
                 res.text().then((body: any) => {
@@ -48,7 +48,7 @@ describe("App", () => {
             });
         })
 
-        it('Gets neighbours path', (done: any) => {
+        it('GETs neighbours path', (done: any) => {
             const path = 'http://' + server1.nicAddresses[0].ip + ':' + server1.options.HTTP_PORT + '/neighbours';
             const response = fetch(path).then((res: any) => {
                 res.text().then((body: any) => {
@@ -58,7 +58,7 @@ describe("App", () => {
             });
         })
 
-        it('Gets influx path but errors', (done: any) => {
+        it('GETs influx path but errors', (done: any) => {
             const path = 'http://' + server1.nicAddresses[0].ip + ':' + server1.options.HTTP_PORT + '/influx/' + randomString();
             const response = fetch(path).then((res: any) => {
                 res.text().then((body: any) => {
@@ -68,7 +68,7 @@ describe("App", () => {
             });
         })
 
-        it('Gets device name', (done: any) => {
+        it('GETs device name', (done: any) => {
             const path = 'http://' + server1.nicAddresses[0].ip + ':' + server1.options.HTTP_PORT + '/device-name/';
             fetch(path).then((res: any) => {
                 res.text().then((body: any) => {
@@ -78,7 +78,7 @@ describe("App", () => {
             });
         })
 
-        it('Updates device name via post', (done: any) => {
+        it('POSTs new device name', (done: any) => {
 
             const deviceName = randomString();
             const path = 'http://' + server1.nicAddresses[0].ip + ':' + server1.options.HTTP_PORT + '/device-name/' + deviceName;
@@ -96,7 +96,7 @@ describe("App", () => {
             });
         })
 
-        it('Resets device name via post', (done: any) => {
+        it('POSTs device name reset', (done: any) => {
 
             const path = 'http://' + server1.nicAddresses[0].ip + ':' + server1.options.HTTP_PORT + '/device-name/';
             fetch(path, {
