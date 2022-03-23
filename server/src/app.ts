@@ -15,7 +15,8 @@ const server = new Server.Server({
     HTTPS_MDNS_SERVICE_NAME: Server.HTTPS_MDNS_SERVICE_NAME,
     MDNS_RECORD_TYPE: Server.MDNS_RECORD_TYPE,
     MDNS_DOMAIN: Server.MDNS_DOMAIN,
-    SERVICE_NAME: Server.SERVICE_NAME
+    SERVICE_NAME: Server.SERVICE_NAME,
+    ssl
 });
 
 server.start();

@@ -11,6 +11,7 @@ import { Mdns, Options } from "./mdns";
 export const HTTP_PORT: number = parseInt(process.env.HTTP_PORT as string) || 80;
 export const HTTPS_PORT: number = parseInt(process.env.HTTPS_PORT as string) || 443;
 export const INFLUX_PORT = parseInt(process.env.INFLUX_PORT as string) || 8086;
+export const INFLUX_DOMAIN = process.env.INFLUX_DOMAIN as string || 'localhost';
 export const HTTP_MDNS_SERVICE_NAME = 'http-my-service'
 export const HTTPS_MDNS_SERVICE_NAME = 'https-my-service'
 export const MDNS_RECORD_TYPE = 'SRV';
@@ -73,7 +74,7 @@ export class Server {
          */
         this.app.all("/influx/*", (req: express.Request, res: any) => {
             let target = this.options.ssl ? 'https://' : 'http://';
-            target += 'localhost' + ':' + this.options.INFLUX_PORT + req.url.substring(req.url.indexOf("x") + 1);
+            target += INFLUX_DOMAIN + ':' + this.options.INFLUX_PORT + req.url.substring(req.url.indexOf("x") + 1);
             console.log('Proxying to influx - ' + target.substring(0, 30))
             this.apiProxy.web(req, res, {
                 ssl: this.options.ssl ? this.options.ssl : undefined,
@@ -128,10 +129,10 @@ export class Server {
                      * External influx proxy
                      */
                     this.app.all(`/${uri}/*`, (req: any, res: any) => {
-                        const target = "http://" + (req.url.substring(req.url.indexOf("/") + 1).replace("/", ':'));
+                        const target = "https://" + (req.url.substring(req.url.indexOf("/") + 1).replace("/", ':'));
                         console.log('Proxying to external influx - ' + target.substring(0, 30) + '...')
                         this.apiProxy.web(req, res, {
-                            //ssl,
+                            ssl: this.options.ssl,
                             target,
                             secure: false // Prevents errors with self-signed certß
                         }, (e: Error) => console.log(e));
