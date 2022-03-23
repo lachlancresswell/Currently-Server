@@ -305,12 +305,13 @@ select {
 /* Chart */
 
 .previous {
-  display: inline-block !important;
-  font-size: 10em !important;
-  line-height: 0.4em;
-  height: 80% !important;
-  width:15% !important;
-  margin-top: 0.1em !important;
+  font-size: 10em;
+  line-height: 0.2em;
+  height: 0.5em;
+  width: 0.7em;
+  margin-top: 0em;
+  padding-top: 0.1em;
+  margin-bottom: 0.1em;
 }
 
 
