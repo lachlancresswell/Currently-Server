@@ -3,7 +3,7 @@ import * as HTML from './html'
 import * as Graph from './graph'
 
 //INTERFACES
-interface neighbourInfo {
+export interface neighbourInfo {
     influx: influx.InfluxDB,
     address: addressInfo,
     elem: HTMLOptionElement,
@@ -11,7 +11,7 @@ interface neighbourInfo {
 interface addressInfo {
     ip: string, local: boolean, name: string, modbusIP: string
 }
-interface neighbourAPI {
+export interface neighbourAPI {
     addresses: addressInfo[]
 }
 interface dbResponse {
@@ -259,7 +259,7 @@ const pollServer = () => new Promise<dbResponse>(async (resolve: any, reject: an
 
             const time = new Date(res[res.length - 1]['time']);
 
-            if (((new Date) as any - (time as any)) > 5000) return reject('Old data') // time in ms
+            // if (((new Date) as any - (time as any)) > 5000) return reject('Old data') // time in ms
 
             dbData = {
                 "time": res[res.length - 1]["time"],
