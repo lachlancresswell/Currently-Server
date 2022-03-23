@@ -25,4 +25,4 @@ WORKDIR /usr/src/app/client/
 COPY ./client/ .
 
 WORKDIR /usr/src/app/server/
-CMD [ "node", "--inspect=0.0.0.0:9229", "./src/app.js" ]
+CMD [ "node", "--inspect=0.0.0.0:9229", "./dist/app.js" ]
