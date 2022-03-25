@@ -309,10 +309,6 @@ export const config = (data?: {
             scales: {
                 x: {
                     type: 'time',
-                    time: {
-                        // Luxon format string
-                        tooltipFormat: 'DD T'
-                    },
                     title: {
                         display: false,
                     }
@@ -331,7 +327,7 @@ export const config = (data?: {
                     type: 'linear',
                     display: true,
                     position: 'right',
-                    afterBuildTicks: (scale: any) => scale.ticks = scale.ticks.filter((t: { value: number }) => (t.value >= 0)),
+                    afterBuildTicks: (scale: any) => scale.ticks = scale.ticks.filter((t: { value: number }) => (t.value >= -1)),
                     // grid line settings
                     grid: {
                         drawOnChartArea: false, // only want the grid lines for one axis to show up

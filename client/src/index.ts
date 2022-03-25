@@ -303,31 +303,31 @@ const pollServer2 = () => new Promise<dbResponse2>(async (resolve: any, reject: 
                 resolve({
                     "time": res.reduce((result: any[], value: any) => {
                         // Only push if there is a voltage
-                        if (value["mean"]) result.push(new Date(value["time"]))
+                        if (value["mean"] != null) result.push(new Date(value["time"]))
                         return result;
                     }, []),
                     "l1-voltage": res.reduce((result: any[], value: any) => {
-                        if (value["mean"]) result.push(value["mean"])
+                        if (value["mean"] != null) result.push(value["mean"])
                         return result;
                     }, []),
                     "l1-amperage": res.reduce((result: any[], value: any) => {
-                        if (value["mean_1"]) result.push(value["mean_1"])
+                        if (value["mean_1"] != null) result.push(value["mean_1"])
                         return result;
                     }, []),
                     "l2-voltage": res.reduce((result: any[], value: any) => {
-                        if (value["mean_2"]) result.push(value["mean_2"])
+                        if (value["mean_2"] != null) result.push(value["mean_2"])
                         return result;
                     }, []),
                     "l2-amperage": res.reduce((result: any[], value: any) => {
-                        if (value["mean_3"]) result.push(value["mean_3"])
+                        if (value["mean_3"] != null) result.push(value["mean_3"])
                         return result;
                     }, []),
                     "l3-voltage": res.reduce((result: any[], value: any) => {
-                        if (value["mean_4"]) result.push(value["mean_4"])
+                        if (value["mean_4"] != null) result.push(value["mean_4"])
                         return result;
                     }, []),
                     "l3-amperage": res.reduce((result: any[], value: any) => {
-                        if (value["mean_5"]) result.push(value["mean_5"])
+                        if (value["mean_5"] != null) result.push(value["mean_5"])
                         return result;
                     }, []),
                 })
@@ -434,10 +434,11 @@ const updateChart = () => {
         keys.forEach((k: string) => {
             data[k as keyof (typeof data)] = [];
             res[k as keyof dbResponse2].forEach((v: string, i: number) => {
-                data[k as keyof (typeof data)].push({ y: parseFloat(v) ? parseFloat(v) : NaN, x: res["time"][i].getTime() })
+                data[k as keyof (typeof data)].push({ y: parseFloat(v), x: res["time"][i].getTime() })
             });
         })
         chart.data = Graph.config(data).data as any
+        Graph.config(data).data as any;
         chart.update();
     }, (err: any) => {
         const notification = document.getElementById('notification') as HTMLDivElement;
