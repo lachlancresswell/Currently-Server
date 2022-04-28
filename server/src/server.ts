@@ -22,6 +22,7 @@ export const CONFIG_PATH = process.env.CONFIG_FILE || './default.json';
 
 interface ServerOptions extends Options {
     CONFIG_PATH: string,
+    INFLUX_DOMAIN: string,
     INFLUX_PORT: number,
     DEFAULT_DEVICE_NAME: string,
     ssl?: { key: string, cert: string },
