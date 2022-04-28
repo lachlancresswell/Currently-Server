@@ -1,3 +1,5 @@
+import dotenv from "dotenv"
+dotenv.config({ path: __dirname + '/../.env' })
 import fs from 'fs';
 import * as Server from './server'
 
@@ -6,6 +8,7 @@ const certificate = fs.readFileSync('../cert/server-selfsigned.crt', 'utf8');
 const ssl = { key: privateKey, cert: certificate };
 
 const server = new Server.Server({
+    INFLUX_DOMAIN: Server.INFLUX_DOMAIN,
     INFLUX_PORT: Server.INFLUX_PORT,
     CONFIG_PATH: Server.CONFIG_PATH,
     DEFAULT_DEVICE_NAME: Server.DEFAULT_DEVICE_NAME,

@@ -21,6 +21,7 @@
   "homepage": "https://github.com/lachlancresswell/local-distro-ui#readme",
   "dependencies": {
     "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
     "express": "^4.17.1",
     "http-proxy": "^1.18.1",
     "multicast-dns": "^7.2.4"
