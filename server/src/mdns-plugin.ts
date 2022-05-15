@@ -15,7 +15,6 @@ export const DEFAULT_DISCOVER = true;
 export const DEFAULT_ADVERTISE = true;
 export const DEFAULT_DEVICE_NAME = 'Distro';
 
-
 interface addressObj {
     ip: string,
     name: string,
@@ -53,8 +52,8 @@ export class plugin extends Plugin.Instance {
     ips: string[];
     timeout?: NodeJS.Timeout;
 
-    constructor(app: any, options?: Options) {
-        super(app, options);
+    constructor(app: any, options?: Options, name?: string) {
+        super(app, options, name);
 
         if (!this.options.HTTP_PORT) this.options.HTTP_PORT = DEFAULT_HTTP_PORT;
         if (!this.options.HTTPS_PORT) this.options.HTTPS_PORT = DEFAULT_HTTPS_PORT;

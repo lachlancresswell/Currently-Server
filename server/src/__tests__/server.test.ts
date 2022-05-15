@@ -10,7 +10,10 @@ jest.mock('http');
 jest.mock('https');
 jest.mock('http-proxy');
 jest.mock('express');
-jest.mock('../plugin-loader', () => ({ loadFromConfig: jest.fn(() => 'foo') }));
+jest.mock('../plugin-loader', () => ({
+    loadFromConfig: jest.fn(() => 'foo'),
+    unload: jest.fn()
+}));
 
 http.createServer = jest.fn().mockImplementation(() => { return { listen: jest.fn() } });
 https.createServer = jest.fn().mockImplementation(() => { return { listen: jest.fn() } });

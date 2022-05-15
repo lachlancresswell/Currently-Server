@@ -52,7 +52,7 @@ describe('Loading plugins', () => {
                         "ms": 20000,
                         "discover": true,
                         "advertise": true,
-                        "name": "hellooo!"
+                        "device_name": "hellooo!"
                     }
                 }
             ]
@@ -66,8 +66,8 @@ describe('Loading plugins', () => {
         plugins = await PluginLoader.loadFromConfig(server, pluginConfigPath);
         const mdnsPlugin = plugins.find(p => p.name === contents.plugins[1].name)
         const configPlugin: any = plugins.find(p => p.name === contents.plugins[0].name)
-        expect(mdnsPlugin?.module.options.name).toEqual(contents.plugins[1].options.name)
-        expect(configPlugin?.module.settings.name).toEqual(contents.plugins[1].options.name)
+        expect(mdnsPlugin?.module.options.device_name).toEqual(contents.plugins[1].options.device_name)
+        expect(configPlugin?.module.settings[mdnsPlugin!.name].device_name).toEqual(contents!.plugins!.find((p) => p.name === mdnsPlugin!.name)!.options.device_name)
 
         fs.unlinkSync(pluginConfigPath);
         fs.unlinkSync(globalConfigPath);
@@ -78,8 +78,8 @@ describe('Loading plugins', () => {
     test('existing values in config file should be used + not overridden', async () => {
         expect.assertions(6)
 
-        const badConfig: any = {
-            'device_name': randomString()
+        const myConfig: any = {
+            ['mdns']: { 'device_name': randomString() }
         };
         const globalConfigPath = Path.join(__dirname, `./${randomString()}.json`)
         const contents = {
@@ -115,15 +115,15 @@ describe('Loading plugins', () => {
         }
         const pluginConfigPath = Path.join(__dirname, `./${randomString()}.json`)
         fs.writeFileSync(pluginConfigPath, JSON.stringify(contents))
-        fs.writeFileSync(globalConfigPath, JSON.stringify(badConfig))
+        fs.writeFileSync(globalConfigPath, JSON.stringify(myConfig))
         expect(fs.existsSync(pluginConfigPath)).toBeTruthy();
         expect(fs.existsSync(globalConfigPath)).toBeTruthy();
 
         plugins = await PluginLoader.loadFromConfig(server, pluginConfigPath);
         const mdnsPlugin = plugins.find(p => p.name === contents.plugins[1].name)
         const configPlugin: any = plugins.find(p => p.name === contents.plugins[0].name)
-        expect(mdnsPlugin?.module.options.device_name).toEqual(badConfig.device_name)
-        expect(configPlugin?.module.settings.device_name).toEqual(badConfig.device_name)
+        expect(mdnsPlugin?.module.options.device_name).toEqual(myConfig[mdnsPlugin!.name].device_name)
+        expect(configPlugin?.module.settings[mdnsPlugin!.name].device_name).toEqual(myConfig[mdnsPlugin!.name].device_name)
 
         fs.unlinkSync(pluginConfigPath);
         fs.unlinkSync(globalConfigPath);

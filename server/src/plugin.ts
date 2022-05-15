@@ -8,11 +8,13 @@ export class Instance {
     event: EventEmitter;
     options: Options;
     app: any;
+    name: string;
 
-    constructor(app: any, options?: {}) {
+    constructor(app: any, options?: {}, name?: string) {
         this.app = app;
         this.event = new EventEmitter();
         this.options = {};
+        this.name = name || 'myPlugin';
         // Overwrite default with user provided options
         Object.assign(this.options, options);
 

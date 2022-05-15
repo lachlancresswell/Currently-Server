@@ -32,7 +32,7 @@ export const load = (app: any, plugin: PluginConfig): Promise<PluginConfig | Err
     const path = plugin.path;
     try {
         const module = require(path);
-        const obj = new module.plugin(app, plugin.options);
+        const obj = new module.plugin(app, plugin.options, plugin.name);
         await obj.load();
         plugin.module = obj;
         console.log(`Loaded plugin: '${plugin.name}'`);
