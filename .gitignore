@@ -10,3 +10,4 @@ influx-data
 *-lock.json
 *.json
 coverage/
+.DS_store
