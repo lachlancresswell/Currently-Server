@@ -5,7 +5,7 @@ export interface PluginConfig {
     name: string;
     enabled: boolean;
     path: string;
-    module: Plugin.Instance;
+    module?: Plugin.Instance;
     loaded: boolean;
     options: any;
 }
@@ -45,11 +45,20 @@ export const load = (app: any, plugin: PluginConfig): Promise<PluginConfig | Err
     }
 });
 
+export const reload = async (app: any, plugin: PluginConfig) => {
+    await plugin.module!.unload()//.then(async (res) => res(await ))
+    plugin.module = undefined;
+    return load(app, plugin)
+};
+
 export const unload = (plugins: PluginConfig[]) => {
     let proms: Promise<any>[] = [];
-    plugins.forEach((plug: PluginConfig) => {
-        proms.push(plug.module.unload());
+    plugins.forEach(async (plug: PluginConfig) => {
+        await plug.module!.unload();
+        plug.module = undefined;
+        // proms.push(p);
+        plug.loaded = false;
     })
 
-    return Promise.all(proms)
+    //return Promise.all(proms)
 }

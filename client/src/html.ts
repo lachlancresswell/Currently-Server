@@ -218,12 +218,17 @@ export const pageConfig = () => `
 </div>`;
 
 
-export const pageDebug = (database: string, modbus: string, databaseIP: string, modbusIP: string) => `
+export const pageDebug = (database: string, modbus: string, databaseIP: string, modbusIP: string, time: string, dbTime: string, browserTime: string) => `
 <div id="config-menu">
+    <div class="debug-details">
         <div>Database: ${database}</div>
-        <div>Database IP: ${databaseIP}</div>
+        <div>Server IP: ${databaseIP}</div>
         <div>Modbus IP: ${modbusIP}</div>
         <div>Modbus: ${modbus}</div>
+        <div>Server Time: ${time}</div>
+        <div>DB Time: ${dbTime}</div>
+        <div>Browser Time: ${browserTime}</div>
+    </div>
 </div>`;
 
 /**

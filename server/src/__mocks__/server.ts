@@ -5,7 +5,13 @@ export const mockRegisterEndpoint = jest.fn((path: string, cb: any) => {
     const send = () => true;
     cb({
         get: get,
-        url: 'localhost'
+        url: 'localhost',
+        socket: {
+            encrypted: true
+        },
+        params: {
+            key: 'key'
+        }
     }, {
         send: send
     });
@@ -21,7 +27,9 @@ const mockConfig = {
 const mock = jest.fn().mockImplementation(() => {
     return {
         start: mockStart,
-        registerEndpoint: mockRegisterEndpoint,
+        registerPostRoute: mockRegisterEndpoint,
+        registerGetRoute: mockRegisterEndpoint,
+        registerAllRoute: mockRegisterEndpoint,
         proxy: mockProxy,
         config: mockConfig
     };

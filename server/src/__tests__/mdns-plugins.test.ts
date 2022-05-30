@@ -36,7 +36,7 @@ describe('Mdns plugin class initialisation', () => {
         expect.assertions(1);
         mdns = new Mdns.plugin(server)
 
-        const defaultOptions = {
+        const defaultOptions: Mdns.Options = {
             HTTP_PORT: Mdns.DEFAULT_HTTP_PORT,
             HTTPS_PORT: Mdns.DEFAULT_HTTPS_PORT,
             HTTP_MDNS_SERVICE_NAME: Mdns.DEFAULT_HTTP_MDNS_SERVICE_NAME,
@@ -44,9 +44,19 @@ describe('Mdns plugin class initialisation', () => {
             SERVICE_NAME: Mdns.DEFAULT_SERVICE_NAME,
             MDNS_DOMAIN: Mdns.DEFAULT_MDNS_DOMAIN,
             ms: Mdns.DEFAULT_MS,
-            discover: Mdns.DEFAULT_DISCOVER,
+            discover: {
+                restart: 'restart-plugin',
+                readableName: 'Discoverable',
+                priority: 1,
+                value: Mdns.DEFAULT_DISCOVER,
+            },
             advertise: Mdns.DEFAULT_ADVERTISE,
-            device_name: Mdns.DEFAULT_DEVICE_NAME
+            device_name: {
+                priority: 1,
+                restart: 'restart-plugin',
+                readableName: 'Device Name',
+                value: Mdns.DEFAULT_DEVICE_NAME
+            }
         }
 
         expect(mdns.options).toEqual(defaultOptions)
@@ -62,9 +72,19 @@ describe('Mdns plugin class initialisation', () => {
             'SERVICE_NAME': randomString(),
             'MDNS_DOMAIN': randomString(),
             'ms': 1000,
-            'discover': true,
+            'discover': {
+                priority: 1,
+                value: true,
+                readableName: 'Discoverable',
+                restart: 'restart-plugin',
+            },
             'advertise': true,
-            'device_name': randomString(),
+            'device_name': {
+                priority: 1,
+                value: randomString(),
+                readableName: 'Discoverable',
+                restart: 'restart-plugin',
+            },
         }
         mdns = new Mdns.plugin(server, options)
 
@@ -82,7 +102,7 @@ describe('Mdns plugin methods', () => {
         mdns.load();
         await new Promise((res) => setTimeout(res, 200));
         expect(mdns.neighbours.addresses.length).toBeGreaterThan(0);
-        expect(server.registerEndpoint).toHaveBeenCalled();
+        expect(server.registerGetRoute).toHaveBeenCalled();
 
     });
 
@@ -108,7 +128,7 @@ describe('Mdns plugin methods', () => {
 
         mdns.load();
         mdns.listen(Events.DEVICE_NAME_UPDATE, async () => {
-            expect(mdns?.options.device_name).toBe(deviceName);
+            expect(mdns?.options.device_name.value).toBe(deviceName);
             mdns!.unload();
             mdns = undefined;
         })

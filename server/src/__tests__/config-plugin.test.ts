@@ -17,7 +17,7 @@ const server = new Server.default({
 const randomString = () => (Math.random() + 1).toString(36).substring(7);
 const randomNum = () => Math.ceil(Math.random() * 10000)
 
-let oldLoad: any;
+let oldLoad: () => void;
 beforeAll(() => {
     oldLoad = Plugin.Instance.prototype.load
 });
@@ -33,17 +33,15 @@ beforeEach(() => {
 describe('Config plugin class initialisation', () => {
 
     test('Should start without options passed and have default values set', () => {
-        expect.assertions(2);
-        if (fs.existsSync(Config.DEFAULT_CONFIG_PATH)) fs.unlinkSync(Config.DEFAULT_CONFIG_PATH);
+        expect.assertions(1);
         const config = new Config.plugin(server)
         expect(config.options.CONFIG_PATH).toBe(Config.DEFAULT_CONFIG_PATH);
-        expect(fs.existsSync(Config.DEFAULT_CONFIG_PATH)).toBeFalsy()
     });
 
     test('Env var should overwrite all other settings', () => {
         expect.assertions(3);
         process.env.CONFIG_PATH = Path.join(__dirname, randomString() + '.json');
-        const options: Config.Options = { CONFIG_PATH: randomString(), default: { [randomString()]: randomString() } };
+        const options: Config.Options = { CONFIG_PATH: randomString(), default: { [randomString()]: randomString() } } as Config.Options;
         const config = new Config.plugin(server, options)
         expect(config.options.CONFIG_PATH).toBe(process.env.CONFIG_PATH);
         expect(fs.existsSync(process.env.CONFIG_PATH)).toBeTruthy()
@@ -56,7 +54,7 @@ describe('Config plugin class initialisation', () => {
         const options: Config.Options = { CONFIG_PATH: randomString() + '.json' }
         const config = new Config.plugin(server, options)
         expect(config.options.CONFIG_PATH).toBe(options.CONFIG_PATH);
-        expect(config.app.registerEndpoint).toHaveBeenCalledTimes(1);
+        expect(config.app.registerGetRoute).toHaveBeenCalledTimes(4);
         expect(fs.existsSync(`../../${config.options.CONFIG_PATH}`)).toBeFalsy()
     });
 
@@ -66,11 +64,11 @@ describe('Config plugin class initialisation', () => {
             default: {
                 testKey: `value-${randomString()}`
             }
-        }
+        } as Config.Options
         const config = new Config.plugin(server, options);
 
         expect(config.options.CONFIG_PATH).toBe(options.CONFIG_PATH);
-        expect(config.app.registerEndpoint).toHaveBeenCalledTimes(3); // Once for getter, once for setter
+        expect(config.app.registerGetRoute).toHaveBeenCalledTimes(4); // Once for getter, once for setter
         expect(fs.existsSync(options.CONFIG_PATH)).toBeTruthy()
         fs.unlinkSync(options.CONFIG_PATH);
     });
@@ -86,7 +84,7 @@ describe('Config plugin class initialisation', () => {
 
         expect(config.options.CONFIG_PATH).toBe(CONFIG_PATH);
         expect(config.options[key]).toBe(options[key]);
-        expect(config.app.registerEndpoint).toHaveBeenCalledTimes(1 + (Object.keys(contents).length * 2)); // Once for getter, once for setter
+        expect(config.app.registerGetRoute).toHaveBeenCalledTimes(2 + (Object.keys(contents).length * 2)); // Once for getter, once for setter
         expect(fs.existsSync(CONFIG_PATH)).toBeTruthy()
         fs.unlinkSync(CONFIG_PATH);
     });
@@ -101,7 +99,7 @@ describe('Proxy tests', () => {
         options = {
             CONFIG_PATH: Path.join(__dirname, `./${randomString()}.json`),
             default: { myPlugin: { testKey: `value-${randomString()}` } }
-        }
+        } as Config.Options
         config = new Config.plugin(server, options);
         myPlugin = new Plugin.Instance(server);
         myPlugin.load();
@@ -141,7 +139,6 @@ describe('Proxy tests', () => {
         const numKey = randomString();
         myPlugin.options[strKey] = randomString();
         myPlugin.options[numKey] = randomNum();
-        console.log(config.settings.myPlugin[numKey])
         await new Promise((res) => setTimeout(() => { res(true), 1000 }))
         const configOnDisk = JSON.parse(fs.readFileSync(options.CONFIG_PATH, "utf8"))
         expect(JSON.stringify(configOnDisk.myPlugin)).toEqual(JSON.stringify(config.settings.myPlugin))

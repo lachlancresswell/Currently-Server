@@ -9,7 +9,7 @@ export interface neighbourInfo {
     elem: HTMLOptionElement,
 }
 interface addressInfo {
-    ip: string, local: boolean, name: string, modbusIP: string
+    ip: string, local: boolean, name: string, modbusIP: string, secure: boolean
 }
 export interface neighbourAPI {
     addresses: addressInfo[]
@@ -43,211 +43,13 @@ interface dbResponse2 {
     "apparent-power": string[],
 }
 
-interface buttonItem {
-    elem: HTMLElement,
-    html: string,
-    cb: any,
-}
-
-interface buttonCollection { [key: string]: buttonItem }
-
-// GLOBALS
-let neighbours: neighbourInfo[] = [];
-let devButtons: HTMLOptionElement[] = [];
-const devMenu = document.getElementById("device-menu") as HTMLSelectElement
-let dbData: dbResponse;
-let modbus = 'Not connected';
-let modbusIP = '';
-let database = 'Not connected';
-let databaseIP = '';
-
-devMenu.onclick = () => {
-    const textBox = document.getElementById("input-name") as HTMLInputElement
-    if (textBox) textBox.value = getSelectedDevice().address.name;
-}
-
-/**
- * Events to run on button press
- * @param ev Button event handler
- */
-const buttonHandler = (ev: MouseEvent) => {
-    let buttonID: string = (<HTMLButtonElement>ev.target).id;
-    if (buttonID === 'backButton') {
-        buttonID = 'button-basic'
-        document.getElementById("menu")!.style.display = "flex";
-        document.getElementById("upstairs")!.style.display = "flex";
-    }
-    setCurrentPage(buttons[buttonID].html, buttonID)
-    setButtonAsSelected(buttons, buttonID)
-}
-
-const chartButtonHandler = (ev: MouseEvent) => {
-    const buttonID: string = (<HTMLButtonElement>ev.target).id;
-    setCurrentPage(buttons[buttonID].html, buttonID)
-    setButtonAsSelected(buttons, buttonID)
-    updateChart();
-}
-
-const getSelectedDevice = (): neighbourInfo => neighbours.find((n) => n.address.ip === devMenu.value)!;
-
-let averagingPeriod = "30s";
-let viewingPeriod = "5h";
-
-const configButtonHandler = (ev: MouseEvent) => {
-    const buttonID: string = (<HTMLButtonElement>ev.target).id;
-
-    if (currentPage != buttonID) {
-
-        setCurrentPage(buttons[buttonID].html, buttonID)
-        const saveButton = document.getElementById("button-save") as HTMLButtonElement;
-        const clearButton = document.getElementById("button-clear") as HTMLButtonElement;
-        const textBox = document.getElementById("input-name") as HTMLInputElement
-        textBox.value = getSelectedDevice().address.name;
-
-        clearButton.onclick = () => {
-            const curDevice = getSelectedDevice();
-            if (confirm(`Clear the device name for ${curDevice.address.name}?`)) {
-                // Save empty name to server, causing server to fallback to default
-                saveDeviceName(curDevice, "");
-                // Get new name from server
-                curDevice.address.name = getDeviceName(curDevice);
-                textBox!.value = curDevice.address.name;
-                updateDevList(curDevice.address.ip, curDevice.address.name)
-            }
-        }
-
-        saveButton.onclick = () => {
-            const curDevice = getSelectedDevice();
-            // Save new name to server
-            saveDeviceName(curDevice, textBox.value);
-            // Get new name from server
-            curDevice.address.name = getDeviceName(curDevice);
-            updateDevList(curDevice.address.ip, curDevice.address.name)
-        }
-
-        const avPeriodMenu = document.getElementById("averaging-period") as HTMLSelectElement
-        avPeriodMenu.value = averagingPeriod;
-        avPeriodMenu.onclick = () => {
-            averagingPeriod = avPeriodMenu.value;
-        }
-
-        const viewPeriodMenu = document.getElementById("viewing-period") as HTMLSelectElement
-        viewPeriodMenu.value = viewingPeriod;
-        viewPeriodMenu.onclick = () => {
-            viewingPeriod = viewPeriodMenu.value;
-        }
-    } else {
-        databaseIP = getSelectedDevice().address.ip;
-        modbusIP = getSelectedDevice().address.modbusIP;
-        setCurrentPage(HTML.pageDebug(database, modbus, databaseIP, modbusIP), 'page-config')
-    }
-
-}
-
-const updateDevList = (ip: string, newName: string) => {
-    const e = neighbours.find((n) => n.elem.id === ip)
-    e!.elem.innerText = newName;
-    return e;
-}
-
-let buttons: buttonCollection = {
-    "button-basic": {
-        elem: document.getElementById("button-basic") as HTMLAnchorElement,
-        html: HTML.pageBasic(),
-        cb: buttonHandler,
-    },
-    "button-l1": {
-        elem: document.getElementById("button-l1") as HTMLAnchorElement,
-        html: HTML.pagePhase(1),
-        cb: buttonHandler,
-    },
-    "button-l2": {
-        elem: document.getElementById("button-l2") as HTMLAnchorElement,
-        html: HTML.pagePhase(2),
-        cb: buttonHandler,
-    },
-    "button-l3": {
-        elem: document.getElementById("button-l3") as HTMLAnchorElement,
-        html: HTML.pagePhase(3),
-        cb: buttonHandler,
-    },
-    "button-adv": {
-        elem: document.getElementById("button-adv") as HTMLAnchorElement,
-        html: HTML.pageAdv(),
-        cb: buttonHandler,
-    },
-    "button-chart": {
-        elem: document.getElementById("button-chart") as HTMLAnchorElement,
-        html: HTML.pageChart(),
-        cb: chartButtonHandler,
-    },
-    "button-config": {
-        elem: document.getElementById("button-config") as HTMLSpanElement,
-        html: HTML.pageConfig(),
-        cb: configButtonHandler,
-    },
-}
-
-Object.keys(buttons).forEach((key) => {
-    buttons[key].elem.onclick = buttons[key].cb;
-})
-
-// FUNCTIONS
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-/**
- * Pulls list of discover neighbouring servers from the server
- * @returns Neighbouring server addresses whether they are local (match the current server address) or not
- */
-const getNeighbourAddresses = (): neighbourAPI => {
-    var xmlHttp = new XMLHttpRequest();
-    console.log('GET - ' + window.location.href + "neighbours")
-    xmlHttp.open("GET", window.location.href + "neighbours", false); // false for synchronous request
-    xmlHttp.send(null);
-    return (JSON.parse(xmlHttp.responseText) as neighbourAPI)
-}
-
-/**
- * Finds the name of a device
- * @returns Name of device
- */
-const getDeviceName = (device: neighbourInfo): string => {
-    const path = window.location.href + `${(device.address.ip).replace(':', '/')}/device-name`;
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("GET", path, false); // false for synchronous request
-    xmlHttp.send(null);
-    return (JSON.parse(xmlHttp.responseText))
-}
-
-/**
- * Saves a name to the server  
- * @param name Name of device to save
- */
-const saveDeviceName = (device: neighbourInfo, name: string) => {
-    const path = window.location.href + `${(device.address.ip).replace(':', '/')}/device-name`;
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open("POST", path, false); // false for synchronous request
-    xmlHttp.setRequestHeader("device-name", name);
-    xmlHttp.send(null);
-}
-
-const deviceButtonHandler = (event: MouseEvent) => {
-    const target = event.target as HTMLAnchorElement;
-    const id = target.id;
-    devButtons.forEach((button: HTMLOptionElement) => {
-        if (button.id === id) {
-            button.classList.add('button-selected')
-        } else {
-            button.classList.remove('button-selected');
-        }
-    })
-}
-
 /**
  * Pulls data from Influx database
  * @returns Resolves with database response or rejects with error message
  */
 const pollServer = () => new Promise<dbResponse>(async (resolve: any, reject: any) => {
+    const selDev = getSelectedDevice();
+
     getSelectedDevice().influx.query(`
     select "L1 Voltage", "L1 Current", "L2 Voltage", "L2 Current", "L3 Voltage", "L3 Current", "Grid Frequency", "Power Factor", "Total Apparent Power" from modbus
     order by time desc
@@ -339,6 +141,318 @@ const pollServer2 = () => new Promise<dbResponse2>(async (resolve: any, reject: 
         return reject(err)
     }
 })
+
+interface buttonItem {
+    elem: HTMLElement,
+    html: string,
+    cb: any,
+}
+
+interface buttonCollection { [key: string]: buttonItem }
+
+// GLOBALS
+let neighbours: neighbourInfo[] = [];
+let devButtons: HTMLOptionElement[] = [];
+const devMenu = document.getElementById("device-menu") as HTMLSelectElement
+let dbData: dbResponse;
+let modbus = 'Not connected';
+let modbusIP = '';
+let database = 'Not connected';
+let databaseIP = '';
+
+devMenu.onclick = () => {
+    const textBox = document.getElementById("input-name") as HTMLInputElement
+    if (textBox) textBox.value = getSelectedDevice().address.name;
+}
+
+/**
+ * Events to run on button press
+ * @param ev Button event handler
+ */
+const buttonHandler = (ev: MouseEvent) => {
+    let buttonID: string = (<HTMLButtonElement>ev.target).id;
+    if (buttonID === 'backButton') {
+        buttonID = 'button-basic'
+        document.getElementById("menu")!.style.display = "flex";
+        document.getElementById("upstairs")!.style.display = "flex";
+    }
+    setCurrentPage(buttons[buttonID].html, buttonID)
+    setButtonAsSelected(buttons, buttonID)
+}
+
+const chartButtonHandler = (ev: MouseEvent) => {
+    const buttonID: string = (<HTMLButtonElement>ev.target).id;
+    setCurrentPage(buttons[buttonID].html, buttonID)
+    setButtonAsSelected(buttons, buttonID)
+    updateChart();
+}
+
+const serialize = (obj: any) => {
+    var str = [];
+    for (var p in obj)
+        if (obj.hasOwnProperty(p)) {
+            str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+        }
+    return str.join("&");
+}
+
+const getSelectedDevice = (): neighbourInfo => neighbours.find((n) => n.address.ip === devMenu.value)!;
+
+let averagingPeriod = "30s";
+let viewingPeriod = "5h";
+
+const configButtonHandler = (ev: MouseEvent) => {
+    const buttonID: string = (<HTMLButtonElement>ev.target).id;
+
+    if (currentPage != buttonID) {
+
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.open("GET", window.location.href + "config", false); // false for synchronous request
+        xmlHttp.send(null);
+        const conf: any = JSON.parse(xmlHttp.responseText);
+        setCurrentPage(buttons[buttonID].html, buttonID)
+
+        const confPage = document.getElementById("config-menu") as HTMLButtonElement;
+        confPage.innerHTML = '';
+        confPage.style.height = '12em';
+        confPage.style.overflow = 'auto';
+        confPage.className = 'jsonArea';
+        const parentDiv = document.createElement("div");
+        parentDiv.className = 'jsonArea'
+        const buttonsDiv = document.createElement("div");
+        buttonsDiv.className = 'buttonsGroup'
+        const button1 = document.createElement("input") as HTMLInputElement;
+        button1.type = 'submit';
+        const button2 = document.createElement("button");
+        button1.value = 'Save';
+        button2.innerHTML = 'Clear';
+        buttonsDiv.appendChild(button1)
+        buttonsDiv.appendChild(button2)
+        confPage.appendChild(buttonsDiv)
+        const form = document.createElement("form");
+        parentDiv.appendChild(form)
+        form.id = 'conf-form';
+        form.style.width = '100%';
+        form.style.height = '100%';
+        Object.keys(conf).forEach((pluginTitle) => {
+            const heading = document.createElement("h4");
+            heading.innerText = pluginTitle
+            heading.style.display = 'none';
+            heading.style.textAlign = 'center';
+            heading.style.marginBottom = '0';
+            heading.style.marginTop = '1em';
+            form.appendChild(heading);
+            Object.keys(conf[pluginTitle]).forEach((valueTitle) => {
+                const cont = document.createElement("div");
+                const content1 = document.createElement("span");
+                const content2 = document.createElement("span");
+                const key = document.createElement("label");
+                const val: any = document.createElement("input");
+                content1.style.fontSize = '0.5em'
+                content2.style.fontSize = '0.5em'
+                content1.style.width = '45%'
+                content2.style.width = '45%'
+                content1.style.textAlign = 'right'
+                val.style.textAlign = 'left'
+                content1.style.marginRight = '0.5em'
+                content2.style.marginLeft = '0.5em'
+                content1.style.display = 'inline-block'
+                content2.style.display = 'inline-block'
+                if (typeof conf[pluginTitle][valueTitle] == 'object') {
+                    key.innerText = conf[pluginTitle][valueTitle].readableName + ': ';
+                    if (typeof (conf[pluginTitle][valueTitle].value) == 'boolean') {
+                        val.type = 'checkbox'
+                        val.checked = conf[pluginTitle][valueTitle].value;
+                    } else {
+                        val.value = conf[pluginTitle][valueTitle].value;
+                        val.style.width = '8em';
+                    }
+                    heading.style.display = 'block';
+                    conf[pluginTitle][valueTitle].elem = val;
+                    content1.appendChild(key);
+                    cont.appendChild(content1)
+                    cont.appendChild(content2)
+                    form.appendChild(cont);
+                    val.pluginKey = pluginTitle;
+                    val.valKey = valueTitle;
+
+                    val.onchange = (e: any) => {
+                        let value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+                        conf[e.target.pluginKey][e.target.valKey].value = value;
+                    };
+                    content2.appendChild(val);
+                }
+
+            })
+        })
+        confPage.appendChild(form);
+
+        const processForm = (e: any) => {
+            if (e.preventDefault) e.preventDefault();
+
+            const path = window.location.href + `config`;
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("POST", path, false); // false for synchronous request
+            xmlHttp.setRequestHeader('Content-type', 'application/json');
+            xmlHttp.send(JSON.stringify(conf));
+
+
+            return false;
+        }
+
+        if (form.attachEvent) {
+            form.attachEvent("submit", processForm);
+        } else {
+            form.addEventListener("submit", processForm);
+        }
+
+        // const saveButton = document.getElementById("button-save") as HTMLButtonElement;
+        // const clearButton = document.getElementById("button-clear") as HTMLButtonElement;
+        // const textBox = document.getElementById("input-name") as HTMLInputElement
+        // textBox.value = getSelectedDevice().address.name;
+
+        // clearButton.onclick = () => {
+        //     const curDevice = getSelectedDevice();
+        //     if (confirm(`Clear the device name for ${curDevice.address.name}?`)) {
+        //         // Save empty name to server, causing server to fallback to default
+        //         saveDeviceName(curDevice, "");
+        //         // Get new name from server
+        //         curDevice.address.name = getDeviceName(curDevice);
+        //         textBox!.value = curDevice.address.name;
+        //         updateDevList(curDevice.address.ip, curDevice.address.name)
+        //     }
+        // }
+
+        // saveButton.onclick = () => {
+        //     const curDevice = getSelectedDevice();
+        //     // Save new name to server
+        //     saveDeviceName(curDevice, textBox.value);
+        //     // Get new name from server
+        //     curDevice.address.name = getDeviceName(curDevice);
+        //     updateDevList(curDevice.address.ip, curDevice.address.name)
+        // }
+
+        // const avPeriodMenu = document.getElementById("averaging-period") as HTMLSelectElement
+        // avPeriodMenu.value = averagingPeriod;
+        // avPeriodMenu.onclick = () => {
+        //     averagingPeriod = avPeriodMenu.value;
+        // }
+
+        // const viewPeriodMenu = document.getElementById("viewing-period") as HTMLSelectElement
+        // viewPeriodMenu.value = viewingPeriod;
+        // viewPeriodMenu.onclick = () => {
+        //     viewingPeriod = viewPeriodMenu.value;
+        // }
+    } else {
+        databaseIP = getSelectedDevice().address.ip;
+        modbusIP = getSelectedDevice().address.modbusIP;
+        const browserTime = new Date().toLocaleString();
+        let dbTime = '';
+        if (dbData) dbTime = new Date(dbData.time).toLocaleString();
+        else dbTime = 'unavailable';
+        setCurrentPage(HTML.pageDebug(database, modbus, databaseIP, modbusIP, (new Date()).toLocaleString(), dbTime, browserTime), 'page-config')
+    }
+
+}
+
+const updateDevList = (ip: string, newName: string) => {
+    const e = neighbours.find((n) => n.elem.id === ip)
+    e!.elem.innerText = newName;
+    return e;
+}
+
+let buttons: buttonCollection = {
+    "button-basic": {
+        elem: document.getElementById("button-basic") as HTMLAnchorElement,
+        html: HTML.pageBasic(),
+        cb: buttonHandler,
+    },
+    "button-l1": {
+        elem: document.getElementById("button-l1") as HTMLAnchorElement,
+        html: HTML.pagePhase(1),
+        cb: buttonHandler,
+    },
+    "button-l2": {
+        elem: document.getElementById("button-l2") as HTMLAnchorElement,
+        html: HTML.pagePhase(2),
+        cb: buttonHandler,
+    },
+    "button-l3": {
+        elem: document.getElementById("button-l3") as HTMLAnchorElement,
+        html: HTML.pagePhase(3),
+        cb: buttonHandler,
+    },
+    "button-adv": {
+        elem: document.getElementById("button-adv") as HTMLAnchorElement,
+        html: HTML.pageAdv(),
+        cb: buttonHandler,
+    },
+    "button-chart": {
+        elem: document.getElementById("button-chart") as HTMLAnchorElement,
+        html: HTML.pageChart(),
+        cb: chartButtonHandler,
+    },
+    "button-config": {
+        elem: document.getElementById("button-config") as HTMLSpanElement,
+        html: HTML.pageConfig(),
+        cb: configButtonHandler,
+    },
+}
+
+Object.keys(buttons).forEach((key) => buttons[key].elem.onclick = buttons[key].cb)
+
+// FUNCTIONS
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+/**
+ * Pulls list of discover neighbouring servers from the server
+ * @returns Neighbouring server addresses whether they are local (match the current server address) or not
+ */
+const getNeighbourAddresses = (secure = false): addressInfo[] => {
+    var xmlHttp = new XMLHttpRequest();
+    console.log('GET - ' + window.location.href + "neighbours")
+    xmlHttp.open("GET", window.location.href + "neighbours", false); // false for synchronous request
+    xmlHttp.send(null);
+    const rtn = JSON.parse(xmlHttp.responseText) as neighbourAPI;
+
+    return rtn.addresses.filter((a) => a.secure === secure);
+}
+
+/**
+ * Finds the name of a device
+ * @returns Name of device
+ */
+const getDeviceName = (device: neighbourInfo): string => {
+    const path = window.location.href + `${(device.address.ip).replace(':', '/')}/config/device-name`;
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("GET", path, false); // false for synchronous request
+    xmlHttp.send(null);
+    return (JSON.parse(xmlHttp.responseText))
+}
+
+/**
+ * Saves a name to the server  
+ * @param name Name of device to save
+ */
+const saveDeviceName = (device: neighbourInfo, name: string) => {
+    const path = window.location.href + `${(device.address.ip).replace(':', '/')}/config/device-name`;
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open("POST", path, false); // false for synchronous request
+    xmlHttp.setRequestHeader("device-name", name);
+    xmlHttp.send(null);
+}
+
+const deviceButtonHandler = (event: MouseEvent) => {
+    const target = event.target as HTMLAnchorElement;
+    const id = target.id;
+    devButtons.forEach((button: HTMLOptionElement) => {
+        if (button.id === id) {
+            button.classList.add('button-selected')
+        } else {
+            button.classList.remove('button-selected');
+        }
+    })
+}
 
 /**
  * Creates a promise loop
@@ -450,7 +564,7 @@ const updateChart = () => {
 
 // START
 const discoveryLoop = async () => {
-    const serverAddresses = getNeighbourAddresses().addresses;
+    const serverAddresses = getNeighbourAddresses(window.location.protocol.indexOf("https") > -1);
 
     const selectedDeviceIP = neighbours.find((n) => n.address.ip === devMenu.value)?.address.ip;
 
@@ -481,7 +595,7 @@ const discoveryLoop = async () => {
                     database: 'influx',
                     path: `/${(address.ip).replace(':', '/')}/influx`,
                     port: parseInt(window.location.port) || (window.location.protocol.indexOf("https") >= 0 ? 443 : 80),
-                    protocol: window.location.protocol.indexOf("https") >= 0 ? "https" : "http",
+                    protocol: address.secure ? "https" : "http",
                     schema: [
                         {
                             measurement: 'modbus',

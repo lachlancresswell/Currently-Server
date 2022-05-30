@@ -1,5 +1,4 @@
 import { mocked } from 'ts-jest/utils';
-import * as DeviceName from '../devicename-plugin';
 import Path from 'path'
 import fs from 'fs';
 import * as PluginLoader from '../plugin-loader';

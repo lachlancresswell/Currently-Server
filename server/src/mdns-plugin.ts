@@ -1,8 +1,10 @@
 import makeMdns from 'multicast-dns';
-import { Answer } from "dns-packet";
+import { Answer, SrvAnswer } from "dns-packet";
 import * as Plugin from './plugin'
 import * as os from 'os';
 import * as Events from './events'
+import * as Server from './server'
+import { RemoteInfo } from 'dgram';
 
 export const DEFAULT_HTTP_PORT = 8080;
 export const DEFAULT_HTTPS_PORT = 8081;
@@ -20,6 +22,7 @@ interface addressObj {
     name: string,
     local: boolean,
     modbusIP: string,
+    secure: boolean,
 }
 
 interface NicInfo {
@@ -38,9 +41,22 @@ export interface Options extends Plugin.Options {
     SERVICE_NAME?: string,
     MDNS_DOMAIN?: string,
     ms: number;
-    discover: boolean;
+    discover: Plugin.ClientOption<boolean>;
     advertise: boolean;
-    device_name: string;
+    device_name: Plugin.ClientOption<string>;
+}
+
+const defaultOptions: Options = {
+    HTTP_PORT: DEFAULT_HTTP_PORT,
+    HTTPS_PORT: DEFAULT_HTTPS_PORT,
+    MDNS_DOMAIN: DEFAULT_MDNS_DOMAIN,
+    HTTP_MDNS_SERVICE_NAME: DEFAULT_HTTP_MDNS_SERVICE_NAME,
+    HTTPS_MDNS_SERVICE_NAME: DEFAULT_HTTPS_MDNS_SERVICE_NAME,
+    SERVICE_NAME: DEFAULT_SERVICE_NAME,
+    ms: DEFAULT_MS,
+    discover: { priority: 1, readableName: 'Discoverable', value: DEFAULT_DISCOVER, restart: 'restart-plugin' },
+    advertise: DEFAULT_ADVERTISE,
+    device_name: { priority: 1, readableName: 'Device Name', value: DEFAULT_DEVICE_NAME, restart: 'restart-plugin' }
 }
 
 export class plugin extends Plugin.Instance {
@@ -52,19 +68,8 @@ export class plugin extends Plugin.Instance {
     ips: string[];
     timeout?: NodeJS.Timeout;
 
-    constructor(app: any, options?: Options, name?: string) {
-        super(app, options, name);
-
-        if (!this.options.HTTP_PORT) this.options.HTTP_PORT = DEFAULT_HTTP_PORT;
-        if (!this.options.HTTPS_PORT) this.options.HTTPS_PORT = DEFAULT_HTTPS_PORT;
-        if (!this.options.MDNS_DOMAIN) this.options.MDNS_DOMAIN = DEFAULT_MDNS_DOMAIN;
-        if (!this.options.HTTP_MDNS_SERVICE_NAME) this.options.HTTP_MDNS_SERVICE_NAME = DEFAULT_HTTP_MDNS_SERVICE_NAME;
-        if (!this.options.HTTPS_MDNS_SERVICE_NAME) this.options.HTTPS_MDNS_SERVICE_NAME = DEFAULT_HTTPS_MDNS_SERVICE_NAME;
-        if (!this.options.SERVICE_NAME) this.options.SERVICE_NAME = DEFAULT_SERVICE_NAME;
-        if (!this.options.ms) this.options.ms = DEFAULT_MS;
-        if (!this.options.discover) this.options.discover = DEFAULT_DISCOVER;
-        if (!this.options.advertise) this.options.advertise = DEFAULT_ADVERTISE;
-        if (!this.options.device_name) this.options.device_name = DEFAULT_DEVICE_NAME;
+    constructor(app: Server.default, options?: Options, name?: string) {
+        super(app, options, name, defaultOptions);
 
         this.nets = os.networkInterfaces()!;
         this.getNicAddresses()!;
@@ -73,18 +78,23 @@ export class plugin extends Plugin.Instance {
         this.attachQueryHandler(() => this.sendUpdate());
 
         const _this = this;
-        this.attachResponseHandler((response: any) => {
-            if ((response.answers[0].name === _this.options.HTTP_MDNS_SERVICE_NAME || response.answers[0].name === _this.options.HTTPS_MDNS_SERVICE_NAME)) {
+        this.attachResponseHandler((response: { answers: Answer[] }) => {
+            const distroServers = response.answers.filter((a) => a.type === 'SRV' && a.name === _this.options.HTTP_MDNS_SERVICE_NAME || a.name === _this.options.HTTPS_MDNS_SERVICE_NAME)
+            if (distroServers) {
+                distroServers.forEach((s) => {
+                    const ip = (response.answers[2] as any).data;
+                    const incomingIP = ip + ':' + (s as any).data!.port;
+                    const secure = s.name.indexOf('https') > -1 ? true : false;
 
-                const incomingIP = _this.formatIPandPort(response)
-                let name = response.answers[2].name;
-                const modbusIP = response.answers[response.answers.length - 1].data;
-                const domainLoc = name.indexOf('.local');
-                if (domainLoc) name = name.substring(0, domainLoc)
-                // Find if response is a loopback e.g the local device
-                let local = _this.nicAddresses.some((address: { name: string, ip: string, mask: string | null }) => (address.ip === response.answers[2].data && /*_this.options.name === name &&*/ (response.answers[0].data.port === _this.options.HTTP_PORT || response.answers[1].data.port.toString === _this.options.HTTPS_PORT)));
+                    let name = response.answers[2].name;
+                    const modbusIP = (response.answers[response.answers.length - 1] as any).data || '0.0.0.0';
+                    const domainLoc = name.indexOf('.local');
+                    if (domainLoc) name = name.substring(0, domainLoc)
+                    // Find if response is a loopback e.g the local device
+                    let local = _this.nicAddresses.some((address: { name: string, ip: string, mask: string | null }) => (address.ip === ip && /*_this.options.name === name &&*/ ((s as any).data.port! === _this.options.HTTP_PORT || (s as any).data.port.toString === _this.options.HTTPS_PORT)));
 
-                this.addNeighbour.bind(_this, name, incomingIP, local, modbusIP)();
+                    this.addNeighbour.bind(_this, { name, incomingIP, local, modbusIP, secure })();
+                })
             }
         })
     }
@@ -96,28 +106,33 @@ export class plugin extends Plugin.Instance {
         /**
          * Neighbouring server API endpoint
          */
-        this.app.registerEndpoint('/neighbours', (req: any, res: any) => res.send(JSON.stringify(this.neighbours)))
+        const route = '/neighbours';
+        this.registerGetRoute(route, this.getNeighbours)
 
         const _this = this;
         this.listen((Events.DEVICE_NAME_UPDATE), (res: string) => {
             const deviceName = res[0]
-            _this.options.device_name = deviceName;
+            _this.options.device_name.value = deviceName;
             _this.sendUpdate();
             //_this.neighbours.addresses.find((n) => n.local)!.name = this.options.name;
         })
     }
 
+    getNeighbours = (_req: any, res: { send: (arg0: string) => any; }) => res.send(JSON.stringify(this.neighbours));
+
     /**
      * Destroys the current MDNS session
      * @returns Nothing
      */
-    unload = () => new Promise((res) => {
-        clearTimeout(this.timeout!);
-        this.mdns.removeAllListeners();
-        this.mdns.destroy(() => res('MDNS finished'))
-    })
-
-    formatIPandPort = (response: { answers: any[] }) => (response.answers[2].data as string) + ':' + response.answers[1].data.port;
+    unload() {
+        super.unload();
+        return new Promise((res) => {
+            //this.routes?.forEach((r) => this.app.removeRoute(r))
+            clearTimeout(this.timeout!);
+            this.mdns.removeAllListeners();
+            this.mdns.destroy(() => res('MDNS finished'))
+        })
+    }
 
     getNicAddresses = () => {
         let nicAddresses: NicInfo[] = [{ name: "localhost", ip: "127.0.0.1", mask: "0" }];
@@ -133,20 +148,23 @@ export class plugin extends Plugin.Instance {
         this.nicAddresses = nicAddresses;
     }
 
-    addNeighbour = (name: string, incomingIP: string, local: boolean, modbusIP = '0.0.0.0') => {
+    addNeighbour = (obj: { name: string, incomingIP: string, local: boolean, modbusIP: string, secure: boolean }) => {
         // Check if incoming address is new or not
-        if ((!this.neighbours.addresses.filter((address: addressObj) => (address.ip === incomingIP && address.local === local)).length)) {
+        if ((!this.neighbours.addresses.filter((address: addressObj) => (address.ip === obj.incomingIP && address.local === obj.local)).length)) {
+            1
+            console.log(`Discovered ${obj.name} @ ${obj.incomingIP}`)
 
-            console.log(`Discovered ${name} @ ${incomingIP}`)
-
-            const neighbourAddress = { ip: incomingIP, name, local, modbusIP };
+            const neighbourAddress = { ip: obj.incomingIP, name: obj.name, local: obj.local, modbusIP: obj.modbusIP, secure: obj.secure };
             this.neighbours.addresses.push(neighbourAddress);
             this.announce(Events.NEIGHBOUR_DISCOVERED, neighbourAddress)
-            const uri = incomingIP.replace(':', '/');
+            const uri = obj.incomingIP.replace(':', '/');
 
-            const path = `${uri}`;
-            this.app.registerEndpoint(path, (req: any, res: any) => {
-                const target = "https://" + (req.url.substring(req.url.indexOf("/") + 1).replace("/", ':'));
+            const path = `/${uri}/*`;
+            this.registerAllRoute(path, (req, res) => {
+                const protocol = (req.socket as any).encrypted ? 'https://' : 'http://'
+                const path = (req.url.substring(req.url.indexOf("/") + 1).replace("/", ':'));
+                const target = protocol + path;
+                console.log('Proxying to - ' + target.substring(0, 30) + '...')
                 this.app.proxy(target, req, res);
             })
         }
@@ -160,7 +178,7 @@ export class plugin extends Plugin.Instance {
     discoveryLoop = () => {
         this.neighbours = { addresses: [] };
         if (this.options.advertise) this.sendQuery()
-        this.timeout = setTimeout(() => { if (this.options.discover) this.discoveryLoop() }, this.options.ms)
+        this.timeout = setTimeout(() => { if (this.options.discover.value) this.discoveryLoop() }, this.options.ms)
     }
 
     /**
@@ -175,14 +193,14 @@ export class plugin extends Plugin.Instance {
      * @param listener Function currently attached as a listener
      * @returns Nothing
      */
-    removeResponseListener = (listener: any) => this.mdns.removeListener('response', listener);
+    removeResponseListener = (listener: (response: makeMdns.ResponsePacket, rinfo: RemoteInfo) => void) => this.mdns.removeListener('response', listener);
 
     /**
      * Removes an MDNS query listener
      * @param listener Function currently attached as a listener
      * @returns Nothing
      */
-    removeQueryListener = (listener: any) => this.mdns.removeListener('query', listener);
+    removeQueryListener = (listener: (query: makeMdns.QueryPacket, rinfo: RemoteInfo) => void) => this.mdns.removeListener('query', listener);
 
     /**
      * Queries the network for services with the same name
@@ -198,9 +216,9 @@ export class plugin extends Plugin.Instance {
      * Attaches a listener to response events
      * @param listener Listener function to attach 
      */
-    attachResponseHandler = (listener: any) => {
+    attachResponseHandler = (listener: { (response: { answers: Answer[]; }): void; (arg0: makeMdns.ResponsePacket): void; }) => {
         const parent = this;
-        this.mdns.on('response', (response: any) => {
+        this.mdns.on('response', (response) => {
             if (parent.validatePacket(response.answers)) {
                 listener(response)
             }
@@ -211,7 +229,7 @@ export class plugin extends Plugin.Instance {
      * Attaches a listener to query events
      * @param listener Listener funciton to attach
      */
-    attachQueryHandler = (listener: any) => this.mdns.on('query', (query) => {
+    attachQueryHandler = (listener: { (): void; (arg0: makeMdns.QueryPacket): void; }) => this.mdns.on('query', (query) => {
         if (this.validatePacket(query.questions)) {
             listener(query);
         }
@@ -246,7 +264,7 @@ export class plugin extends Plugin.Instance {
 
         this.ips.forEach((ipAddress: string) => {
             answers.push({
-                name: this.options.device_name + this.options.MDNS_DOMAIN,
+                name: this.options.device_name.value + this.options.MDNS_DOMAIN!,
                 type: 'A',
                 data: ipAddress
             })

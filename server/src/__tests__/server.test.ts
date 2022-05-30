@@ -117,8 +117,6 @@ describe('Methods', () => {
     test('should register endpoint', async () => {
         expect.assertions(1);
         server = new Server.default();
-        server.registerEndpoint('mypath', (path: string) => {
-            expect(path).toEqual('mypath');
-        })
+        server.registerGetRoute('mypath', (path) => expect(path).toEqual('mypath'));
     });
 });
