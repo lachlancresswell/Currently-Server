@@ -1,0 +1,25 @@
+.phase-details {
+    display: flex;
+    justify-content: center;
+    flex-basis: 33%;
+    width: 100%;
+    font-size: 20vh;
+}
+
+.phase-details>.voltage,
+.phase-details>.amperage {
+    flex-basis: 40%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: right;
+}
+
+.phase-details .value {
+    margin-right: 0.15em;
+    font-weight: bold;
+}
+
+.phase-details .denominator {
+    padding-bottom: 0.1em;
+    font-size: 75%;
+}

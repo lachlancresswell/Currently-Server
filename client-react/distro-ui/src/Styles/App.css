@@ -1,0 +1,185 @@
+:root {
+    --l1-color: red;
+    --l2-color: white;
+    --l3-color: blue;
+    --pf-color: grey;
+    --kva-color: yellow;
+    --hz-color: orange;
+
+    /* --app-bg-color: black; */
+
+    --details-font-size: 3em;
+    --minor-font-size: 2.05em;
+    --adv-font-size: 2em;
+    --chart-legend-font-size: 2em;
+    --config-font-size: 1em;
+
+    --text-colour: white;
+
+    --accent-color: rgb(20, 20, 20);
+}
+
+[data-theme='light'] {
+    --app-bg-color: lightgrey;
+    --accent-color: rgb(179, 179, 179);
+    --text-colour: black;
+
+    --kva-color: rgb(255, 255, 168);
+    --hz-color: rgb(175, 97, 1);
+}
+
+[data-theme='dark'] {
+    --app-bg-color: black;
+    --text-colour: white;
+
+    --accent-color: rgb(20, 20, 20);
+}
+
+@font-face {
+    font-family: "MontserratRegular";
+    src: local("MontserratRegular"),
+        url("../Fonts/Montserrat/static/Montserrat-Regular.ttf") format("truetype");
+    font-weight: bold;
+}
+
+html,
+body {
+    font-family: "MontserratRegular", sans-serif;
+    /* font-weight: 400; */
+    background: var(--app-bg-color);
+    height: 100%;
+    margin: 0;
+
+    color: var(--text-colour);
+
+    transition: background .5s;
+}
+
+#root {
+    border: 1px solid grey;
+
+    /***** MAINTAIN ASPECT RATIO *******/
+    width: 99.5vw;
+    /* height: 75.19vw; */
+    /* 100/56.25 = 1.778 */
+    max-height: 100vh;
+    max-width: 133vh;
+    /* 16/9 = 1.778 */
+    margin: auto;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    /* vertical center */
+    left: 0;
+    right: 0;
+    /* horizontal center */
+
+    /**************/
+}
+
+.single-page {
+    height: 90%;
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.l1 {
+    color: var(--l1-color);
+}
+
+.l2 {
+    color: var(--l2-color);
+}
+
+.l3 {
+    color: var(--l3-color);
+}
+
+.pf {
+    color: var(--pf-color);
+}
+
+.kva {
+    color: var(--kva-color)
+}
+
+.hz {
+    color: var(--hz-color)
+}
+
+/* Loader */
+#loader {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 1;
+    width: 3em;
+    height: 3em;
+    margin: -5em 0 0 -2em;
+    border: 16px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 16px solid #3498db;
+    -webkit-animation: spin 2s linear infinite;
+    animation: spin 2s linear infinite;
+}
+
+@-webkit-keyframes spin {
+    0% {
+        -webkit-transform: rotate(0deg);
+    }
+
+    100% {
+        -webkit-transform: rotate(360deg);
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+svg {
+    height: 1em;
+    width: 1em;
+    font-size: 1em !important;
+}
+
+.chart-container {
+    margin-left: 1em;
+    margin-top: 1em;
+    /* margin-right: 5em; */
+    /* position: relative; */
+    height: 95%;
+    width: 95%;
+}
+
+.WARN {
+    color: orange;
+}
+
+.DEBUG {
+    color: green;
+}
+
+.INFO {
+    color: BLUE;
+}
+
+.ERROR {
+    color: red;
+}
+
+.MDNS {
+    background-color: darkgreen;
+}
+
+.App {
+    background-color: darkkhaki;
+}

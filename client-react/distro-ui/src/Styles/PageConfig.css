@@ -1,0 +1,28 @@
+form h4 {
+    margin-bottom: 0;
+    font-weight: bold;
+    text-align: center;
+}
+
+form {
+    font-size: 5vh;
+    margin-left: 1em;
+    height: 77vh;
+    overflow: auto;
+
+    display: flex;
+    flex-direction: column;
+}
+
+form>div>div {
+    display: flex;
+    justify-content: center;
+}
+
+form label {
+    width: 50%;
+}
+
+form input {
+    width: 30%;
+}

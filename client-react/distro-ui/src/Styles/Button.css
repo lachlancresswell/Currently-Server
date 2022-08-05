@@ -1,0 +1,45 @@
+.menu {
+
+    position: sticky;
+    top: 100vh;
+
+    display: flex;
+    justify-content: center;
+    text-align: center;
+
+    font-size: 5vh;
+}
+
+.menu a,
+.menu button {
+    display: inline;
+    width: 100%;
+    text-align: center;
+    border-top: 3px solid #aa003300;
+    color: var(--text-colour);
+    background: none;
+
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+
+    text-decoration: none;
+
+}
+
+.menu a:hover,
+.menu button:hover {
+    background: #ffffff22;
+    cursor: pointer;
+}
+
+.menu a.selected,
+.menu button.selected {
+    border-top: 3px solid grey;
+    border-radius: 2px;
+}
+
+.menu button {
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+}
