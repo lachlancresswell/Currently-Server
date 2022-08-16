@@ -1,49 +1,85 @@
 import React from 'react'
 import * as Types from '../types'
-import '../Styles/PagePhase.css';
 
 const DEFAULT_VALUE = '-'
 
-export default function PagePhase({ data, phaseIndex }: { data: Types.DistroData, phaseIndex: number }): any {
-    const phase = data.phases[phaseIndex];
-    return (
-        <>
-            <div className={`phase-VA l${phase.phase}`}>
-                <div className='voltage'>
-                    <span className='value'>
-                        {phase.voltage || DEFAULT_VALUE}
-                    </span>
-                    <span className='denominator'>
-                        V
-                    </span>
+export default function PagePhase({ data, phaseIndex }: { data?: Types.DistroData, phaseIndex?: number }): any {
+    if (data && phaseIndex != undefined) {
+        const phase = data.phases[phaseIndex];
+        return (
+            <div className='pageParent pageBasic'>
+                <div className='pageCol val fontLarge'>
+                    <div className={`pageRow l${phaseIndex + 1}`}>
+                        <span className='value'>
+                            {phase.voltage || '-'}
+                        </span>
+                    </div>
+                    <div className={`pageRow l${phaseIndex + 1}`}>
+                        <span className='value'>
+                            {phase.amperage || '-'}
+                        </span>
+                    </div>
                 </div>
-                <div className='amperage'>
-                    <span className='value'>
-                        {phase.amperage || DEFAULT_VALUE}
-                    </span>
-                    <span className='denominator'>
-                        A
-                    </span>
+                <div className='pageCol denomin fontLarge'>
+                    <div className={`pageRow l${phaseIndex + 1}`}>
+                        <span>
+                            V
+                        </span>
+                    </div>
+                    <div className={`pageRow l${phaseIndex + 1}`}>
+                        <span>
+                            A
+                        </span>
+                    </div>
+                </div>
+                <div className='pageCol'>
+                    <div className='pageRow'>
+                        <span className='circle green'>
+                        </span>
+                    </div>
+                    <div className='pageRow'>
+                        <span className='circle orange'>
+                        </span>
+                    </div>
+                </div>
+                <div className='pageCol val  fontSmall'>
+                    <div className={`pageRow pf`}>
+                        <span className='value'>
+                            {8 || '-'}
+                        </span>
+                    </div>
+                    <div className='pageRow kva'>
+                        <span className='value'>
+                            {9 || '-'}
+                        </span>
+                    </div>
+                </div>
+                <div className='pageCol denomin fontSmall'>
+                    <div className={`pageRow pf`}>
+                        <span>
+                            pF
+                        </span>
+                    </div>
+                    <div className={`pageRow kva`}>
+                        <span>
+                            kVA
+                        </span>
+                    </div>
+                </div>
+                <div className='pageCol'>
+                    <div className='pageRow'>
+                        <span className='circle green'>
+                        </span>
+                    </div>
+                    <div className='pageRow'>
+                        <span className='circle orange'>
+                        </span>
+                    </div>
                 </div>
             </div>
-            <div className={`phase-PFkVA`}>
-                <div className='pf'>
-                    <span className='value'>
-                        {data.pf || DEFAULT_VALUE}
-                    </span>
-                    <span className='denominator'>
-                        PF
-                    </span>
-                </div>
-                <div className='kva'>
-                    <span className='value'>
-                        {data.kva || DEFAULT_VALUE}
-                    </span>
-                    <span className='denominator'>
-                        kVA
-                    </span>
-                </div>
-            </div>
-        </>
-    )
+        );
+
+    } else {
+        return <></>
+    }
 }

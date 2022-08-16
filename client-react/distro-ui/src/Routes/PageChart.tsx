@@ -1,12 +1,8 @@
 import React from 'react';
 import 'chartjs-adapter-moment';
-import '../Styles/App.css';
-import Button from '../Components/Button'
+import '../Styles/Page.css';
 import * as Types from '../types'
-import AddIcon from '@mui/icons-material/Add';
-import RemoveIcon from '@mui/icons-material/Remove';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import MenuIcon from '@mui/icons-material/Menu';
+import TuneIcon from '@mui/icons-material/Tune';
 
 import {
     Chart,
@@ -199,117 +195,24 @@ const configData = (data: any) => {
     }
 };
 
-export default class PageChart extends React.Component<{ device?: Neighbour }, { device?: Neighbour, data: any, start: string, end: string, buttons: Types.ButtonItem[] }> {
-    constructor(props: { device: Neighbour }) {
-        super(props);
-
-        const buttons: Types.ButtonItem[] = [{
-            title: '<',
-            paths: ['/rtn'],
-            icon: <ArrowBackIcon />,
-        }, {
-            title: '-',
-            fn: this.updateTime,
-            icon: <RemoveIcon />,
-        }, {
-            title: '+',
-            fn: () => this.updateTime('+'),
-            icon: <AddIcon />,
-        }, {
-            title: 'Start',
-        }, {
-            title: 'End',
-        }, {
-            title: 'End',
-            icon: <MenuIcon />
-        }]
-
-
-        this.state = {
-            device: props.device,
-            data: null,
-            start: '40m',
-            end: 'now',
-            buttons,
-        }
-    }
-
-    updateTime = (direction: '+' | '-' = '-') => {
-        const loader = document.getElementById('loader') as HTMLDivElement;
-        if (loader) loader.style.display = 'initial';
-
-        this.setState((prevState) => {
-            let diff = 0;
-            const denominator = prevState.start.substring(prevState.start.length - 1)
-            let start = parseInt(prevState.start.substring(0, prevState.start.length - 1));
-            let end = 0;
-            if (prevState.end.includes('now')) {
-                end = 0;
-            } else {
-                end = parseInt(prevState.end.substring(0, prevState.end.length - 1));
-            }
-            diff = end - start;
-
-            if (direction === '+') {
-                start = start + diff;
-                end = end + diff;
-            } else {
-                start = start - diff;
-                end = end - diff;
-            }
-
-            return { ...prevState, start: start + denominator, end: end + denominator }
-        })
-    }
-
-    componentDidMount() {
-        influx.plugin.pollRange(this.state.device?.db, this.state.start, this.state.end).then((data: any) => {
-            const d = {
-                "l1-amperage": data[0].amperage, "l1-voltage": data[0].voltage,
-                "l2-amperage": data[1].amperage, "l2-voltage": data[1].voltage,
-                "l3-amperage": data[2].amperage, "l3-voltage": data[2].voltage,
-            }
-
-            this.setState(prevState => ({ ...prevState, ...{ data: d } }))
-        });
-    }
-
-    componentDidUpdate(prevProps: any, prevState: any) {
-        // Typical usage (don't forget to compare props):
-        if (this.props.device !== prevProps.device || this.state.start !== prevState.start || this.state.end !== prevState.end) {
-            influx.plugin.pollRange(this.props.device?.db, this.state.start, this.state.end).then((data: any) => {
-                const d = {
-                    "l1-amperage": data[0].amperage, "l1-voltage": data[0].voltage,
-                    "l2-amperage": data[1].amperage, "l2-voltage": data[1].voltage,
-                    "l3-amperage": data[2].amperage, "l3-voltage": data[2].voltage,
-                }
-
-                this.setState(prevState => ({ ...prevState, ...{ data: d } }))
-            });
-        }
-    }
-
-
-    render() {
-        const parent = document.getElementById("single-page") as HTMLDivElement;
-        // let height = '100px';
-        // let width = '100px';
-
-        if (parent) {
-            // height = parent.offsetHeight / 0.5 + 'px'
-            // width = parent.offsetWidth / 0.5 + 'px'
-        }
-
-        // width = '30px';
-
-        return (<>
-            <div id="loader"></div>
-            <div className="chart-container">
-                <Line width={"80%"} options={options} data={configData(this.state.data)} />
-            </div>
-            <div className="menu">
-                {this.state.buttons.map((b) => <Button key={b.title} button={b} />)}
-            </div>
-        </>);
-    }
+export default function PageChart({ device, data }: { device?: Neighbour, data: any }) {
+    return (<>
+        <div id="loader"></div>
+        <div style={{ width: "90%", height: "65%" }} className="chart-container">
+            <Line options={options} data={configData(data)} />
+        </div>
+        <div className="pageRow2">
+            <span className="pageChartMenu">
+                <span className='roundedBox'>+</span>
+                <span className='roundedBox l1'>V</span>
+                <span className='roundedBox l1'>A</span>
+                <span className='roundedBox l2'>V</span>
+                <span className='roundedBox l2'>A</span>
+                <span className='roundedBox l3'>V</span>
+                <span className='roundedBox l3'>A</span>
+                <span className='roundedBox'>-</span>
+                <span className='roundedBox'><TuneIcon /></span>
+            </span>
+        </div>
+    </>);
 }

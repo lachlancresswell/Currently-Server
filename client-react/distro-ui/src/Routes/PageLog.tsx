@@ -1,5 +1,4 @@
 import React from 'react'
-import '../Styles/PageAdv.css';
 import { History, Message } from '../log';
 
 

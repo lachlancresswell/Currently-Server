@@ -1,38 +1,113 @@
 import React from 'react'
 import * as Types from '../types'
-import '../Styles/PageAdv.css';
 
 const DEFAULT_VALUE = '-';
 
 export default function PageAdv({ data }: { data: Types.DistroData }): any {
     return (
-        <div className="adv">
-            <div className='column'>
-                <div className="column1 value">
-                    {data.phases.map((p) => <div key={'v-v-' + p.phase} className={`l${p.phase}`}>{p.voltage || DEFAULT_VALUE}</div>)}
-                    <div className='pf'>{data.pf || DEFAULT_VALUE}</div>
-                    <div className='kva'>{data.kva || DEFAULT_VALUE}</div>
+        <div className='pageParent pageBasic'>
+            <div className='pageCol val'>
+                <div className='pageRow l1'>
+                    <span className='value'>
+                        {231 || '-'}
+                    </span>
                 </div>
-
-                <div className="column2 denominator">
-                    {data.phases.map((p) => <div key={'v-d-' + p.phase} className={`l${p.phase || DEFAULT_VALUE}`}>V</div>)}
-                    <div className='pf'>pf</div>
-                    <div className='kva'>kVA</div>
+                <div className='pageRow l2'>
+                    <span className='value'>
+                        {232 || '-'}
+                    </span>
                 </div>
-            </div>
-            <div className='column'>
-                <div className="column3 value">
-                    {data.phases.map((p) => <div key={'a-v-' + p.phase} className={`l${p.phase}`}>{p.amperage || DEFAULT_VALUE}</div>)}
-                    <div className='hz' style={{ visibility: 'hidden' }}>{data.hz || DEFAULT_VALUE}</div>
-                    <div className='hz'>{data.hz || DEFAULT_VALUE}</div>
-                </div>
-
-                <div className="column4 denominator">
-                    {data.phases.map((p) => <div key={'a-d-' + p.phase} className={`l${p.phase || DEFAULT_VALUE}`}>A</div>)}
-                    <div>  </div>
-                    <div className='hz'>Hz</div>
+                <div className='pageRow l3'>
+                    <span className='value'>
+                        {233 || '-'}
+                    </span>
                 </div>
             </div>
-        </div >
+            <div className='pageCol denomin'>
+                <div className='pageRow l1'>
+                    <span>
+                        V
+                    </span>
+                </div>
+                <div className='pageRow l2'>
+                    <span>
+                        V
+                    </span>
+                </div>
+                <div className='pageRow l3'>
+                    <span>
+                        V
+                    </span>
+                </div>
+            </div>
+            <div className='pageCol val'>
+                <div className='pageRow l1'>
+                    <span className='value'>
+                        {8 || '-'}
+                    </span>
+                </div>
+                <div className='pageRow l2'>
+                    <span className='value'>
+                        {9 || '-'}
+                    </span>
+                </div>
+                <div className='pageRow l3'>
+                    <span className='value'>
+                        {10 || '-'}
+                    </span>
+                </div>
+            </div>
+            <div className='pageCol denomin'>
+                <div className='pageRow l1'>
+                    <span>
+                        A
+                    </span>
+                </div>
+                <div className='pageRow l2'>
+                    <span>
+                        A
+                    </span>
+                </div>
+                <div className='pageRow l3'>
+                    <span>
+                        A
+                    </span>
+                </div>
+            </div>
+            <div className='pageCol val  fontSmall'>
+                <div className={`pageRow pf`}>
+                    <span className='value'>
+                        {8 || '-'}
+                    </span>
+                </div>
+                <div className='pageRow kva'>
+                    <span className='value'>
+                        {9 || '-'}
+                    </span>
+                </div>
+                <div className='pageRow hz'>
+                    <span className='value'>
+                        {data.hz || '-'}
+                    </span>
+                </div>
+            </div>
+            <div className='pageCol denomin fontSmall'>
+                <div className={`pageRow pf`}>
+                    <span>
+                        pF
+                    </span>
+                </div>
+                <div className={`pageRow kva`}>
+                    <span>
+                        kVA
+                    </span>
+                </div>
+                <div className={`pageRow hz`}>
+                    <span>
+                        hz
+                    </span>
+                </div>
+            </div>
+        </div>
     );
 }

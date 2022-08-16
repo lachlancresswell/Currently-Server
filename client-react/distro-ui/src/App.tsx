@@ -1,22 +1,34 @@
 import React from 'react';
-import Buttons from './Components/Buttons'
 import Status from './Components/Status'
 import * as Types from './types'
 import './Styles/App.css';
-import PageBasic from './Routes/PageBasic';
-import PagePhase from './Routes/PagePhase';
-import PageAdv from './Routes/PageAdv';
-import PageChart from './Routes/PageChart';
-import { BrowserRouter, Route, Switch, useLocation } from 'react-router-dom';
-import ShowChartIcon from '@mui/icons-material/ShowChart';
-import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
-import PageConfig from './Routes/PageConfig';
-import PageLog from './Routes/PageLog';
+import MainMenu from './MainMenu';
+import { BrowserRouter, useLocation } from "react-router-dom";
 import * as MDNS from './Plugins/mdns';
 import * as Influx from './Plugins/influx';
 import Neighbour from './Neighbour';
 import * as Config from './Config';
 import { Logger, History } from './log';
+
+const testData: Types.DistroData = {
+  time: new Date(),
+  pf: 3,
+  kva: 600,
+  hz: 60,
+  phases: [{
+    voltage: 238,
+    amperage: 8.4,
+    phase: 1,
+  }, {
+    voltage: 233,
+    amperage: 4.1,
+    phase: 2,
+  }, {
+    voltage: 232,
+    amperage: 2.4,
+    phase: 3,
+  }]
+}
 
 let once = false;
 
@@ -26,25 +38,6 @@ class App extends React.Component<{}, {
   config: any,
   discovery: boolean,
   curNeighbour?: Neighbour,
-  buttons: ({
-    title: string;
-    paths: string[];
-    component: () => JSX.Element;
-    icon?: undefined;
-    menu: boolean;
-  } | {
-    title: string;
-    component: () => JSX.Element;
-    paths?: undefined;
-    icon?: undefined;
-    menu: boolean;
-  } | {
-    title: string;
-    icon: JSX.Element;
-    component: () => JSX.Element;
-    paths?: undefined;
-    menu: boolean;
-  })[],
   status: {
     server: boolean,
     influx: boolean,
@@ -115,7 +108,6 @@ class App extends React.Component<{}, {
       config,
       phaseData,
       curDevice: -1,
-      buttons: this.buttons(phaseData, undefined),
       neighbours,
       curNeighbour: undefined,
       discovery: false,
@@ -130,43 +122,6 @@ class App extends React.Component<{}, {
       attention: false,
     }
   }
-
-  buttons = (phaseData: Types.DistroData, device?: Neighbour) => [{
-    title: 'Basic',
-    paths: ['/'],
-    component: () => <PageBasic data={phaseData} />,
-    menu: true,
-  }, {
-    title: 'L1',
-    component: () => <PagePhase data={phaseData} phaseIndex={0} />,
-    menu: true,
-  }, {
-    title: 'L2',
-    component: () => <PagePhase data={phaseData} phaseIndex={1} />,
-    menu: true,
-  }, {
-    title: 'L3',
-    component: () => <PagePhase data={phaseData} phaseIndex={2} />,
-    menu: true,
-  }, {
-    title: 'Adv',
-    component: () => <PageAdv data={phaseData} />,
-    menu: true,
-  }, {
-    title: 'Chart',
-    icon: <ShowChartIcon />,
-    component: () => <PageChart device={device} />,
-    menu: false,
-  }, {
-    title: 'Cfg',
-    icon: <SettingsOutlinedIcon />,
-    component: () => <PageConfig device={this.state.curNeighbour} times={{ dbTime: this.state.phaseData.time, server: this.state.time.server }} />,
-    menu: true,
-  }, {
-    title: 'Log',
-    component: () => <PageLog loggers={this.state.loggers} attention={this.state.attention} onLoad={() => this.setState((prevState) => ({ ...prevState, attention: false }))} />,
-    menu: true,
-  }];
 
   componentDidMount() {
     this.log.debug('Component did mount.')
@@ -232,7 +187,7 @@ class App extends React.Component<{}, {
               }]
             }
             this.setState(prevState => {
-              return { ...prevState, ...{ buttons: this.buttons(phaseData, curNeighbour), phaseData, status: { ...prevState.status, influx: true } } }
+              return { ...prevState, ...{ phaseData, status: { ...prevState.status, influx: true } } }
             });
           } else {
             this.log.warn("Influx query returned empty.");
@@ -255,28 +210,12 @@ class App extends React.Component<{}, {
   );
 
   render() {
-    // this.log.debug('Rendering.')
-    return <BrowserRouter>
-      <Status status={this.state.status} neighbours={this.state.neighbours} selectedDeviceIndex={this.state.curDevice} onDeviceSelected={this.onDeviceSelected} attention={this.state.attention} />
-      <div id='single-page' className='single-page'>
-        <Switch>
-          {this.state.buttons.map((b) => {
-            b.paths = [...b.paths || [], '/' + b.title];
-            return (
-              <Route key={b.title} exact path={b.paths}>
-                {b.component()}
-                {(b.menu) ? <Buttons buttons={this.state.buttons as { title: string, paths: string[], icon?: JSX.Element }[]} /> : null}
-              </Route>
-            )
-          })}
-          <Route>
-            {this.state.buttons[0].component()}
-            <Buttons buttons={this.state.buttons as { title: string, paths: string[], icon?: JSX.Element }[]} />
-          </Route>
-        </Switch>
-      </div>
-    </BrowserRouter >
-  };
+    return <div id='single-page' className='single-page'>
+      <BrowserRouter>
+        <MainMenu device={this.state.curNeighbour!} data={testData} loggers={this.state.loggers} />
+      </BrowserRouter>
+    </div>
+  }
 }
 
 export default App;
