@@ -12,22 +12,22 @@ export default function PageHome({ data }: { data?: Types.DistroData }) {
             <div className='pageCol val'>
                 <div className='pageRow l1'>
                     <span className='value'>
-                        {231 || '-'}
+                        {data?.phases[0].voltage || '-'}
                     </span>
                 </div>
                 <div className='pageRow l2'>
                     <span className='value'>
-                        {232 || '-'}
+                        {data?.phases[1].voltage || '-'}
                     </span>
                 </div>
                 <div className='pageRow l3'>
                     <span className='value'>
-                        {233 || '-'}
+                        {data?.phases[2].voltage || '-'}
                     </span>
                 </div>
                 <div className='pageRow hz'>
                     <span className='value'>
-                        {50 || '-'}
+                        {data?.hz || '-'}
                     </span>
                 </div>
             </div>
@@ -56,17 +56,17 @@ export default function PageHome({ data }: { data?: Types.DistroData }) {
             <div className='pageCol val'>
                 <div className='pageRow l1'>
                     <span className='value'>
-                        {8 || '-'}
+                        {data?.phases[0].amperage || '-'}
                     </span>
                 </div>
                 <div className='pageRow l2'>
                     <span className='value'>
-                        {9 || '-'}
+                        {data?.phases[1].amperage || '-'}
                     </span>
                 </div>
                 <div className='pageRow l3'>
                     <span className='value'>
-                        {10 || '-'}
+                        {data?.phases[2].amperage || '-'}
                     </span>
                 </div>
                 <div className='pageRow l3'>

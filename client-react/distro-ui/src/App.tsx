@@ -129,6 +129,7 @@ class App extends React.Component<{}, {
 
       try {
         this.mdns.discoveryLoop().then(({ newNeighbours, time }) => {
+          if (newNeighbours) {
           this.setState(prevState => {
             let neighbours = prevState.neighbours;
             let curDevice = prevState.curDevice;
@@ -145,6 +146,7 @@ class App extends React.Component<{}, {
             const newState = { ...prevState, ...{ neighbours, curDevice, status, time: { ...prevState.time, server: time } } };
             return newState;
           });
+          }
         }, (rej) => {
         })
       } catch (e) {
@@ -212,7 +214,8 @@ class App extends React.Component<{}, {
   render() {
     return <div id='single-page' className='single-page'>
       <BrowserRouter>
-        <MainMenu device={this.state.curNeighbour!} data={testData} loggers={this.state.loggers} />
+        <Status status={this.state.status} neighbours={this.state.neighbours} selectedDeviceIndex={this.state.curDevice} onDeviceSelected={this.onDeviceSelected} attention={this.state.attention} />
+        <MainMenu device={this.state.curNeighbour!} data={this.state.phaseData} loggers={this.state.loggers} />
       </BrowserRouter>
     </div>
   }

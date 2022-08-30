@@ -57,17 +57,16 @@ export class plugin extends Plugin.Instance {
         from(bucket: "mybucket")
           |> range(start: -1m)
           |> filter(fn: (r) => r["_measurement"] == "modbus")
-          |> filter(fn: (r) => r["_field"] == "L1 Voltage" or r["_field"] == "L2 Voltage" or r["_field"] == "L3 Voltage" or r["_field"] == "L1 Current" or r["_field"] == "L2 Current" or r["_field"] == "L3 Current" or r["_field"] == "Power Factor" or r["_field"] == "Total Apparent Power")
+          |> filter(fn: (r) => r["_field"] == "L1 Voltage" or r["_field"] == "L2 Voltage" or r["_field"] == "L3 Voltage" or r["_field"] == "L1 Current" or r["_field"] == "L2 Current" or r["_field"] == "L3 Current" or r["_field"] == "Power Factor" or r["_field"] == "Total Apparent Power" or r["_field"] == "Grid Frequency")
           |> last()`);
 
-    static pollRange = async (db: QueryApi, start: string, end: string = 'now()') => {
-        if (end.includes('now')) end = 'now()';
-        else end = '-' + end;
-        const query =
-            `from(bucket: "mybucket")
-        |> range(start: -${start}, stop: ${end})
+    static pollRange = async (db: QueryApi, start: string, end: string = 'now()', avg = '30s') => {
+        const query = `
+        from(bucket: "mybucket")
+          |> range(start: ${start}, stop: ${end})
         |> filter(fn: (r) => r["_measurement"] == "modbus")
         |> filter(fn: (r) => r["_field"] == "L3 Voltage" or r["_field"] == "L2 Voltage" or r["_field"] == "L1 Voltage" or r["_field"] == "L1 Current" or r["_field"] == "L2 Current" or r["_field"] == "L3 Current")
+          |> timedMovingAverage(every: ${avg}, period: ${avg})
         |> yield(name: "mean")`;
         const data: FluxQuery[] = await db.collectRows(query);
 

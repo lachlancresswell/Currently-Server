@@ -17,7 +17,7 @@ export default class Neighbour {
         this.local = info.local;
         this.name = info.name;
         this.secure = info.secure;
-        this.id = info.id || Math.floor(Math.random() * 10);
+        this.id = (info.id !== undefined && info.id > -1) ? info.id : Math.floor(Math.random() * 10);
         this.influxIP = info.influxIP;
 
         this.influx = new Influx.plugin();

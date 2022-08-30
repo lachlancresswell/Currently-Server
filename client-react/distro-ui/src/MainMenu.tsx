@@ -77,17 +77,23 @@ export default function MainMenu({ device, data, loggers }: { device: Neighbour,
 
     const chart = new MenuItem({
         title: 'Chart',
-        component: (device: Neighbour) => <PageChart data={undefined} />,
+        component: () => <PageChart device={device} />,
         icon: <ShowChartIcon />
     });
 
     const cfg = new MenuItem({
         title: 'Cfg',
         icon: <SettingsOutlinedIcon />,
-        component: () => <PageConfig times={{
+        component: () => <PageConfigMenu times={{
             dbTime: undefined,
             server: undefined
         }} />
+    })
+
+    const addDevice = new MenuItem({
+        title: 'Device',
+        icon: <>+</>,
+        component: () => <PageAddDevice />,
     })
 
 
@@ -206,73 +212,224 @@ const OnesMenu = ({ menuItem, lastPath, subpath, index, footer }: {
     );
 }
 
+interface OneStageMinMax {
+    title: string,
+    readableName: string,
+    value: number,
+    min: number,
+    max: number,
+}
+
+interface OneStageOptions {
+    title: string,
+    readableName: string,
+    index: number,
+    options: any[],
+}
+
+interface OneStageValue {
+    title: string,
+    readableName: string,
+    value: any,
+}
+
 /**
  * Distro configuration menu
  * @param param0 props containing the device to configure and Date objects
  * @returns React Componenet
  */
-function PageConfig({ device, times }: { device?: Neighbour, times: { dbTime?: Date, server?: Date } }) {
+function PageConfigMenu({ device, times }: { device?: Neighbour, times: { dbTime?: Date, server?: Date } }) {
     let { url } = useRouteMatch();
+
+    const startConfig: {
+        "Warnings": (OneStageValue | OneStageMinMax | OneStageOptions)[],
+        "Network": (OneStageValue | OneStageMinMax | OneStageOptions)[],
+        "Time": (OneStageValue | OneStageMinMax | OneStageOptions)[],
+        "Locale": (OneStageValue | OneStageMinMax | OneStageOptions)[],
+        "Power": (OneStageValue | OneStageMinMax | OneStageOptions)[],
+        "System": (OneStageValue | OneStageMinMax | OneStageOptions)[],
+    } = {
+        "Warnings": [{
+            "title": "vSet",
+            "readableName": "V Set",
+            "value": 240,
+            "min": 0,
+            "max": 300
+        }, {
+            "title": "vmax",
+            "readableName": "V Max",
+            "value": 5,
+            "min": 0,
+            "max": 300
+        }, {
+            "title": "vmin",
+            "readableName": "V Min",
+            "value": 10,
+            "min": 0,
+            "max": 300
+        }, {
+            "title": "amax",
+            "readableName": "A Max",
+            "value": 32,
+            "min": 0,
+            "max": 300
+        }, {
+            "title": "HZset",
+            "readableName": "HZ Set",
+            "value": 50,
+            "min": 0,
+            "max": 100
+        }, {
+            "title": "hzmax",
+            "readableName": "HZ Max",
+            "value": 1,
+            "min": 0,
+            "max": 100
+        }, {
+            "title": "hzmin",
+            "readableName": "HZ Min",
+            "value": 1,
+            "min": 0,
+            "max": 100
+        }],
+        "Network": [{
+            "title": "id",
+            "readableName": "ID",
+            "value": "Stage Left PA"
+        }, {
+            "title": "ip_address",
+            "readableName": "IP Address",
+            "value": "192.168.1.1"
+        }, {
+            "title": "subnet_mask",
+            "readableName": "Subnet Mask",
+            "value": "255.255.255.0"
+        }, {
+            "title": "gateway",
+            "readableName": "Gateway",
+            "value": "192.168.1.254"
+        }, {
+            "title": "dhcp",
+            "readableName": "DHCP",
+            "index": 0,
+            "options": [
+                "false",
+                "true"
+            ]
+        }],
+        "Time": [{
+            "title": "timezone",
+            "readableName": "Time Zone",
+            "index": 0,
+            "options": [
+                "GMT+10",
+                "GMT+9",
+                "GMT+8"
+            ]
+        }, {
+            "title": "timeformat",
+            "readableName": "Time Format",
+            "index": 0,
+            "options": [
+                "12H",
+                "24H"
+            ]
+        }, {
+            "title": "dateformat",
+            "readableName": "Date Format",
+            "index": 0,
+            "options": [
+                "DMY",
+                "MDY"
+            ]
+        }],
+        "Locale": [{
+            "title": "countr",
+            "readableName": "Country",
+            "value": "Australia"
+        }],
+        "Power": [{
+            "title": "restart",
+            "readableName": "Restart",
+            "value": "%button"
+        }, {
+            "title": "factoryreset",
+            "readableName": "Factory Reset",
+            "value": "%button"
+        }, {
+            "title": "memorywipe",
+            "readableName": "Memory Wipe",
+            "value": "%button"
+        }],
+        "System": [{
+            "title": "firmwarever",
+            "readableName": "Firmware",
+            "value": "0.10.0"
+        }, {
+            "title": "memory",
+            "readableName": "Available Memory",
+            "value": "1.25gb"
+        }]
+    }
 
     const pages = [new MenuItem({
         title: 'Warnings',
-        component: (phaseData?: any) => <h1>Warnings</h1>,
+        component: () => <PageConfig options={startConfig.Warnings} />,
         icon: <ReportProblemIcon />
     }), new MenuItem({
         title: 'Network',
-        component: (phaseData?: any) => <h1>Network</h1>,
+        component: () => <PageConfig options={startConfig.Network} />,
         icon: <SettingsEthernetIcon />
     }), new MenuItem({
         title: 'Time',
-        component: (phaseData?: any) => <h1>asdasd</h1>,
+        component: () => <PageConfig options={startConfig.Time} />,
         icon: <AccessTimeIcon />
     }), new MenuItem({
         title: 'Locale',
-        component: (phaseData?: any) => <h1>Locale</h1>,
+        component: () => <PageConfig options={startConfig.Locale} />,
         icon: <LocationOnIcon />
     }), new MenuItem({
         title: 'Power',
-        component: (phaseData?: any) => <h1>Power</h1>,
+        component: () => <PageConfig options={startConfig.Power} />,
         icon: <PowerSettingsNewIcon />
     }), new MenuItem({
         title: 'System',
-        component: (phaseData?: any) => <h1>System</h1>,
+        component: () => <PageConfig options={startConfig.System} />,
         icon: <HelpIcon />
     })];
+
+    const elements = Object.keys(startConfig).map((pluginTitle) => {
+        const page = pages.find((page) => page.title === pluginTitle);
+        if (page) {
+            return <NavLink style={{ color: 'white' }} to={`${url}/${page?.title}`}>{page.icon}</NavLink>
+        } else {
+            return <></>
+        }
+    })
 
     return (
         <>
             <Route exact path={`${url}/`} >
                 <div className='pageParent pageConfig'>
-                    <div className='pageCol'>
-                        <div className={`pageRow}`}>
-                            <NavLink style={{ color: 'white' }} to={`${url}/Warnings`}><ReportProblemIcon /></NavLink>
-                        </div>
-                        <div className={`pageRow}`}>
-                            <NavLink style={{ color: 'white' }} to={`${url}/Locale`}><LocationOnIcon /></NavLink>
-                        </div>
-                    </div>
-                    <div className='pageCol'>
-                        <div className={`pageRow}`}>
-                            <NavLink style={{ color: 'white' }} to={`${url}/Network`}><SettingsEthernetIcon /></NavLink>
-
-                        </div>
-                        <div className={`pageRow}`}>
-                            <NavLink style={{ color: 'white' }} to={`${url}/Power`}><PowerSettingsNewIcon /></NavLink>
-
-                        </div>
-                    </div>
-                    <div className='pageCol'>
-                        <div className={`pageRow}`}>
-                            <NavLink style={{ color: 'white' }} to={`${url}/Time`}><AccessTimeIcon /></NavLink>
-
-                        </div>
-                        <div className={`pageRow}`}>
-                            <NavLink style={{ color: 'white' }} to={`${url}/System`}><HelpIcon /></NavLink>
-                        </div>
-                    </div>
-                </div >
+                    {
+                        elements.map((element, index) => {
+                            let rtn;
+                            if (index % 2 === 0) {
+                                rtn = <div className='pageCol'>
+                                    <div className={`pageRow}`}>
+                                        {elements[index]}
+                                    </div>
+                                    {
+                                        (index + 1 < elements.length) && <div className={`pageRow}`}>{elements[index + 1]}</div>
+                                    }
+                                </div>
+                            }
+                            return rtn;
+                        })
+                    }
+                </div>
             </Route>
+
             {
                 pages && pages.map((page) => {
                     return (
@@ -283,7 +440,90 @@ function PageConfig({ device, times }: { device?: Neighbour, times: { dbTime?: D
                 })
             }
         </>
-
     )
 }
 
+
+function handleVarType(val: any) {
+    switch (val.value) {
+        case '%button':
+            return <button>OK</button>;
+        case 'false':
+            return <span className="configItem"><label className="switch">
+                <input type="checkbox" />
+                <span className="slider round"></span>
+            </label></span>
+        case 'true':
+            return <span className="configItem"><label className="switch">
+                <input type="checkbox" />
+                <span className="slider round"></span>
+            </label></span>
+        default:
+            if (val.options) {
+                return <span className="configItem">
+                    <select>
+                        {val.options.map((opt: any) => <option value={opt}>{opt}</option>)}
+                    </select>
+                </span>;
+            }
+            return <span className="configItem">
+                <input type="text" value={val.value} />
+            </span>;
+    }
+}
+
+function PageConfig({ options }: { options: (OneStageValue | OneStageMinMax | OneStageOptions)[] }) {
+    return <>{
+        options.map((setting) => {
+            return <div className='configRow'>
+                <span className="configItem">
+                    {setting.readableName}
+                </span>
+                {
+                    handleVarType(setting)
+                }
+            </div>;
+        })}
+    </>
+}
+
+function PageAddDevice() {
+    const ipKey = 'ipAddresses';
+
+    const [storedPeriod, setStoredPeriod] = useState<string[]>(JSON.parse(window.localStorage.getItem(ipKey) || '[]'));
+
+    const [ipAddress, setIpAddress] = useState('');
+
+    const addDevice = (e: React.FormEvent<HTMLFormElement>) => {
+        if (ipAddress) {
+            const newArr = [...storedPeriod, ipAddress];
+            setStoredPeriod(newArr);
+            setIpAddress('');
+            localStorage.setItem(ipKey, JSON.stringify(newArr));
+        }
+    }
+
+    const removeDevice = (ip: string) => {
+        const curStoredPeriod = storedPeriod.filter((item) => item !== ip);
+        setStoredPeriod(curStoredPeriod);
+        localStorage.setItem(ipKey, JSON.stringify(curStoredPeriod));
+    }
+
+    return <>
+        <h3>Add Device</h3>
+        <form onSubmit={addDevice}>
+            <label htmlFor="ip">IP:Port</label>
+            <input onChange={(e) => {
+                e.preventDefault();
+                setIpAddress(e.target.value)
+            }} type="text" id="ip" name="ip" value={ipAddress} />
+            <input type="submit" value="Submit" />
+        </form>
+
+        <h3>Current Devices</h3>
+        {storedPeriod.map((ip) => <div>
+            <button onClick={() => removeDevice(ip)}>X</button>
+            <span>{ip}</span>
+        </div>)}
+    </>
+}
