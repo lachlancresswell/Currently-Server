@@ -453,9 +453,12 @@ function ChartView({ device, chartConfig, startDate, endDate }: { device: Neighb
         })
     }
 
+    let loader = true;
+    if (data && data.find(phase => phase.voltage.length === 0 && phase.amperage.length === 0)) loader = false;
 
     return (<>
-        <div id="loader"></div>
+        {loader && <div id="loader"></div>}
+        {data && data.find(phase => phase.voltage.length === 0 && phase.amperage.length === 0) && <div id="chart-notify">No data in period {startDate.toLocaleString()} to {endDate.toLocaleString()}</div>}
         <div style={{ width: "90%", height: "65%" }} className="chart-container">
             <Line options={options} plugins={[htmlLegendPlugin, annotationPlug(startDate, endDate)]} data={configData(data)} />
         </div>

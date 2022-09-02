@@ -32,6 +32,7 @@ const testData: Types.DistroData = {
 
 let once = false;
 
+let loggers: { app: Logger, mdns: Logger };
 class App extends React.Component<{}, {
   neighbours: Neighbour[], phaseData: Types.DistroData,
   curDevice: number,
@@ -45,7 +46,6 @@ class App extends React.Component<{}, {
   time: {
     server: Date
   },
-  loggers: History[],
   attention: boolean,
 }> {
   mdns: MDNS.plugin;
@@ -61,7 +61,7 @@ class App extends React.Component<{}, {
       if (!this.tId) {
         this.tId = setTimeout(() => {
           this.tId = undefined;
-          this.setState((prevState) => ({ ...prevState, loggers: [this.log.history, this.mdns.log.history] }))
+          loggers = { app: this.log, mdns: this.mdns.log };
         }, 1000)
       }
     });
@@ -104,14 +104,15 @@ class App extends React.Component<{}, {
       this.log.warn('Failed to GET - ' + path)
     })
 
+    loggers = { app: this.log, mdns: this.mdns.log }
+
     this.state = {
       config,
       phaseData,
-      curDevice: -1,
+      curDevice,
       neighbours,
       curNeighbour: undefined,
       discovery: false,
-      loggers: [this.log.history, this.mdns.log.history],
       status: {
         server: false,
         influx: false
@@ -215,7 +216,7 @@ class App extends React.Component<{}, {
     return <div id='single-page' className='single-page'>
       <BrowserRouter>
         <Status status={this.state.status} neighbours={this.state.neighbours} selectedDeviceIndex={this.state.curDevice} onDeviceSelected={this.onDeviceSelected} attention={this.state.attention} />
-        <MainMenu device={this.state.curNeighbour!} data={this.state.phaseData} loggers={this.state.loggers} />
+        <MainMenu device={this.state.curNeighbour!} data={this.state.phaseData} loggers={loggers} />
       </BrowserRouter>
     </div>
   }

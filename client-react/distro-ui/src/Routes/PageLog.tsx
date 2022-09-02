@@ -1,8 +1,8 @@
 import React from 'react'
-import { History, Message } from '../log';
+import { Logger, Message } from '../log';
 
 
-export default function PageLog({ loggers, attention, onLoad }: { loggers: History[], attention: boolean, onLoad: any }) {
+export default function PageLog({ logs, attention, onLoad }: { logs: { app: Logger, mdns: Logger }, attention: boolean, onLoad: any }) {
     if (attention) onLoad();
 
     let log: Message[] = [];
@@ -25,7 +25,9 @@ export default function PageLog({ loggers, attention, onLoad }: { loggers: Histo
         return unique;
     }
 
-    loggers.forEach((l) => log.push(...l.DEBUG));
+    const loggers = [logs.app.history, logs.mdns.history];
+
+    loggers.forEach((l) => log.push(...getUnique(l.DEBUG)));
     loggers.forEach((l) => log.push(...getUnique(l.INFO)));
     loggers.forEach((l) => log.push(...getUnique(l.WARN)));
     loggers.forEach((l) => log.push(...l.ERROR));
@@ -34,7 +36,7 @@ export default function PageLog({ loggers, attention, onLoad }: { loggers: Histo
 
     return (
         <div className="log" style={{
-            width: '95%', height: '100%', margin: '1em', overflowX: 'scroll', overflowY: 'scroll', whiteSpace: 'nowrap'
+            width: '95%', height: '75%', margin: '1em', overflowX: 'scroll', overflowY: 'scroll', whiteSpace: 'nowrap'
         }} >
             {log.map((m) => {
                 return <samp style={{ display: 'block' }}>

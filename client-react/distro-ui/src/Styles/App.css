@@ -117,6 +117,13 @@ body {
     animation: spin 2s linear infinite;
 }
 
+#chart-notify {
+    position: absolute;
+    left: 17%;
+    top: 50%;
+    z-index: 1;
+}
+
 @-webkit-keyframes spin {
     0% {
         -webkit-transform: rotate(0deg);

@@ -27,6 +27,7 @@ import {
 } from "react-router-dom";
 import Neighbour from './Neighbour';
 import PageDisplay from './Routes/PageDisplay';
+import { Logger } from './log';
 
 /**
  * An item displayed in a menu
@@ -61,11 +62,11 @@ class MenuItem {
     }
 }
 
-export default function MainMenu({ device, data, loggers }: { device: Neighbour, data: Types.DistroData, loggers: any }) {
+export default function MainMenu({ device, data, loggers }: { device: Neighbour, data: Types.DistroData, loggers: { app: Logger, mdns: Logger } }) {
 
     const home = new MenuItem({
         title: 'Home',
-        component: () => <PageHome data={data} />,
+        component: () => <PageHome device={device} log={loggers.app} />,
         icon: <HomeIcon />
     });
     const display = new MenuItem({
@@ -122,7 +123,7 @@ export default function MainMenu({ device, data, loggers }: { device: Neighbour,
 
     const log = new MenuItem({
         title: 'Log',
-        component: (attention: any) => <PageLog loggers={loggers} attention={attention} onLoad={undefined} />//onLoad={() => this.setState((prevState) => ({ ...prevState, attention: false }))} />,
+        component: (attention: any) => <PageLog logs={loggers} attention={attention} onLoad={undefined} />//onLoad={() => this.setState((prevState) => ({ ...prevState, attention: false }))} />,
     })
 
     const main = new MenuItem({ title: '/', pages: [home, display, channelPage, chart, cfg, log] })
