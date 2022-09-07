@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { urlencoded } from 'express';
 import cors from 'cors';
 import httpProxy from 'http-proxy';
 import http from 'http';
@@ -34,20 +34,30 @@ export default class Server {
     constructor(options?: Options) {
         this.options = { ...defaultOptions, ...options };
 
+        console.log(`Running in ${process.env.NODE_ENV} mode`);
+
         if (process.env.HTTP_PORT) this.options.HTTP_PORT = parseInt(process.env.HTTP_PORT as string)
         if (process.env.HTTPS_PORT) this.options.HTTPS_PORT = parseInt(process.env.HTTPS_PORT as string)
         if (process.env.SSL_KEY && process.env.SSL_CERT) {
             this.options.ssl = { key: process.env.SSL_KEY, cert: process.env.SSL_CERT };
         }
 
+        var logger = (req: any, _res: any, next: () => void) => {
+            console.log(`${req.method} ${req.url}`);
+            next();
+        }
+
         this.app = express();
+        this.app.use(logger);
         this.app.use(cors({
             'allowedHeaders': ['Content-Type'],
             'origin': '*',
             'preflightContinue': true
         }));
-        this.app.use(express.static('../client/dist/'))
-        this.app.use(express.json());
+        this.app.use(express.static('../client-react/distro-ui/dist/'))
+        this.app.use(express.json({
+            type: (req) => !(req.url?.includes('influx') || req.url?.includes('.'))
+        }));
 
         this.apiProxy = httpProxy.createProxyServer();
     }
@@ -65,7 +75,7 @@ export default class Server {
     }
 
     end = () => {
-        PluginLoader.unload(this.plugins!);
+        if (this.plugins) PluginLoader.unload(this.plugins);
         if (this.httpServer) this.httpServer.close();
         if (this.httpsServer) this.httpsServer.close();
         if (this.apiProxy) this.apiProxy.close();
