@@ -5,7 +5,7 @@ import Path from 'path';
 import * as Server from './server'
 import * as PluginLoader from './plugin-loader'
 
-export const DEFAULT_CONFIG_PATH = Path.join(__dirname, './default.json');
+export const DEFAULT_CONFIG_PATH = Path.join(__dirname, '../default.json');
 
 interface Config {
     [index: string]: any;
@@ -73,15 +73,15 @@ export class plugin extends Plugin.Instance {
         this.app.registerPostRoute('/config', (req, res) => {
 
             const changed = false;
-            const recurse = (obj: Config, other: { [index: string]: any; }, keys?: { pluginTitle: string, restart?: Plugin.RestartOption }) => {
-                Object.keys(obj).forEach(async k => {
+            const recurse = (curConf: Config, newConf: { [index: string]: any; }, keys?: { pluginTitle: string, restart?: Plugin.RestartOption }) => {
+                Object.keys(curConf).forEach(async k => {
                     let set = false;
-                    if (typeof obj[k] === 'object') {
+                    if (typeof curConf[k] === 'object') {
                         if (!keys) {
                             keys = { pluginTitle: k, restart: undefined };
                             set = true;
                         }
-                        recurse(obj[k], other[k], keys)
+                        recurse(curConf[k], newConf[k], keys)
                         if (keys) {
                             if (keys.restart && set) {
                                 if (keys.restart === 'restart-plugin') {
@@ -92,24 +92,29 @@ export class plugin extends Plugin.Instance {
                             if (set) keys = undefined;
                         }
                     } else {
-                        if (obj[k] !== other[k]) {
-                            if (typeof obj[k] == 'boolean' && typeof other[k] != 'boolean') {
-                                if (other[k] === 'on') other[k] = false;
-                                else if (other[k] === 'off') other[k] = true;
+                        if (curConf[k] !== newConf[k]) {
+                            if (typeof curConf[k] == 'boolean' && typeof newConf[k] != 'boolean') {
+                                if (newConf[k] === 'on') newConf[k] = false;
+                                else if (newConf[k] === 'off') newConf[k] = true;
                             }
-                            obj[k] = other[k];
-                            if (obj['restart']) keys!.restart = obj['restart'];
+                            curConf[k] = newConf[k];
+                            if (curConf['restart']) keys!.restart = curConf['restart'];
                         }
                     }
 
                 });
             }
 
-            recurse(_this.settings, req.body)
+            const key = Object.keys(req.body)[0];
+
+            recurse(_this.settings[key], req.body[key])
 
             // _this.settings = { ...this.settings, ...req.body }
             _this.announce(Events.CONFIG_UPDATE, this.settings!);
-            // return this.saveConfig();
+
+            res.send()
+
+            return this.saveConfig();
         })
 
         const oldLoad = Plugin.Instance.prototype.load
