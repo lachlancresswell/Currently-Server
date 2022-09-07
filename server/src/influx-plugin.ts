@@ -28,10 +28,14 @@ export class plugin extends Plugin.Instance {
     constructor(app: Server.default, options?: Options, name?: string) {
         super(app, options, name, defaultOptions);
 
-        this.app.registerGetRoute("/influx/*", (req, res) => {
+        const _this = this;
+        this.app.registerAllRoute("/influx/*", (req, res) => {
             let target = (req.socket as any).encrypted ? 'https://' : 'http://';
-            target += this.options.INFLUX_DOMAIN!.value + ':' + this.options.INFLUX_PORT!.value + req.url.substring(req.url.indexOf("x") + 1);
-            return this.app.proxy(target, req, res);
+            const domain = _this.options.INFLUX_DOMAIN!.value || _this.options.INFLUX_DOMAIN;
+            const port = _this.options.INFLUX_PORT!.value || _this.options.INFLUX_PORT;
+            target += domain + ':' + port;
+            req.url = req.url.substring(req.url.indexOf('/influx') + '/influx'.length);
+            return _this.app.proxy(target, req, res);
         });
     }
 }
