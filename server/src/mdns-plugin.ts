@@ -151,7 +151,6 @@ export class plugin extends Plugin.Instance {
     addNeighbour = (obj: { name: string, incomingIP: string, local: boolean, modbusIP: string, secure: boolean }) => {
         // Check if incoming address is new or not
         if ((!this.neighbours.addresses.filter((address: addressObj) => (address.ip === obj.incomingIP && address.local === obj.local)).length)) {
-            1
             console.log(`Discovered ${obj.name} @ ${obj.incomingIP}`)
 
             const neighbourAddress = { ip: obj.incomingIP, name: obj.name, local: obj.local, modbusIP: obj.modbusIP, secure: obj.secure };
@@ -162,9 +161,15 @@ export class plugin extends Plugin.Instance {
             const path = `/${uri}/*`;
             this.registerAllRoute(path, (req, res) => {
                 const protocol = (req.socket as any).encrypted ? 'https://' : 'http://'
-                const path = (req.url.substring(req.url.indexOf("/") + 1).replace("/", ':'));
+
+                let p = req.url;
+                p = p.substring(p.indexOf('/', 1));
+                p = p.substring(p.indexOf('/', 1));
+                let path = (req.url.substring(req.url.indexOf("/") + 1).replace("/", ':'))
+                path = (req.url.substring(req.url.indexOf("/") + 1).replace("/", ':')).substring(0, path.indexOf('/'));
+                req.url = p;
                 const target = protocol + path;
-                console.log('Proxying to - ' + target.substring(0, 30) + '...')
+                console.log('Proxying to - ' + target)
                 this.app.proxy(target, req, res);
             })
         }
