@@ -1,33 +1,60 @@
-import React from 'react'
+import React, { useState } from 'react'
 import * as Types from '../types'
 import SettingsEthernetIcon from '@mui/icons-material/SettingsEthernet';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import PublicIcon from '@mui/icons-material/Public';
+import Neighbour from '../Neighbour';
 import '../Styles/Page.css';
+import * as Influx from '../Plugins/influx';
+import { Logger } from '../log';
+import * as Warnings from '../warnings'
 
-export default function PageHome({ data }: { data?: Types.DistroData }) {
+let fetching = false;
+
+
+export default function PageHome({ device, log, config }: { device?: Neighbour, log: Logger, config: any | undefined }) {
+
+    const [state, setState] = useState<{ data: Types.DistroData | undefined, pause: Promise<boolean> }>({
+        data: undefined,
+        pause: new Promise((res) => setTimeout(() => { res(true) }, 1000))
+    });
+
+    log.debug("RENDER - PageHome");
+
+    if (device && !fetching) {
+        fetching = true;
+        state.pause.then(() => {
+            log.debug('Fetching...')
+            Influx.plugin.pollServer(device.db).then((phaseData) => {
+                log.debug('Returned.')
+                fetching = false;
+                setState({ data: phaseData, pause: new Promise((res) => setTimeout(() => { res(true) }, 1000)) })
+            })
+        });
+    }
+
     return (
         <div className='pageParent pageHome'>
             <div className='pageCol val'>
                 <div className='pageRow l1'>
                     <span className='value'>
-                        {data?.phases[0].voltage || '-'}
+                        {state.data?.phases[0].voltage || '-'}
                     </span>
                 </div>
                 <div className='pageRow l2'>
                     <span className='value'>
-                        {data?.phases[1].voltage || '-'}
+                        {state.data?.phases[1].voltage || '-'}
                     </span>
                 </div>
                 <div className='pageRow l3'>
                     <span className='value'>
-                        {data?.phases[2].voltage || '-'}
+                        {state.data?.phases[2].voltage || '-'}
                     </span>
                 </div>
                 <div className='pageRow hz'>
                     <span className='value'>
-                        {data?.hz || '-'}
+                        {state.data?.hz || '-'}
                     </span>
                 </div>
             </div>
@@ -56,17 +83,17 @@ export default function PageHome({ data }: { data?: Types.DistroData }) {
             <div className='pageCol val'>
                 <div className='pageRow l1'>
                     <span className='value'>
-                        {data?.phases[0].amperage || '-'}
+                        {state.data?.phases[0].amperage || '-'}
                     </span>
                 </div>
                 <div className='pageRow l2'>
                     <span className='value'>
-                        {data?.phases[1].amperage || '-'}
+                        {state.data?.phases[1].amperage || '-'}
                     </span>
                 </div>
                 <div className='pageRow l3'>
                     <span className='value'>
-                        {data?.phases[2].amperage || '-'}
+                        {state.data?.phases[2].amperage || '-'}
                     </span>
                 </div>
                 <div className='pageRow l3'>
@@ -99,19 +126,19 @@ export default function PageHome({ data }: { data?: Types.DistroData }) {
             </div>
             <div className='pageCol'>
                 <div className='pageRow'>
-                    <span className='circle green'>
+                    <span className={`circle ${state.data && Warnings.toleranceToColourVA(config, state.data, 0)}`}>
                     </span>
                 </div>
                 <div className='pageRow'>
-                    <span className='circle orange'>
+                    <span className={`circle ${state.data && Warnings.toleranceToColourVA(config, state.data, 1)}`}>
                     </span>
                 </div>
                 <div className='pageRow'>
-                    <span className='circle red'>
+                    <span className={`circle ${state.data && Warnings.toleranceToColourVA(config, state.data, 2)}`}>
                     </span>
                 </div>
                 <div className='pageRow'>
-                    <span className='circle green'>
+                    <span className={`circle ${state.data && Warnings.toleranceToColour(config, state.data, 'hz')}`}>
                     </span>
                 </div>
             </div>

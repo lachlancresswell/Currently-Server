@@ -28,6 +28,7 @@ import {
 import Neighbour from './Neighbour';
 import PageDisplay from './Routes/PageDisplay';
 import { Logger } from './log';
+import * as Config from './Config';
 
 /**
  * An item displayed in a menu
@@ -62,11 +63,11 @@ class MenuItem {
     }
 }
 
-export default function MainMenu({ device, data, loggers }: { device: Neighbour, data: Types.DistroData, loggers: { app: Logger, mdns: Logger } }) {
+export default function MainMenu({ device, data, loggers, conf }: { device: Neighbour, data: Types.DistroData, loggers: { app: Logger, mdns: Logger }, conf?: { [key: string]: Types.OneStageMinMax | Types.OneStageOptions | Types.OneStageValue } }) {
 
     const home = new MenuItem({
         title: 'Home',
-        component: () => <PageHome device={device} log={loggers.app} />,
+        component: () => <PageHome device={device} log={loggers.app} config={conf} />,
         icon: <HomeIcon />
     });
     const display = new MenuItem({
@@ -85,7 +86,7 @@ export default function MainMenu({ device, data, loggers }: { device: Neighbour,
     const cfg = new MenuItem({
         title: 'Cfg',
         icon: <SettingsOutlinedIcon />,
-        component: () => <PageConfigMenu times={{
+        component: () => <PageConfigMenu device={device} times={{
             dbTime: undefined,
             server: undefined
         }} />
@@ -105,19 +106,19 @@ export default function MainMenu({ device, data, loggers }: { device: Neighbour,
         icon: <FormatListNumberedIcon />,
         pages: [new MenuItem({
             title: 'Basic',
-            component: (phaseData?: any) => <PageBasic data={data} />
+            component: (phaseData?: any) => <PageBasic device={device} log={loggers.app} />
         }), new MenuItem({
             title: 'L1',
-            component: (phaseData?: any) => <PagePhase data={data} phaseIndex={0} />,
+            component: (phaseData?: any) => <PagePhase device={device} log={loggers.app} phaseIndex={0} />,
         }), new MenuItem({
             title: 'L2',
-            component: (phaseData?: any) => <PagePhase data={data} phaseIndex={1} />,
+            component: (phaseData?: any) => <PagePhase device={device} log={loggers.app} phaseIndex={1} />,
         }), new MenuItem({
             title: 'L3',
-            component: (phaseData?: any) => <PagePhase data={data} phaseIndex={2} />,
+            component: (phaseData?: any) => <PagePhase device={device} log={loggers.app} phaseIndex={2} />,
         }), new MenuItem({
             title: 'Adv',
-            component: (phaseData?: any) => <PageAdv data={data} />,
+            component: (phaseData?: any) => <PageAdv device={device} log={loggers.app} />,
         })]
     });
 
@@ -213,193 +214,51 @@ const OnesMenu = ({ menuItem, lastPath, subpath, index, footer }: {
     );
 }
 
-interface OneStageMinMax {
-    title: string,
-    readableName: string,
-    value: number,
-    min: number,
-    max: number,
-}
-
-interface OneStageOptions {
-    title: string,
-    readableName: string,
-    index: number,
-    options: any[],
-}
-
-interface OneStageValue {
-    title: string,
-    readableName: string,
-    value: any,
-}
-
 /**
  * Distro configuration menu
  * @param param0 props containing the device to configure and Date objects
  * @returns React Componenet
  */
-function PageConfigMenu({ device, times }: { device?: Neighbour, times: { dbTime?: Date, server?: Date } }) {
+function PageConfigMenu({ device, times }: { device: Neighbour, times: { dbTime?: Date, server?: Date } }) {
     let { url } = useRouteMatch();
-
-    const startConfig: {
-        "Warnings": (OneStageValue | OneStageMinMax | OneStageOptions)[],
-        "Network": (OneStageValue | OneStageMinMax | OneStageOptions)[],
-        "Time": (OneStageValue | OneStageMinMax | OneStageOptions)[],
-        "Locale": (OneStageValue | OneStageMinMax | OneStageOptions)[],
-        "Power": (OneStageValue | OneStageMinMax | OneStageOptions)[],
-        "System": (OneStageValue | OneStageMinMax | OneStageOptions)[],
-    } = {
-        "Warnings": [{
-            "title": "vSet",
-            "readableName": "V Set",
-            "value": 240,
-            "min": 0,
-            "max": 300
-        }, {
-            "title": "vmax",
-            "readableName": "V Max",
-            "value": 5,
-            "min": 0,
-            "max": 300
-        }, {
-            "title": "vmin",
-            "readableName": "V Min",
-            "value": 10,
-            "min": 0,
-            "max": 300
-        }, {
-            "title": "amax",
-            "readableName": "A Max",
-            "value": 32,
-            "min": 0,
-            "max": 300
-        }, {
-            "title": "HZset",
-            "readableName": "HZ Set",
-            "value": 50,
-            "min": 0,
-            "max": 100
-        }, {
-            "title": "hzmax",
-            "readableName": "HZ Max",
-            "value": 1,
-            "min": 0,
-            "max": 100
-        }, {
-            "title": "hzmin",
-            "readableName": "HZ Min",
-            "value": 1,
-            "min": 0,
-            "max": 100
-        }],
-        "Network": [{
-            "title": "id",
-            "readableName": "ID",
-            "value": "Stage Left PA"
-        }, {
-            "title": "ip_address",
-            "readableName": "IP Address",
-            "value": "192.168.1.1"
-        }, {
-            "title": "subnet_mask",
-            "readableName": "Subnet Mask",
-            "value": "255.255.255.0"
-        }, {
-            "title": "gateway",
-            "readableName": "Gateway",
-            "value": "192.168.1.254"
-        }, {
-            "title": "dhcp",
-            "readableName": "DHCP",
-            "index": 0,
-            "options": [
-                "false",
-                "true"
-            ]
-        }],
-        "Time": [{
-            "title": "timezone",
-            "readableName": "Time Zone",
-            "index": 0,
-            "options": [
-                "GMT+10",
-                "GMT+9",
-                "GMT+8"
-            ]
-        }, {
-            "title": "timeformat",
-            "readableName": "Time Format",
-            "index": 0,
-            "options": [
-                "12H",
-                "24H"
-            ]
-        }, {
-            "title": "dateformat",
-            "readableName": "Date Format",
-            "index": 0,
-            "options": [
-                "DMY",
-                "MDY"
-            ]
-        }],
-        "Locale": [{
-            "title": "countr",
-            "readableName": "Country",
-            "value": "Australia"
-        }],
-        "Power": [{
-            "title": "restart",
-            "readableName": "Restart",
-            "value": "%button"
-        }, {
-            "title": "factoryreset",
-            "readableName": "Factory Reset",
-            "value": "%button"
-        }, {
-            "title": "memorywipe",
-            "readableName": "Memory Wipe",
-            "value": "%button"
-        }],
-        "System": [{
-            "title": "firmwarever",
-            "readableName": "Firmware",
-            "value": "0.10.0"
-        }, {
-            "title": "memory",
-            "readableName": "Available Memory",
-            "value": "1.25gb"
-        }]
-    }
 
     const pages = [new MenuItem({
         title: 'Warnings',
-        component: () => <PageConfig options={startConfig.Warnings} />,
+        component: () => <PageConfig type="warnings" submit={true} device={device} />,
         icon: <ReportProblemIcon />
     }), new MenuItem({
         title: 'Network',
-        component: () => <PageConfig options={startConfig.Network} />,
+        component: () => <PageConfig type="network" submit={true} device={device} />,
         icon: <SettingsEthernetIcon />
     }), new MenuItem({
         title: 'Time',
-        component: () => <PageConfig options={startConfig.Time} />,
+        component: () => <PageConfig type="time" submit={true} device={device} />,
         icon: <AccessTimeIcon />
     }), new MenuItem({
         title: 'Locale',
-        component: () => <PageConfig options={startConfig.Locale} />,
+        component: () => <PageConfig type="locale" submit={true} device={device} />,
         icon: <LocationOnIcon />
     }), new MenuItem({
         title: 'Power',
-        component: () => <PageConfig options={startConfig.Power} />,
+        component: () => <PageConfig type="power" device={device} />,
         icon: <PowerSettingsNewIcon />
     }), new MenuItem({
         title: 'System',
-        component: () => <PageConfig options={startConfig.System} />,
+        component: () => <PageConfig type="system" device={device} />,
         icon: <HelpIcon />
     })];
 
-    const elements = Object.keys(startConfig).map((pluginTitle) => {
+    const title = {
+        "Warnings": {},
+        'Network': {},
+        'Time': {},
+        'Locale': {},
+        'Power': {},
+        'System': {},
+
+    }
+
+    const elements = Object.keys(title).map((pluginTitle) => {
         const page = pages.find((page) => page.title === pluginTitle);
         if (page) {
             return <NavLink style={{ color: 'white' }} to={`${url}/${page?.title}`}>{page.icon}</NavLink>
@@ -445,46 +304,81 @@ function PageConfigMenu({ device, times }: { device?: Neighbour, times: { dbTime
 }
 
 
-function handleVarType(val: any) {
+function handleVarType(val: any, id: string, onchange?: (e: any) => void) {
     switch (val.value) {
         case '%button':
-            return <button>OK</button>;
+            return <button id={id}>OK</button>;
         case 'false':
             return <span className="configItem"><label className="switch">
-                <input type="checkbox" />
+                <input id={id} type="checkbox" onChange={onchange} />
                 <span className="slider round"></span>
             </label></span>
         case 'true':
             return <span className="configItem"><label className="switch">
-                <input type="checkbox" />
+                <input id={id} type="checkbox" onChange={onchange} />
                 <span className="slider round"></span>
             </label></span>
         default:
             if (val.options) {
                 return <span className="configItem">
-                    <select>
-                        {val.options.map((opt: any) => <option value={opt}>{opt}</option>)}
+                    <select id={id} onChange={onchange}>
+                        {val.options.map((opt: any) => <option value={opt} selected={opt === val.value} >{opt}</option>)}
                     </select>
                 </span>;
             }
             return <span className="configItem">
-                <input type="text" value={val.value} />
+                <input id={id} type="text" value={val.value} onChange={onchange} />
             </span>;
     }
 }
 
-function PageConfig({ options }: { options: (OneStageValue | OneStageMinMax | OneStageOptions)[] }) {
+function PageConfig({ type, submit, device }: { type: string, submit?: boolean, device: Neighbour }) {
+
+    const [conf, setConf] = useState<{ [key: string]: Types.OneStageValue | Types.OneStageMinMax | Types.OneStageOptions } | undefined>(undefined);
+
+
+    if (type && !conf) {
+        Config.getConfig(device.urlFromIp()).then((conf) => {
+            if ((conf as any)[type]) setConf((conf as any)[type]);
+        })
+    }
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>, setting: any) => {
+        setConf((curConf) => {
+            if (curConf) {
+
+                const id = e.target.id;
+                const conf = curConf[id];
+
+                if (conf) {
+                    if (typeof (conf.value) === 'number') {
+                        if (e.target.value) conf.value = parseInt(e.target.value)
+                        if ((conf as Types.OneStageMinMax).max && conf.value > (conf as Types.OneStageMinMax).max) conf.value = (conf as Types.OneStageMinMax).max;
+                        else if ((conf as Types.OneStageMinMax).min && conf.value < (conf as Types.OneStageMinMax).min) conf.value = (conf as Types.OneStageMinMax).min;
+                    }
+                    else conf.value = e.target.value;
+                    curConf[id] = conf;
+                }
+
+            }
+            return { ...curConf }
+        });
+    }
+
     return <>{
-        options.map((setting) => {
+        conf && Object.keys(conf).map((key) => {
+            const setting = conf[key]
             return <div className='configRow'>
                 <span className="configItem">
                     {setting.readableName}
                 </span>
                 {
-                    handleVarType(setting)
+                    handleVarType(setting, key, (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => handleChange(e, setting))
                 }
             </div>;
         })}
+
+        {submit ? <button onClick={() => Config.submitConfig(device.urlFromIp(), { [type]: conf })}>Submit</button> : null}
     </>
 }
 

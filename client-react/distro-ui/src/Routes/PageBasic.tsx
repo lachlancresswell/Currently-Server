@@ -1,25 +1,49 @@
-import React from 'react'
+import React, { useState } from 'react'
+import Neighbour from '../Neighbour';
 import * as Types from '../types'
 import '../Styles/Page.css';
+import { Logger } from '../log';
+import * as Influx from '../Plugins/influx';
 
+let fetching = false;
 
-export default function PageBasic({ data }: { data: Types.DistroData }) {
+export default function PageBasic({ device, log }: { device?: Neighbour, log: Logger }) {
+
+  const [state, setState] = useState<{ data: Types.DistroData | undefined, pause: Promise<boolean> }>({
+    data: undefined,
+    pause: new Promise((res) => setTimeout(() => { res(true) }, 1000))
+  });
+
+  log.debug("RENDER - PageBasic");
+
+  if (device && !fetching) {
+    fetching = true;
+    state.pause.then(() => {
+      log.debug('Fetching...')
+      Influx.plugin.pollServer(device.db).then((phaseData) => {
+        log.debug('Returned.')
+        fetching = false;
+        setState({ data: phaseData, pause: new Promise((res) => setTimeout(() => { res(true) }, 1000)) })
+      })
+    });
+  }
+
   return (
     <div className='pageParent pageBasic'>
       <div className='pageCol val'>
         <div className='pageRow l1'>
           <span className='value'>
-            {data?.phases[0].voltage || '-'}
+            {state.data?.phases[0].voltage || '-'}
           </span>
         </div>
         <div className='pageRow l2'>
           <span className='value'>
-            {data?.phases[1].voltage || '-'}
+            {state.data?.phases[1].voltage || '-'}
           </span>
         </div>
         <div className='pageRow l3'>
           <span className='value'>
-            {data?.phases[2].voltage || '-'}
+            {state.data?.phases[2].voltage || '-'}
           </span>
         </div>
       </div>
@@ -43,17 +67,17 @@ export default function PageBasic({ data }: { data: Types.DistroData }) {
       <div className='pageCol val'>
         <div className='pageRow l1'>
           <span className='value'>
-            {data?.phases[0].amperage || '-'}
+            {state.data?.phases[0].amperage || '-'}
           </span>
         </div>
         <div className='pageRow l2'>
           <span className='value'>
-            {data?.phases[1].amperage || '-'}
+            {state.data?.phases[1].amperage || '-'}
           </span>
         </div>
         <div className='pageRow l3'>
           <span className='value'>
-            {data?.phases[2].amperage || '-'}
+            {state.data?.phases[2].amperage || '-'}
           </span>
         </div>
       </div>

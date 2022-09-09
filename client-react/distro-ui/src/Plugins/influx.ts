@@ -1,4 +1,5 @@
 import * as Plugin from '../plugin'
+import * as Types from '../types'
 import { InfluxDB, QueryApi } from '@influxdata/influxdb-client-browser'
 
 interface FluxQuery {
@@ -11,6 +12,20 @@ interface FluxQuery {
     _value: string | number,
     host: string,
     name: string,
+    table: number,
+    type: string,
+}
+
+export interface influxRtn {
+    _field: string,
+    _measurement: string,
+    _start: string,
+    _stop: string,
+    _time: string,
+    _value: number,
+    host: string,
+    name: string,
+    result: string,
     table: number,
     type: string,
 }
@@ -42,7 +57,6 @@ export class plugin extends Plugin.Instance {
 
     addDB = (url: string) => {
         const db = new InfluxDB({ url: url, token: this.token });//, transportOptions: { rejectUnauthorized: false } });
-        //db.getQueryApi(this.org).
         this.dbs.push(db.getQueryApi(this.org))
     };
 
@@ -52,13 +66,38 @@ export class plugin extends Plugin.Instance {
  * Pulls data from Influx database
  * @returns Resolves with database response or rejects with error message
  */
-    static pollServer = (db: QueryApi) =>
-        db.collectRows(`
+    static pollServer = async (db: QueryApi) => {
+        const data: influxRtn[] = await db.collectRows(`
         from(bucket: "mybucket")
-          |> range(start: -1m)
+          |> range(start: 2022-06-14)
           |> filter(fn: (r) => r["_measurement"] == "modbus")
           |> filter(fn: (r) => r["_field"] == "L1 Voltage" or r["_field"] == "L2 Voltage" or r["_field"] == "L3 Voltage" or r["_field"] == "L1 Current" or r["_field"] == "L2 Current" or r["_field"] == "L3 Current" or r["_field"] == "Power Factor" or r["_field"] == "Total Apparent Power" or r["_field"] == "Grid Frequency")
-          |> last()`);
+          |> last()`)
+
+        if (data && data.length) {
+            const phaseData: Types.DistroData = {
+                time: new Date(data[0]._time),
+                pf: parseInt(data.find((d) => d._field === 'Power Factor')!._value.toFixed(0)),
+                kva: parseInt(data.find((d) => d._field === 'Total Apparent Power')!._value.toFixed(0)),
+                hz: parseInt(data.find((d) => d._field === 'Grid Frequency')!._value.toFixed(0)),
+                phases: [{
+                    voltage: parseInt(data.find((d) => d._field === 'L1 Voltage')!._value.toFixed(0)),
+                    amperage: parseInt(data.find((d) => d._field === 'L1 Current')!._value.toFixed(0)),
+                    phase: 1,
+                }, {
+                    voltage: parseInt(data.find((d) => d._field === 'L2 Voltage')!._value.toFixed(0)),
+                    amperage: parseInt(data.find((d) => d._field === 'L2 Current')!._value.toFixed(0)),
+                    phase: 2,
+                }, {
+                    voltage: parseInt(data.find((d) => d._field === 'L3 Voltage')!._value.toFixed(0)),
+                    amperage: parseInt(data.find((d) => d._field === 'L3 Current')!._value.toFixed(0)),
+                    phase: 3,
+                }]
+            }
+            return phaseData
+        } else return undefined;
+
+    };
 
     static pollRange = async (db: QueryApi, start: string, end: string = 'now()', avg = '30s') => {
         const query = `

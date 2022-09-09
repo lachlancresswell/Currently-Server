@@ -23,3 +23,30 @@ export interface ButtonItem {
     paths?: string[],
     fn?: () => void;
 }
+
+export interface OneStageMinMax {
+    title: string,
+    readableName: string,
+    value: number,
+    min: number,
+    max: number,
+}
+
+export interface OneStageOptions {
+    title: string,
+    readableName: string,
+    value: number,
+    options: any[],
+}
+
+export interface OneStageValue {
+    title: string,
+    readableName: string,
+    value: any,
+}
+
+export interface Config {
+    warnings: {
+        [key: string]: OneStageMinMax | OneStageOptions | OneStageValue
+    }
+}

@@ -47,6 +47,7 @@ class App extends React.Component<{}, {
     server: Date
   },
   attention: boolean,
+  conf: { [key: string]: Types.OneStageValue | Types.OneStageMinMax | Types.OneStageOptions } | undefined
 }> {
   mdns: MDNS.plugin;
   influx: Influx.plugin;
@@ -73,6 +74,7 @@ class App extends React.Component<{}, {
     })
     this.influx = new Influx.plugin();
 
+    const curDevice = -1;
     const neighbours = [] as Neighbour[];
 
     const phaseData: Types.DistroData = {
@@ -121,6 +123,7 @@ class App extends React.Component<{}, {
         server: new Date()
       },
       attention: false,
+      conf: undefined,
     }
   }
 
@@ -131,22 +134,22 @@ class App extends React.Component<{}, {
       try {
         this.mdns.discoveryLoop().then(({ newNeighbours, time }) => {
           if (newNeighbours) {
-          this.setState(prevState => {
-            let neighbours = prevState.neighbours;
-            let curDevice = prevState.curDevice;
-            const status = prevState.status;
+            this.setState(prevState => {
+              let neighbours = prevState.neighbours;
+              let curDevice = prevState.curDevice;
+              const status = prevState.status;
 
-            if (newNeighbours) {
-              newNeighbours.forEach((n) => {
-                neighbours = neighbours.concat(new Neighbour(n));
-                if (curDevice < 0) curDevice = neighbours[0].id;
-                status.server = true;
-              })
-            }
+              if (newNeighbours) {
+                newNeighbours.forEach((n) => {
+                  neighbours = neighbours.concat(new Neighbour(n));
+                  if (curDevice < 0) curDevice = neighbours[0].id;
+                  status.server = true;
+                })
+              }
 
-            const newState = { ...prevState, ...{ neighbours, curDevice, status, time: { ...prevState.time, server: time } } };
-            return newState;
-          });
+              const newState = { ...prevState, ...{ neighbours, curDevice, status, time: { ...prevState.time, server: time } } };
+              return newState;
+            });
           }
         }, (rej) => {
         })
@@ -165,44 +168,13 @@ class App extends React.Component<{}, {
     const myFunc = () => {
       const curNeighbour = this.state.neighbours.find((n) => n.id === this.state.curDevice);
       if (curNeighbour) {
-        this.setState(prevState => {
-          return { ...prevState, curNeighbour };
-        });
-        Influx.plugin.pollServer(curNeighbour!.db).then((data: any) => {
-          if (data.length) {
-            const phaseData: Types.DistroData = {
-              time: new Date(data[0]._time),
-              pf: data[6]._value.toFixed(0),
-              kva: data[7]._value.toFixed(0),
-              hz: 66,
-              phases: [{
-                voltage: data[1]._value.toFixed(0),
-                amperage: data[0]._value.toFixed(0),
-                phase: 1,
-              }, {
-                voltage: data[3]._value.toFixed(0),
-                amperage: data[2]._value.toFixed(0),
-                phase: 2,
-              }, {
-                voltage: data[5]._value.toFixed(0),
-                amperage: data[4]._value.toFixed(0),
-                phase: 3,
-              }]
-            }
+        if (!this.state.curNeighbour || this.state.curNeighbour && curNeighbour.id !== this.state.curNeighbour.id) {
+          Config.getConfig(curNeighbour.urlFromIp()).then((conf) => {
             this.setState(prevState => {
-              return { ...prevState, ...{ phaseData, status: { ...prevState.status, influx: true } } }
+              return { ...prevState, curNeighbour, conf };
             });
-          } else {
-            this.log.warn("Influx query returned empty.");
-            this.setState(prevState => {
-              return { ...prevState, status: { ...prevState.status, influx: true } }
-            });
-          }
-        }, (rej) => {
-          this.setState(prevState => {
-            return { ...prevState, status: { ...prevState.status, influx: false } }
           });
-        });
+        }
       }
       setTimeout(myFunc, 1000);
     }
@@ -216,7 +188,7 @@ class App extends React.Component<{}, {
     return <div id='single-page' className='single-page'>
       <BrowserRouter>
         <Status status={this.state.status} neighbours={this.state.neighbours} selectedDeviceIndex={this.state.curDevice} onDeviceSelected={this.onDeviceSelected} attention={this.state.attention} />
-        <MainMenu device={this.state.curNeighbour!} data={this.state.phaseData} loggers={loggers} />
+        <MainMenu device={this.state.curNeighbour!} data={this.state.phaseData} loggers={loggers} conf={this.state.conf} />
       </BrowserRouter>
     </div>
   }
