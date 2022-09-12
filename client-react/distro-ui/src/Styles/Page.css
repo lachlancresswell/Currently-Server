@@ -126,6 +126,19 @@
     align-items: center;
 }
 
+.datePicker {
+    text-align: center;
+    background-color: none;
+    font-size: 12vh;
+}
+
+.datePicker input {
+    background: gray;
+    border: none;
+    font-size: 0.5em;
+    margin-left: 0.5em;
+}
+
 .roundedBox {
     font-size: 50%;
     display: inline-block;
