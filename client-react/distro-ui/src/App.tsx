@@ -188,7 +188,7 @@ class App extends React.Component<{}, {
     return <div id='single-page' className='single-page'>
       <BrowserRouter>
         <Status status={this.state.status} neighbours={this.state.neighbours} selectedDeviceIndex={this.state.curDevice} onDeviceSelected={this.onDeviceSelected} attention={this.state.attention} />
-        <MainMenu device={this.state.curNeighbour!} data={this.state.phaseData} loggers={loggers} conf={this.state.conf} />
+        <MainMenu device={this.state.curNeighbour!} loggers={loggers} conf={this.state.conf} />
       </BrowserRouter>
     </div>
   }
