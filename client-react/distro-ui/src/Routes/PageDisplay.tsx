@@ -8,7 +8,7 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 export default function PageDisplay({ }: {}) {
     let startPeriod = JSON.parse(window.localStorage.getItem('period') || '"30s"');
     let startBrightness = JSON.parse(window.localStorage.getItem('brightness') || '100');
-    let startTheme = JSON.parse(window.localStorage.getItem('theme') || 'dark');
+    let startTheme = JSON.parse(window.localStorage.getItem('theme') || '"dark"');
     const [period, setPeriod] = useState(startPeriod);
     const [brightness, setBrightness] = useState(startBrightness);
     const [theme, setTheme] = useState(startTheme);
