@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import 'chartjs-adapter-moment';
 import '../Styles/Page.css';
-import * as Types from '../types'
 import TuneIcon from '@mui/icons-material/Tune';
 import * as Influx from '../Plugins/influx';
-import { convertTimeToNanos } from '@influxdata/influxdb-client-browser'
-import annotationPlugin from "chartjs-plugin-annotation";
 
 import {
     Chart,
@@ -33,7 +30,6 @@ import {
     Title,
     Tooltip,
     SubTitle,
-    Plugin,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import Neighbour from '../Neighbour';
@@ -64,8 +60,6 @@ Chart.register(
     Tooltip,
     SubTitle,
 );
-
-Chart.register(annotationPlugin);
 
 export const options: any = {
     // aspectRatio: 1.7,
@@ -98,19 +92,6 @@ export const options: any = {
             algorithm: 'min-max',
             enabled: true
         },
-        annotation: {
-            annotations: {
-                line1: {
-                    type: 'line',
-                    xMin: 'Sat Jun 11 2022 18:41:30 GMT+1000 (Australian Eastern Standard Time)',
-                    xMax: 'Sat Jun 11 2022 18:41:30 GMT+1000 (Australian Eastern Standard Time)',
-                    label: {
-                        enabled: true,
-                        content: 'end value'
-                    }
-                }
-            }
-        }
     },
     scales: {
         x: {
@@ -260,7 +241,6 @@ const htmlLegendPlugin = {
             textContainer.style.textDecoration = item.hidden ? 'line-through' : '';
 
             textContainer.onclick = () => {
-                const { type } = chart.config;
                 chart.setDatasetVisibility(item.datasetIndex, !chart.isDatasetVisible(item.datasetIndex));
                 chart.update();
             };
@@ -270,26 +250,6 @@ const htmlLegendPlugin = {
     }
 };
 
-const annotationPlug = (startDate: Date, endDate: Date): Plugin => {
-    return {
-        id: 'annotation',
-        afterUpdate(chart: any, args: any, options: any) {
-
-            for (var d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-                d.setUTCHours(0, 0, 0, 0);
-                options.annotations[d.toLocaleString()] = {
-                    type: 'line',
-                    xMin: d,
-                    xMax: d,
-                    label: {
-                        enabled: true,
-                        content: 'end value'
-                    }
-                }
-            }
-        },
-    }
-}
 
 interface Phase {
     voltage: { y: number | string, x: Date }[]
@@ -350,9 +310,7 @@ interface hook<T> {
     set: (val: T) => void;
 }
 
-const toNanoDate = (date: Date) => convertTimeToNanos(String(date.valueOf()) + '000000');
-
-function ChartConfig({ changePage, startDate, endDate, avgPeriod, scrollPeriod }: { changePage: () => void, startDate: hook<Date>, endDate: hook<Date>, avgPeriod: hook<string>, scrollPeriod: hook<string> }) {
+const ChartConfig = React.memo(function ChartConfig({ changePage, startDate, endDate, avgPeriod, scrollPeriod }: { changePage: () => void, startDate: hook<Date>, endDate: hook<Date>, avgPeriod: hook<string>, scrollPeriod: hook<string> }) {
     const getRange = (period: number) => {
         const start = new Date(startDate.value).getTime();
         const end = new Date(endDate.value).getTime();
@@ -386,23 +344,23 @@ function ChartConfig({ changePage, startDate, endDate, avgPeriod, scrollPeriod }
             <button onClick={changePage}>Back</button>
             <div>
                 <label>Start</label>
-                <div>
-                    <input type="date" id="endDate" name="endDate" onChange={(e) => {
+                <div className={`datePicker`}>
+                    <input required type="date" id="endDate" name="endDate" onChange={(e) => {
                         const d = e.target.value + ' ' + startDate.value.toISOString().substring(11);
                         startDate.set(new Date(d))
                     }} value={startDate.value.toISOString().substring(0, 10)} />
-                    <input type="time" id="endTime" name="endTime" onChange={(e) => {
+                    <input required type="time" id="endTime" name="endTime" onChange={(e) => {
                         const d = startDate.value.toISOString().substring(0, 10) + 'T' + e.target.value + ':00.000Z'
                         startDate.set(new Date(d))
                     }} value={startDate.value.toISOString().substring(11, 16)} />
                 </div>
                 <label>End</label>
-                <div>
-                    <input type="date" id="endDate" name="endDate" onChange={(e) => {
+                <div className={`datePicker`}>
+                    <input required type="date" id="endDate" name="endDate" onChange={(e) => {
                         const d = e.target.value + ' ' + endDate.value.toISOString().substring(11);
                         endDate.set(new Date(d))
                     }} value={endDate.value.toISOString().substring(0, 10)} />
-                    <input type="time" id="endTime" name="endTime" onChange={(e) => {
+                    <input required type="time" id="endTime" name="endTime" onChange={(e) => {
                         const d = endDate.value.toISOString().substring(0, 10) + 'T' + e.target.value + ':00.000Z'
                         endDate.set(new Date(d))
                     }} value={endDate.value.toISOString().substring(11, 16)} />
@@ -441,7 +399,7 @@ function ChartConfig({ changePage, startDate, endDate, avgPeriod, scrollPeriod }
             </div>
         </div>
     </>
-}
+});
 
 function ChartView({ device, chartConfig, startDate, endDate }: { device: Neighbour, chartConfig: () => void, startDate: Date, endDate: Date }) {
 
@@ -460,7 +418,7 @@ function ChartView({ device, chartConfig, startDate, endDate }: { device: Neighb
         {loader && <div id="loader"></div>}
         {data && data.find(phase => phase.voltage.length === 0 && phase.amperage.length === 0) && <div id="chart-notify">No data in period {startDate.toLocaleString()} to {endDate.toLocaleString()}</div>}
         <div style={{ width: "90%", height: "65%" }} className="chart-container">
-            <Line options={options} plugins={[htmlLegendPlugin, annotationPlug(startDate, endDate)]} data={configData(data)} />
+            <Line options={options} plugins={[htmlLegendPlugin]} data={configData(data)} />
         </div>
         <div className="pageRow2">
             <span className="pageChartMenu" id="legend-container">

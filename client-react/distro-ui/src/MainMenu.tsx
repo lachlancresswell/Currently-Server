@@ -20,15 +20,14 @@ import HelpIcon from '@mui/icons-material/Help';
 import './Styles/Button.css';
 import {
     Route,
-    Link,
     useRouteMatch,
-    useHistory,
     NavLink,
 } from "react-router-dom";
 import Neighbour from './Neighbour';
 import PageDisplay from './Routes/PageDisplay';
 import { Logger } from './log';
 import * as Config from './Config';
+import * as Influx from './Plugins/influx';
 
 /**
  * An item displayed in a menu
@@ -63,155 +62,111 @@ class MenuItem {
     }
 }
 
-export default function MainMenu({ device, data, loggers, conf }: { device: Neighbour, data: Types.DistroData, loggers: { app: Logger, mdns: Logger }, conf?: { [key: string]: Types.OneStageMinMax | Types.OneStageOptions | Types.OneStageValue } }) {
+let fetching = false;
+let v = 0;
 
-    const home = new MenuItem({
-        title: 'Home',
-        component: () => <PageHome device={device} log={loggers.app} config={conf} />,
-        icon: <HomeIcon />
-    });
-    const display = new MenuItem({
-        title: 'Display',
-        component: () => <PageDisplay />,
-        icon: < LightModeIcon />
-    });
+export default function MainMenu({ device, loggers, conf }: { device: Neighbour, loggers: { app: Logger, mdns: Logger }, conf?: { [key: string]: Types.OneStageMinMax | Types.OneStageOptions | Types.OneStageValue } }) {
 
-
-    const chart = new MenuItem({
-        title: 'Chart',
-        component: () => <PageChart device={device} />,
-        icon: <ShowChartIcon />
-    });
-
-    const cfg = new MenuItem({
-        title: 'Cfg',
-        icon: <SettingsOutlinedIcon />,
-        component: () => <PageConfigMenu device={device} times={{
-            dbTime: undefined,
-            server: undefined
-        }} />
+    const [state, setState] = useState<{ data: Types.DistroData | undefined, pause: Promise<boolean> }>({
+        data: undefined,
+        pause: new Promise((res) => setTimeout(() => { res(true) }, 1000)),
     })
 
-    const addDevice = new MenuItem({
-        title: 'Device',
-        icon: <>+</>,
-        component: () => <PageAddDevice />,
-    })
+    const [lastChannelPath, setLastChannelPath] = useState('basic');
 
+    if (device && !fetching) {
+        fetching = true;
 
-    const channelPage = new MenuItem({
-        title: 'Channel',
-        state: useState,
-        component: () => <OnesMenu menuItem={channelPage} subpath={channelPage.startingPage} lastPath={channelPage.onPageChange} footer={true} />,
-        icon: <FormatListNumberedIcon />,
-        pages: [new MenuItem({
-            title: 'Basic',
-            component: (phaseData?: any) => <PageBasic device={device} log={loggers.app} />
-        }), new MenuItem({
-            title: 'L1',
-            component: (phaseData?: any) => <PagePhase device={device} log={loggers.app} phaseIndex={0} />,
-        }), new MenuItem({
-            title: 'L2',
-            component: (phaseData?: any) => <PagePhase device={device} log={loggers.app} phaseIndex={1} />,
-        }), new MenuItem({
-            title: 'L3',
-            component: (phaseData?: any) => <PagePhase device={device} log={loggers.app} phaseIndex={2} />,
-        }), new MenuItem({
-            title: 'Adv',
-            component: (phaseData?: any) => <PageAdv device={device} log={loggers.app} />,
-        })]
-    });
-
-    const log = new MenuItem({
-        title: 'Log',
-        component: (attention: any) => <PageLog logs={loggers} attention={attention} onLoad={undefined} />//onLoad={() => this.setState((prevState) => ({ ...prevState, attention: false }))} />,
-    })
-
-    const main = new MenuItem({ title: '/', pages: [home, display, channelPage, chart, cfg, log] })
-
-    return < OnesMenu index={true} menuItem={main} />
-}
-
-/**
- * Default OneStage menu component
- * @param param0 Object containing options object, callback to receive most recent path and default subpath
- * @returns React Component
- */
-const OnesMenu = ({ menuItem, lastPath, subpath, index, footer }: {
-    menuItem: MenuItem, lastPath?: (path: string) => void, subpath?: string, index?: boolean, footer?: boolean
-}) => {
-    const history = useHistory();
-
-    let { url } = useRouteMatch();
-    if (index) url = '';
-
-    let className = "menu ";
-    if (footer) className += 'footer';
-
-    // Set current url to supplied subpath
-    if (subpath && history.location.pathname !== `${url}/${subpath}`) {
-        history.replace(`${url}/${subpath}`);
-    }
-
-    const Menu = () => {
-        let element;
-
-        // Print title + submenu above child routes
-        if (!menuItem.replace) {
-            element = <div className={className}>
-                {
-                    menuItem.pages && menuItem.pages.map((page) => {
-                        const path = `${url}/${page.title}`;
-                        let className = '';
-                        if (path) {
-                            className += (history.location.pathname.includes(path)) ? 'selected' : '';
-                        }
-                        return (
-                            <NavLink to={`${url}/${page.title}`} className={className} onClick={() => lastPath && lastPath(page.title)}>{page.icon || page.title}</NavLink>
-                        )
-                    })
-                }
-            </div>
-        } else {
-            element = <Route exact path={`${url}/`}>
-                <h1>{menuItem.title}</h1>
-                <ul>
-                    {
-                        // Print menu
-                        menuItem.pages && menuItem.pages.map((page) => {
-                            return (
-                                <li>
-                                    <Link to={`${url}/${page.title}`} onClick={() => lastPath && lastPath(page.title)}>{page.title}</Link>
-                                </li>
-                            )
-                        })
-                    }
-                </ul>
-            </Route>
+        const funccc = () => {
+            loggers.app.debug('Fetching...')
+            Influx.plugin.pollServer(device.db).then((phaseData) => {
+                loggers.app.debug('Returned.')
+                fetching = false;
+                phaseData!.hz = v;
+                v += 1;
+                setState((last) => ({
+                    data: phaseData,
+                    pause: new Promise((res) => setTimeout(() => {
+                        res(true)
+                    }, 1000)),
+                }));
+            })
         }
 
-        return element;
+        state.pause.then(funccc);
     }
 
-    const Content = () => {
-        // Print child pages
-        let element = [<></>];
-        if (menuItem.pages) element = menuItem.pages.map((page) => {
-            return (
-                <Route path={`${url}/${page.title}`}>
-                    {page.component && page.component()}
-                </Route>
-            )
-        })
-
-        return <>{
-            element
-        }</>
-    }
-
-    return (
-        footer ? <>< Content /> <Menu /></> : <><Menu /><Content /></>
-    );
+    return (<>
+        <div className={"menu "}>
+            <NavLink to={`/home`}>
+                <HomeIcon />
+            </NavLink>
+            <NavLink to={'/display'}>
+                < LightModeIcon />
+            </NavLink>
+            <NavLink to={`/channel/${lastChannelPath}`}>
+                <FormatListNumberedIcon />
+            </NavLink>
+            <NavLink to={'/chart'}>
+                <ShowChartIcon />
+            </NavLink>
+            <NavLink to={'/cfg'}>
+                <SettingsOutlinedIcon />
+            </NavLink>
+            <NavLink to={`/log`}>
+                Log
+            </NavLink>
+        </div>
+        <Route path={'/home'}>
+            <PageHome device={device} data={state.data!} log={loggers.app} config={conf} />
+        </Route>
+        <Route path={'/display'}>
+            <PageDisplay />
+        </Route>
+        <Route exact path={`/channel/basic`}>
+            <PageBasic device={device} data={state.data!} log={loggers.app} />
+        </Route>
+        <Route exact path={`/channel/l1`}>
+            <PagePhase device={device} data={state.data!} log={loggers.app} phaseIndex={0} />
+        </Route>
+        <Route exact path={`/channel/l2`}>
+            <PagePhase device={device} data={state.data!} log={loggers.app} phaseIndex={1} />
+        </Route>
+        <Route exact path={`/channel/l3`}>
+            <PagePhase device={device} data={state.data!} log={loggers.app} phaseIndex={2} />
+        </Route>
+        <Route exact path={`/channel/adv`}>
+            <PageAdv device={device} data={state.data!} log={loggers.app} />
+        </Route>
+        <Route exact path={`/channel`}>
+            <>
+                {
+                    // history.replace(`channel/${state.lastChannelPath}`)
+                }
+            </>
+        </Route>
+        <Route path={`/channel`}>
+            <div className={"menu footer"}>
+                <NavLink to={`basic`} onClick={() => setLastChannelPath('basic')} >Basic</NavLink>
+                <NavLink to={`l1`} onClick={() => setLastChannelPath('l1')}>L1</NavLink>
+                <NavLink to={`l2`} onClick={() => setLastChannelPath('l2')}>L2</NavLink>
+                <NavLink to={`l3`} onClick={() => setLastChannelPath('l3')}>L3</NavLink>
+                <NavLink to={`adv`} onClick={() => setLastChannelPath('adv')}>Adv</NavLink>
+            </div>
+        </Route>
+        <Route path={'/chart'}>
+            <PageChart device={device} />
+        </Route>
+        <Route path={`/cfg`}>
+            <PageConfigMenu device={device} times={{
+                dbTime: undefined,
+                server: undefined
+            }} />
+        </Route>
+        <Route path={`/log`}>
+            <PageLog logs={loggers} attention={false} onLoad={undefined} />
+        </Route>
+    </>);
 }
 
 /**
@@ -336,7 +291,6 @@ function PageConfig({ type, submit, device }: { type: string, submit?: boolean, 
 
     const [conf, setConf] = useState<{ [key: string]: Types.OneStageValue | Types.OneStageMinMax | Types.OneStageOptions } | undefined>(undefined);
 
-
     if (type && !conf) {
         Config.getConfig(device.urlFromIp()).then((conf) => {
             if ((conf as any)[type]) setConf((conf as any)[type]);
@@ -379,46 +333,5 @@ function PageConfig({ type, submit, device }: { type: string, submit?: boolean, 
         })}
 
         {submit ? <button onClick={() => Config.submitConfig(device.urlFromIp(), { [type]: conf })}>Submit</button> : null}
-    </>
-}
-
-function PageAddDevice() {
-    const ipKey = 'ipAddresses';
-
-    const [storedPeriod, setStoredPeriod] = useState<string[]>(JSON.parse(window.localStorage.getItem(ipKey) || '[]'));
-
-    const [ipAddress, setIpAddress] = useState('');
-
-    const addDevice = (e: React.FormEvent<HTMLFormElement>) => {
-        if (ipAddress) {
-            const newArr = [...storedPeriod, ipAddress];
-            setStoredPeriod(newArr);
-            setIpAddress('');
-            localStorage.setItem(ipKey, JSON.stringify(newArr));
-        }
-    }
-
-    const removeDevice = (ip: string) => {
-        const curStoredPeriod = storedPeriod.filter((item) => item !== ip);
-        setStoredPeriod(curStoredPeriod);
-        localStorage.setItem(ipKey, JSON.stringify(curStoredPeriod));
-    }
-
-    return <>
-        <h3>Add Device</h3>
-        <form onSubmit={addDevice}>
-            <label htmlFor="ip">IP:Port</label>
-            <input onChange={(e) => {
-                e.preventDefault();
-                setIpAddress(e.target.value)
-            }} type="text" id="ip" name="ip" value={ipAddress} />
-            <input type="submit" value="Submit" />
-        </form>
-
-        <h3>Current Devices</h3>
-        {storedPeriod.map((ip) => <div>
-            <button onClick={() => removeDevice(ip)}>X</button>
-            <span>{ip}</span>
-        </div>)}
     </>
 }
