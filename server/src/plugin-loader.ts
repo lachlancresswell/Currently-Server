@@ -29,7 +29,7 @@ export const loadConfig = (path = './plugins.json'): PluginConfig[] | void => {
 };
 
 export const load = (app: any, plugin: PluginConfig): Promise<PluginConfig | Error> => new Promise(async (res, rej) => {
-    const path = plugin.path;
+    const path = process.cwd() + '/' + plugin.path;
     try {
         const module = require(path);
         const obj = new module.plugin(app, plugin.options, plugin.name);

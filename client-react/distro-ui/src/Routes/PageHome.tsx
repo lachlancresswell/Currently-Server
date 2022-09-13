@@ -1,4 +1,3 @@
-import React, { useState } from 'react'
 import * as Types from '../types'
 import SettingsEthernetIcon from '@mui/icons-material/SettingsEthernet';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -6,14 +5,11 @@ import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import PublicIcon from '@mui/icons-material/Public';
 import Neighbour from '../Neighbour';
 import '../Styles/Page.css';
-import * as Influx from '../Plugins/influx';
 import { Logger } from '../log';
 import * as Warnings from '../warnings'
 
-let fetching = false;
 
-
-export default function PageHome({ device, data, log, config }: { device?: Neighbour, data: Types.DistroData, log: Logger, config: any | undefined }) {
+export default function PageHome({ device, data, log, config }: { device?: Neighbour, data?: Types.DistroData, log: Logger, config?: any | undefined }) {
 
     log.debug("RENDER - PageHome");
 
@@ -22,22 +18,22 @@ export default function PageHome({ device, data, log, config }: { device?: Neigh
             <div className='pageCol val'>
                 <div className='pageRow l1'>
                     <span className='value'>
-                        {data?.phases[0].voltage || '-'}
+                        {data?.phases[0].voltage}
                     </span>
                 </div>
                 <div className='pageRow l2'>
                     <span className='value'>
-                        {data?.phases[1].voltage || '-'}
+                        {data?.phases[1].voltage}
                     </span>
                 </div>
                 <div className='pageRow l3'>
                     <span className='value'>
-                        {data?.phases[2].voltage || '-'}
+                        {data?.phases[2].voltage}
                     </span>
                 </div>
                 <div className='pageRow hz'>
                     <span className='value'>
-                        {data?.hz || '-'}
+                        {data?.hz}
                     </span>
                 </div>
             </div>
@@ -66,17 +62,17 @@ export default function PageHome({ device, data, log, config }: { device?: Neigh
             <div className='pageCol val'>
                 <div className='pageRow l1'>
                     <span className='value'>
-                        {data?.phases[0].amperage || '-'}
+                        {data?.phases[0].amperage}
                     </span>
                 </div>
                 <div className='pageRow l2'>
                     <span className='value'>
-                        {data?.phases[1].amperage || '-'}
+                        {data?.phases[1].amperage}
                     </span>
                 </div>
                 <div className='pageRow l3'>
                     <span className='value'>
-                        {data?.phases[2].amperage || '-'}
+                        {data?.phases[2].amperage}
                     </span>
                 </div>
                 <div className='pageRow l3'>
@@ -109,20 +105,16 @@ export default function PageHome({ device, data, log, config }: { device?: Neigh
             </div>
             <div className='pageCol'>
                 <div className='pageRow'>
-                    <span className={`circle ${data && Warnings.toleranceToColourVA(config, data, 0)}`}>
-                    </span>
+                    {data && config && <Warnings.Warning config={config} data={data} type={'va'} phaseIndex={0} />}
                 </div>
                 <div className='pageRow'>
-                    <span className={`circle ${data && Warnings.toleranceToColourVA(config, data, 1)}`}>
-                    </span>
+                    {data && config && <Warnings.Warning config={config} data={data} type={'va'} phaseIndex={1} />}
                 </div>
                 <div className='pageRow'>
-                    <span className={`circle ${data && Warnings.toleranceToColourVA(config, data, 2)}`}>
-                    </span>
+                    {data && config && <Warnings.Warning config={config} data={data} type={'va'} phaseIndex={2} />}
                 </div>
                 <div className='pageRow'>
-                    <span className={`circle ${data && Warnings.toleranceToColour(config, data, 'hz')}`}>
-                    </span>
+                    {data && config && <Warnings.Warning config={config} data={data} type={'hz'} />}
                 </div>
             </div>
             <div className='pageCol'>

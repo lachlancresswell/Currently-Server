@@ -2,6 +2,7 @@ import Neighbour from '../Neighbour';
 import * as Types from '../types'
 import '../Styles/Page.css';
 import { Logger } from '../log';
+import * as Warnings from '../warnings'
 
 export default function PageBasic({ device, data, log, config }: { device?: Neighbour, data: Types.DistroData, log: Logger, config?: any | undefined }) {
 
@@ -77,16 +78,13 @@ export default function PageBasic({ device, data, log, config }: { device?: Neig
       </div>
       <div className='pageCol'>
         <div className='pageRow'>
-          <span className='circle green'>
-          </span>
+          {data && config && <Warnings.Warning config={config} data={data} type={'va'} phaseIndex={0} />}
         </div>
         <div className='pageRow'>
-          <span className='circle orange'>
-          </span>
+          {data && config && <Warnings.Warning config={config} data={data} type={'va'} phaseIndex={1} />}
         </div>
         <div className='pageRow'>
-          <span className='circle red'>
-          </span>
+          {data && config && <Warnings.Warning config={config} data={data} type={'va'} phaseIndex={2} />}
         </div>
       </div>
     </div>

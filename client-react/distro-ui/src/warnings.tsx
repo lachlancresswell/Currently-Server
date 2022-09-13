@@ -1,5 +1,26 @@
 import * as Types from './types'
 
+export function Warning({ config, data, type, phaseIndex }: { config: Types.Config, data: Types.DistroData, type: 'va' | 'hz' | 'voltage' | 'amperage', phaseIndex?: 0 | 1 | 2 }) {
+    let colour = '';
+    const enable = config.warnings.enable as Types.OneStageOptions;
+    const visible = enable.options[enable.value];
+    switch (type) {
+        case 'hz':
+            colour = toleranceToColour(config, data, 'hz')
+            break;
+        case 'va':
+            if (phaseIndex !== undefined && phaseIndex > -1) colour = toleranceToColourVA(config, data, phaseIndex)
+            break;
+        case 'voltage':
+            if (phaseIndex !== undefined && phaseIndex > -1) colour = toleranceToColour(config, data, 'voltage', phaseIndex)
+            break;
+        case 'amperage':
+            if (phaseIndex !== undefined && phaseIndex > -1) colour = toleranceToColour(config, data, 'amperage', phaseIndex)
+            break;
+    }
+
+    return (<span style={{ display: visible === 'true' ? '' : 'none' }} className={`circle ${colour}`}></span>)
+}
 
 const checkToleranceMaxMin = (set: number, max: number, min: number, val: number): -1 | -0.5 | 0 | 0.5 | 1 => {
     let rtn: -1 | -0.5 | 0 | 0.5 | 1 = -1;

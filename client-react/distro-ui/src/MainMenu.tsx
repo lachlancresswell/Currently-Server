@@ -65,7 +65,7 @@ class MenuItem {
 let fetching = false;
 let v = 0;
 
-export default function MainMenu({ device, loggers, conf }: { device: Neighbour, loggers: { app: Logger, mdns: Logger }, conf?: { [key: string]: Types.OneStageMinMax | Types.OneStageOptions | Types.OneStageValue } }) {
+export default function MainMenu({ device, loggers, conf, updateConf }: { device: Neighbour, loggers: { app: Logger, mdns: Logger }, conf?: { [key: string]: Types.OneStageMinMax | Types.OneStageOptions | Types.OneStageValue }, updateConf: () => void }) {
 
     const [state, setState] = useState<{ data: Types.DistroData | undefined, pause: Promise<boolean> }>({
         data: undefined,
@@ -124,16 +124,16 @@ export default function MainMenu({ device, loggers, conf }: { device: Neighbour,
             <PageDisplay />
         </Route>
         <Route exact path={`/channel/basic`}>
-            <PageBasic device={device} data={state.data!} log={loggers.app} />
+            <PageBasic device={device} data={state.data!} log={loggers.app} config={conf} />
         </Route>
         <Route exact path={`/channel/l1`}>
-            <PagePhase device={device} data={state.data!} log={loggers.app} phaseIndex={0} />
+            <PagePhase device={device} data={state.data!} log={loggers.app} phaseIndex={0} config={conf} />
         </Route>
         <Route exact path={`/channel/l2`}>
-            <PagePhase device={device} data={state.data!} log={loggers.app} phaseIndex={1} />
+            <PagePhase device={device} data={state.data!} log={loggers.app} phaseIndex={1} config={conf} />
         </Route>
         <Route exact path={`/channel/l3`}>
-            <PagePhase device={device} data={state.data!} log={loggers.app} phaseIndex={2} />
+            <PagePhase device={device} data={state.data!} log={loggers.app} phaseIndex={2} config={conf} />
         </Route>
         <Route exact path={`/channel/adv`}>
             <PageAdv device={device} data={state.data!} log={loggers.app} />
@@ -161,7 +161,7 @@ export default function MainMenu({ device, loggers, conf }: { device: Neighbour,
             <PageConfigMenu device={device} times={{
                 dbTime: undefined,
                 server: undefined
-            }} />
+            }} updateConf={updateConf} />
         </Route>
         <Route path={`/log`}>
             <PageLog logs={loggers} attention={false} onLoad={undefined} />
@@ -174,32 +174,32 @@ export default function MainMenu({ device, loggers, conf }: { device: Neighbour,
  * @param param0 props containing the device to configure and Date objects
  * @returns React Componenet
  */
-function PageConfigMenu({ device, times }: { device: Neighbour, times: { dbTime?: Date, server?: Date } }) {
+function PageConfigMenu({ device, times, updateConf }: { device: Neighbour, times: { dbTime?: Date, server?: Date }, updateConf: () => void }) {
     let { url } = useRouteMatch();
 
     const pages = [new MenuItem({
         title: 'Warnings',
-        component: () => <PageConfig type="warnings" submit={true} device={device} />,
+        component: () => <PageConfig type="warnings" submit={true} device={device} updateConf={updateConf} />,
         icon: <ReportProblemIcon />
     }), new MenuItem({
         title: 'Network',
-        component: () => <PageConfig type="network" submit={true} device={device} />,
+        component: () => <PageConfig type="ip-settings" submit={true} device={device} updateConf={updateConf} />,
         icon: <SettingsEthernetIcon />
     }), new MenuItem({
         title: 'Time',
-        component: () => <PageConfig type="time" submit={true} device={device} />,
+        component: () => <PageConfig type="time" submit={true} device={device} updateConf={updateConf} />,
         icon: <AccessTimeIcon />
     }), new MenuItem({
         title: 'Locale',
-        component: () => <PageConfig type="locale" submit={true} device={device} />,
+        component: () => <PageConfig type="locale" submit={true} device={device} updateConf={updateConf} />,
         icon: <LocationOnIcon />
     }), new MenuItem({
         title: 'Power',
-        component: () => <PageConfig type="power" device={device} />,
+        component: () => <PageConfig type="power" device={device} updateConf={updateConf} />,
         icon: <PowerSettingsNewIcon />
     }), new MenuItem({
         title: 'System',
-        component: () => <PageConfig type="system" device={device} />,
+        component: () => <PageConfig type="system" device={device} updateConf={updateConf} />,
         icon: <HelpIcon />
     })];
 
@@ -277,7 +277,7 @@ function handleVarType(val: any, id: string, onchange?: (e: any) => void) {
             if (val.options) {
                 return <span className="configItem">
                     <select id={id} onChange={onchange}>
-                        {val.options.map((opt: any) => <option value={opt} selected={opt === val.value} >{opt}</option>)}
+                        {val.options.map((opt: any, i: number) => <option value={i} selected={i === val.value} >{opt}</option>)}
                     </select>
                 </span>;
             }
@@ -287,11 +287,11 @@ function handleVarType(val: any, id: string, onchange?: (e: any) => void) {
     }
 }
 
-function PageConfig({ type, submit, device }: { type: string, submit?: boolean, device: Neighbour }) {
+function PageConfig({ type, submit, device, updateConf }: { type: string, submit?: boolean, device: Neighbour, updateConf: () => void }) {
 
     const [conf, setConf] = useState<{ [key: string]: Types.OneStageValue | Types.OneStageMinMax | Types.OneStageOptions } | undefined>(undefined);
 
-    if (type && !conf) {
+    if (type && !conf && device) {
         Config.getConfig(device.urlFromIp()).then((conf) => {
             if ((conf as any)[type]) setConf((conf as any)[type]);
         })
@@ -332,6 +332,6 @@ function PageConfig({ type, submit, device }: { type: string, submit?: boolean, 
             </div>;
         })}
 
-        {submit ? <button onClick={() => Config.submitConfig(device.urlFromIp(), { [type]: conf })}>Submit</button> : null}
+        {submit ? <button onClick={() => Config.submitConfig(device.urlFromIp(), { [type]: conf }).then(updateConf)}>Submit</button> : null}
     </>
 }

@@ -4,6 +4,7 @@ import * as SetIp from 'set-ip-address'
 import { networkInterfaces, NetworkInterfaceInfo } from 'os';
 
 interface Options extends Plugin.Options {
+    interface: Plugin.ClientOption<string>,
     dhcp?: Plugin.ClientOption<boolean>,
     ip?: Plugin.ClientOption<string>,
     mask?: Plugin.ClientOption<string>,
@@ -12,7 +13,13 @@ interface Options extends Plugin.Options {
     dns2?: Plugin.ClientOption<string>,
 }
 
-const defaultOptions: Options = {
+export const defaultOptions: Options = {
+    interface: {
+        priority: 0,
+        readableName: 'Interface',
+        restart: 'restart-server',
+        value: 'enp0s5'
+    },
     ip: {
         priority: 0,
         readableName: 'IP Address',
@@ -55,21 +62,18 @@ export class plugin extends Plugin.Instance {
         this.getIps();
     }
 
-    setIp = () => {
-        const eth0 = {
-            dhcp: this.options.dhcp,
-            interface: 'eth0',
-            ip_address: this.options.ip,
-            prefix: 20,
-            gateway: this.options.gateway,
-            nameservers: [this.options.dns1, this.options.dns2],
-            optional: true // (netplan) - dont wait for interfaces to avoid boot delay
+    setIp = (ip: string): Promise<void> => {
+        const iface = {
+            dhcp: false,
+            interface: this.options.interface.value,
+            prefix: 24,
+            ip_address: ip,
         }
 
-        SetIp.configure([eth0]).then(() => console.log('done writing config files'));
+        return SetIp.configure([iface]).then(SetIp.restartService);
     }
 
-    getIps = () => {
+    getIps() {
         const results = Object.create(null); // Or just '{}', an empty object
         for (const name of Object.keys(this.nets)) {
             for (const net of this.nets[name]!) {
@@ -86,8 +90,8 @@ export class plugin extends Plugin.Instance {
         }
         this.ips = results;
 
-        this.options.ip!.value = this.ips!.en5[0].address;
-        this.options.mask!.value = this.ips!.en5[0].netmask;
+        this.options.ip!.value = this.ips![this.options.interface.value][0].address;
+        this.options.mask!.value = this.ips![this.options.interface.value][0].netmask;
     }
 
     restartInterface = () => SetIp.restartService().then(() => console.log('network service restarted'))
