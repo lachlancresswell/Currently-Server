@@ -17,6 +17,8 @@ services:
 
   influxdb:
     build: ./influxdb
+    volumes: 
+      - 'influxdb_data:/var/lib/influxdb2'
     #env_file: configuration.env
     environment:
       - INFLUXDB_DB=influx

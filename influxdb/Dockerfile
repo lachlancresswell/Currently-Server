@@ -1,4 +1,4 @@
-FROM influxdb:1.8
+FROM influxdb:2.1
 
 RUN apt-get update && \
     apt-get install -y openssl && \
