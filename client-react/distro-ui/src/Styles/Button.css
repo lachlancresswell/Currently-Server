@@ -41,7 +41,7 @@
 }
 
 .selected {
-    color: var(--text-colour-selected);
+    color: var(--text-colour-selected) !important;
 }
 
 .menu button {

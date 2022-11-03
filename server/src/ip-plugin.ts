@@ -18,7 +18,7 @@ export const defaultOptions: Options = {
         priority: 0,
         readableName: 'Interface',
         restart: 'restart-server',
-        value: 'enp0s5'
+        value: 'eth0'
     },
     ip: {
         priority: 0,
@@ -55,6 +55,16 @@ export class plugin extends Plugin.Instance {
         super(app, options, name, defaultOptions);
 
         this.nets = networkInterfaces();
+
+        const _this = this;
+        this.app.registerPostRoute(`/ip_address`, (req, res) => {
+            const dhcp = req.body.dhcp;
+            const ip_address = req.body.ip_address;
+            const prefix = req.body.prefix;
+            const gateway = req.body.gateway;
+
+            return this.setIp(dhcp, ip_address, prefix, gateway).then(() => res.send(true), (e) => res.send(JSON.stringify(e)));
+        })
     }
 
     load = () => {
@@ -62,15 +72,15 @@ export class plugin extends Plugin.Instance {
         this.getIps();
     }
 
-    setIp = (ip: string): Promise<void> => {
-        const iface = {
-            dhcp: false,
-            interface: this.options.interface.value,
-            prefix: 24,
-            ip_address: ip,
-        }
+    setIp = (dhcp: boolean = true, ip_address?: string, prefix?: string, gateway?: string): Promise<void> => {
 
-        return SetIp.configure([iface]).then(SetIp.restartService);
+        const iface = {
+            dhcp,
+            interface: this.options.interface.value,
+            prefix,
+            ip_address,
+        }
+        return SetIp.configure([iface]).then(this.restartInterface);
     }
 
     getIps() {
@@ -94,7 +104,7 @@ export class plugin extends Plugin.Instance {
         this.options.mask!.value = this.ips![this.options.interface.value][0].netmask;
     }
 
-    restartInterface = () => SetIp.restartService().then(() => console.log('network service restarted'))
+    restartInterface = () => SetIp.restartService().then(this.getIps)
 }
 
 

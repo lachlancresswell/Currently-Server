@@ -4,7 +4,7 @@ services:
     build: ./telegraf
     environment:
       - INFLUX_ADDRESS=influxdb:8086
-      - MODBUS_GATEWAY_IP=192.168.8.123
+      - MODBUS_GATEWAY_IP=192.168.1.63
       - L1_NAME=L1
       - L2_NAME=L2
       - L3_NAME=L3
@@ -29,25 +29,30 @@ services:
       - INFLUXDB_HTTP_HTTPS_CERTIFICATE=/etc/ssl/influxdb-selfsigned.crt
       # Use a separate private key location.
       - INFLUXDB_HTTP_HTTPS_PRIVATE_KEY=/etc/ssl/influxdb-selfsigned.key
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=admin
+      - DOCKER_INFLUXDB_INIT_ORG=myorg
+      - DOCKER_INFLUXDB_INIT_BUCKET=mybucket
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=mytoken
     ports:
       - '8086:8086'
 
-  ui:
-    build: .
-    environment:
-      - HTTP_PORT=80
-      - HTTPS_PORT=443
-    network_mode: "host"
+  # ui:
+  #   build: .
+  #   environment:
+  #     - HTTP_PORT=80
+  #     - HTTPS_PORT=443
+  #   network_mode: "host"
 
-  tailscale:
-    build:
-      context: ./tailscale-balena-block
-      dockerfile: Dockerfile.template
-    restart: always
-    network_mode: host
-    volumes:
-      - tailscale-state:/tailscale
+  # tailscale:
+  #   build:
+  #     context: ./tailscale-balena-block
+  #     dockerfile: Dockerfile.template
+  #   restart: always
+  #   network_mode: host
+  #   volumes:
+  #     - tailscale-state:/tailscale
 
 volumes:
   influxdb_data: {}
-  tailscale-state: {}
+  # tailscale-state: {}

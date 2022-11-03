@@ -151,7 +151,7 @@ svg {
 }
 
 .chart-container {
-    margin-left: 1em;
+    margin-left: 1.9em;
     margin-top: 1em;
     /* margin-right: 5em; */
     /* position: relative; */
@@ -181,4 +181,12 @@ svg {
 
 .App {
     background-color: darkkhaki;
+}
+
+.roundedBox.inactive {
+    opacity: 50%;
+}
+
+.roundedBox.active {
+    opacity: 100%;
 }

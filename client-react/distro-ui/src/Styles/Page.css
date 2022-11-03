@@ -146,12 +146,28 @@
     background-color: grey;
     border-radius: 0.2em;
     text-align: center;
-    margin: 0 0.2em;
+    margin: 0 0.1em;
     min-width: 2em;
 }
 
 .roundedBox .selected {
     background-color: lightgrey;
+}
+
+.yellow {
+    background-color: yellow !important;
+}
+
+.purple {
+    background-color: purple !important;
+}
+
+.green {
+    background-color: green !important;
+}
+
+.orange {
+    background-color: orange !important;
 }
 
 .pageChartMenu {

@@ -107,7 +107,7 @@ export class plugin extends Plugin.Instance {
          * Neighbouring server API endpoint
          */
         const route = '/neighbours';
-        this.registerGetRoute(route, this.getNeighbours)
+        this.registerGetRoute(route, (req: any, res: any) => this.getNeighbours(req, res, this))
 
         const _this = this;
         this.listen((Events.DEVICE_NAME_UPDATE), (res: string) => {
@@ -118,7 +118,7 @@ export class plugin extends Plugin.Instance {
         })
     }
 
-    getNeighbours = (_req: any, res: { send: (arg0: string) => any; }) => res.send(JSON.stringify(this.neighbours));
+    getNeighbours = (_req: any, res: { send: (arg0: string) => any; }, _this: any) => res.send(JSON.stringify(_this.neighbours));
 
     /**
      * Destroys the current MDNS session

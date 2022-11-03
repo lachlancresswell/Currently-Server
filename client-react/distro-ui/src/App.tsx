@@ -8,27 +8,7 @@ import * as MDNS from './Plugins/mdns';
 import * as Influx from './Plugins/influx';
 import Neighbour from './Neighbour';
 import * as Config from './Config';
-import { Logger, History } from './log';
-
-const testData: Types.DistroData = {
-  time: new Date(),
-  pf: 3,
-  kva: 600,
-  hz: 60,
-  phases: [{
-    voltage: 238,
-    amperage: 8.4,
-    phase: 1,
-  }, {
-    voltage: 233,
-    amperage: 4.1,
-    phase: 2,
-  }, {
-    voltage: 232,
-    amperage: 2.4,
-    phase: 3,
-  }]
-}
+import { Logger } from './log';
 
 let once = false;
 
@@ -36,7 +16,6 @@ let loggers: { app: Logger, mdns: Logger };
 class App extends React.Component<{}, {
   neighbours: Neighbour[], phaseData: Types.DistroData,
   curDevice: number,
-  config: any,
   discovery: boolean,
   curNeighbour?: Neighbour,
   status: {
@@ -47,7 +26,7 @@ class App extends React.Component<{}, {
     server: Date
   },
   attention: boolean,
-  conf: { [key: string]: Types.OneStageValue | Types.OneStageMinMax | Types.OneStageOptions } | undefined
+  conf: { [key: string]: { [key: string]: Types.OneStageValue | Types.OneStageMinMax | Types.OneStageOptions } } | undefined
 }> {
   mdns: MDNS.plugin;
   influx: Influx.plugin;
@@ -97,19 +76,9 @@ class App extends React.Component<{}, {
       }]
     };
 
-    let config = {};
-
-    const path = '127.0.0.1/8200';
-    config = Config.getConfig(path).then((res) => {
-      this.setState((prevState) => ({ ...prevState, config: res }))
-    }, (rej) => {
-      this.log.warn('Failed to GET - ' + path)
-    })
-
     loggers = { app: this.log, mdns: this.mdns.log }
 
     this.state = {
-      config,
       phaseData,
       curDevice,
       neighbours,
@@ -129,8 +98,21 @@ class App extends React.Component<{}, {
 
   componentDidMount() {
     this.log.debug('Component did mount.')
-    const myFunc2 = () => {
 
+    if (!once) {
+      once = true;
+      this.setState((prevState) => ({ ...prevState, discovery: true }))
+      this.log.debug('Starting discovery loop')
+      this.discoveryLoop();
+    }
+
+    this.getCurrentDeviceConfig();
+  }
+
+  /**
+   * Queries server for neighbour list + updates client list
+   */
+  discoveryLoop = () => {
       try {
         this.mdns.discoveryLoop().then(({ newNeighbours, time }) => {
           if (newNeighbours) {
@@ -147,8 +129,7 @@ class App extends React.Component<{}, {
                 })
               }
 
-              const newState = { ...prevState, ...{ neighbours, curDevice, status, time: { ...prevState.time, server: time } } };
-              return newState;
+            return { ...prevState, ...{ neighbours, curDevice, status, time: { ...prevState.time, server: time } } }
             });
           }
         }, (rej) => {
@@ -156,33 +137,26 @@ class App extends React.Component<{}, {
       } catch (e) {
         this.setState(prevState => ({ ...prevState, status: { ...prevState.status, server: false } }));
       } finally {
-        setTimeout(() => myFunc2(), 5000);
+      setTimeout(() => this.discoveryLoop(), 5000);
       }
     }
-    if (!once) {
-      once = true;
-      this.setState((prevState) => ({ ...prevState, discovery: true }))
-      this.log.debug('Starting discovery loop')
-      myFunc2();
-    }
-    const myFunc = () => {
+
+  /**
+   * Loop to check wether the currently selected device has changed and returns the new config if so
+   */
+  getCurrentDeviceConfig = () => {
       const curNeighbour = this.state.neighbours.find((n) => n.id === this.state.curDevice);
-      if (curNeighbour) {
-        if (!this.state.curNeighbour || this.state.curNeighbour && curNeighbour.id !== this.state.curNeighbour.id) {
+    if (curNeighbour && (!this.state.curNeighbour || this.state.curNeighbour && curNeighbour.id !== this.state.curNeighbour.id)) {
           Config.getConfig(curNeighbour.urlFromIp()).then((conf) => {
             this.setState(prevState => {
               return { ...prevState, curNeighbour, conf };
             });
           });
         }
-      }
-      setTimeout(myFunc, 1000);
-    }
-    myFunc();
+    setTimeout(this.getCurrentDeviceConfig, 1000);
   }
 
-  onDeviceSelected = (e: number) => this.setState(prevState => ({ ...prevState, ...{ curDevice: e } })
-  );
+  onDeviceSelected = (e: number) => this.setState(prevState => ({ ...prevState, ...{ curDevice: e } }));
 
   render() {
     return <div id='single-page' className='single-page'>

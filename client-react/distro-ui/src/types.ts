@@ -4,7 +4,6 @@ export interface PhaseData {
     phase: 1 | 2 | 3,
 }
 
-
 export interface DistroData {
     time: Date,
     pf?: number,
@@ -15,6 +14,10 @@ export interface DistroData {
 
 export interface NeighbourData {
     ip: string, local: boolean, name: string, secure: boolean, id?: number, influxIP: string
+}
+
+export interface addressInfo {
+    ip: string, local: boolean, name: string, modbusIP: string, secure: boolean, influxIP: string,
 }
 
 export interface ButtonItem {
@@ -50,3 +53,5 @@ export interface Config {
         [key: string]: OneStageMinMax | OneStageOptions | OneStageValue
     }
 }
+
+export type AnnotationColor = 'yellow' | 'purple' | 'orange' | 'green';
