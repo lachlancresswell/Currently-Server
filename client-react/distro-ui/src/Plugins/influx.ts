@@ -17,6 +17,11 @@ interface FluxQuery {
     type: string,
 }
 
+export interface Phase {
+    voltage: { y: number | string | null, x: Date }[]
+    amperage: { y: number | string | null, x: Date }[]
+}
+
 export interface influxRtn {
     _field: string,
     _measurement: string,
@@ -65,7 +70,7 @@ export class plugin extends Plugin.Instance {
         const db = new InfluxDB({ url: url, token: this.token });//, transportOptions: { rejectUnauthorized: false } });
         this.dbs.push(db.getQueryApi(this.org))
         this.writeApi = db.getWriteApi(this.org, this.bucket)
-        this.deleteApi = new DeleteAPI(db)
+        // this.deleteApi = new DeleteAPI(db)
     };
 
     static queryDB = (db: QueryApi, fluxQuery: string) => db.collectRows(fluxQuery)
@@ -142,10 +147,7 @@ export class plugin extends Plugin.Instance {
 
         const annotationData: FluxQuery[] = await db.collectRows(annotationQuery);
 
-        interface Phase {
-            voltage: { y: number | string, x: Date }[]
-            amperage: { y: number | string, x: Date }[]
-        }
+
 
         let phases: Phase[] = [{
             voltage: [],
@@ -185,6 +187,22 @@ export class plugin extends Plugin.Instance {
         annotationData.forEach((row) => {
             annotations.push({ y: row._value as string, x: new Date(row._time), color: row._field })
         });
+
+        let indexes: number[] = [];
+
+        phases[0].amperage.forEach((item, i, arr) => {
+            if (i) {
+                const lastItem = arr[i - 1];
+                const lel = item.x.getTime() / 1000
+                const lol = lastItem.x.getTime() / 1000
+                if (lel - lol > 120) {
+                    indexes.push(i)
+                }
+            }
+        })
+
+        phases.forEach((phase) => nullPadding(phase, new Date(start), new Date(end)))
+
         return { phases, annotations };
     }
 
@@ -220,4 +238,48 @@ export class plugin extends Plugin.Instance {
             })
         }
     }
+}
+
+
+/**
+ * Create null entries in array between measurements with more than 120seconds between them. Also creates null entries at the start and end dates to
+ * ensure plot is not cropped to entered data
+ * @param phase phase object
+ * @param start start date of range
+ * @param end end date of range
+ */
+export const nullPadding = (phase: Phase, start: Date, end: Date) => {
+
+    let i = phase.amperage.length - 1;
+
+    for (; i > 0; i -= 1) {
+        const dateLate = phase.amperage[i].x.getTime() / 1000
+        const dateEarly = phase.amperage[i - 1].x.getTime() / 1000
+        const delta = dateLate - dateEarly;
+
+
+        if (delta > 120) {
+            const item = {
+                x: new Date((dateEarly + 60) * 1000),
+                y: null,
+            }
+
+            phase.amperage.splice(i, 0, item);
+            phase.voltage.splice(i, 0, item);
+        }
+    }
+
+    const startItem = {
+        x: new Date((start.getTime() - 1000)),
+        y: null,
+    }
+
+    const endItem = {
+        x: new Date((end.getTime() + 1000)),
+        y: null,
+    }
+    phase.amperage.splice(0, 0, startItem);
+    phase.amperage.splice(phase.amperage.length - 1, 0, endItem);
+    phase.voltage.splice(0, 0, startItem);
+    phase.voltage.splice(phase.voltage.length - 1, 0, endItem);
 }

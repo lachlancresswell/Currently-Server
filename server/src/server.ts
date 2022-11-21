@@ -54,7 +54,7 @@ export default class Server {
             'origin': '*',
             'preflightContinue': true
         }));
-        this.app.use(express.static('../client-react/distro-ui/dist/'))
+        this.app.use(express.static('../client-react/distro-ui/build/'))
         this.app.use(express.json({
             type: (req) => !(req.url?.includes('influx') || req.url?.includes('.'))
         }));

@@ -117,11 +117,22 @@ body {
     animation: spin 2s linear infinite;
 }
 
+.strikethrough {
+    text-decoration: line-through;
+    color: black !important;
+}
+
+.icon {
+    color: black;
+}
+
 #chart-notify {
     position: absolute;
-    left: 17%;
-    top: 50%;
+    left: 0;
+    top: 35%;
     z-index: 1;
+    width: 100%;
+    text-align: center;
 }
 
 @-webkit-keyframes spin {
@@ -144,7 +155,7 @@ body {
     }
 }
 
-svg {
+a>svg {
     height: 1em;
     width: 1em;
     font-size: 1em !important;

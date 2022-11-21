@@ -113,46 +113,46 @@ class App extends React.Component<{}, {
    * Queries server for neighbour list + updates client list
    */
   discoveryLoop = () => {
-      try {
-        this.mdns.discoveryLoop().then(({ newNeighbours, time }) => {
-          if (newNeighbours) {
-            this.setState(prevState => {
-              let neighbours = prevState.neighbours;
-              let curDevice = prevState.curDevice;
-              const status = prevState.status;
+    try {
+      this.mdns.discoveryLoop().then(({ newNeighbours, time }) => {
+        if (newNeighbours) {
+          this.setState(prevState => {
+            let neighbours = prevState.neighbours;
+            let curDevice = prevState.curDevice;
+            const status = prevState.status;
 
-              if (newNeighbours) {
-                newNeighbours.forEach((n) => {
-                  neighbours = neighbours.concat(new Neighbour(n));
-                  if (curDevice < 0) curDevice = neighbours[0].id;
-                  status.server = true;
-                })
-              }
+            if (newNeighbours) {
+              newNeighbours.forEach((n) => {
+                neighbours = neighbours.concat(new Neighbour(n));
+                if (curDevice < 0) curDevice = neighbours[0].id;
+                status.server = true;
+              })
+            }
 
             return { ...prevState, ...{ neighbours, curDevice, status, time: { ...prevState.time, server: time } } }
-            });
-          }
-        }, (rej) => {
-        })
-      } catch (e) {
-        this.setState(prevState => ({ ...prevState, status: { ...prevState.status, server: false } }));
-      } finally {
+          });
+        }
+      }, (rej) => {
+      })
+    } catch (e) {
+      this.setState(prevState => ({ ...prevState, status: { ...prevState.status, server: false } }));
+    } finally {
       setTimeout(() => this.discoveryLoop(), 5000);
-      }
     }
+  }
 
   /**
    * Loop to check wether the currently selected device has changed and returns the new config if so
    */
   getCurrentDeviceConfig = () => {
-      const curNeighbour = this.state.neighbours.find((n) => n.id === this.state.curDevice);
+    const curNeighbour = this.state.neighbours.find((n) => n.id === this.state.curDevice);
     if (curNeighbour && (!this.state.curNeighbour || this.state.curNeighbour && curNeighbour.id !== this.state.curNeighbour.id)) {
-          Config.getConfig(curNeighbour.urlFromIp()).then((conf) => {
-            this.setState(prevState => {
-              return { ...prevState, curNeighbour, conf };
-            });
-          });
-        }
+      Config.getConfig(curNeighbour.urlFromIp()).then((conf) => {
+        this.setState(prevState => {
+          return { ...prevState, curNeighbour, conf };
+        });
+      });
+    }
     setTimeout(this.getCurrentDeviceConfig, 1000);
   }
 
@@ -161,6 +161,8 @@ class App extends React.Component<{}, {
   render() {
     return <div id='single-page' className='single-page'>
       <BrowserRouter>
+        {/* <Status status={this.state.status} neighbours={this.state.neighbours} selectedDeviceIndex={this.state.curDevice} onDeviceSelected={this.onDeviceSelected} attention={this.state.attention} /> */}
+
         <MainMenu device={this.state.curNeighbour!} loggers={loggers} conf={this.state.conf} updateConf={() => {
           if (this.state.curNeighbour) {
             Config.getConfig(this.state.curNeighbour.urlFromIp()).then((conf) => {

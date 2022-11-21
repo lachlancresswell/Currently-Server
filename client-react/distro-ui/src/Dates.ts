@@ -1,4 +1,5 @@
 export const FIVE_MINS = (60 * 60 * 1000);
+export const ONE_YEAR_AGO = (356 * 24 * 60 * 60 * 1000)
 
 export const loadDate = (name: string) => {
     const rtn = window.localStorage.getItem(name) || "";
@@ -12,7 +13,7 @@ const saveValue = (name: string, value: any) => localStorage.setItem(name, value
 
 export const GetDates = () => {
     const currentDate = new Date();
-    const fiveMinsAgo = new Date(currentDate.getTime() - FIVE_MINS)
+    const fiveMinsAgo = new Date(currentDate.getTime() - ONE_YEAR_AGO)
 
     let loadedStart = LoadStartDate();
     let loadedEnd = LoadEndDate();

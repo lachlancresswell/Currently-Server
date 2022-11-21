@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useState } from 'react';
+import { Dispatch, SetStateAction, useState, memo } from 'react';
 import * as Types from './types'
 import PageConfigMenu from './Routes/PageConfigMenu'
 import PageBasic from './Routes/PageBasic';
@@ -54,7 +54,6 @@ class MenuItem {
 }
 
 let fetching = false;
-let v = 0;
 
 /**
  * 

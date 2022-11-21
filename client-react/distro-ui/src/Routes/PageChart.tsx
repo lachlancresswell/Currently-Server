@@ -1,282 +1,19 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, Component, memo } from 'react';
 import 'chartjs-adapter-moment';
 import '../Styles/Page.css';
 import TuneIcon from '@mui/icons-material/Tune';
 import CommentIcon from '@mui/icons-material/Comment';
 import * as Types from '../types'
 import * as Influx from '../Plugins/influx';
-import zoomPlugin from 'chartjs-plugin-zoom';
-import annotationPlugin from 'chartjs-plugin-annotation';
 import * as Dates from '../Dates'
-
-import {
-    Chart,
-    ArcElement,
-    LineElement,
-    BarElement,
-    PointElement,
-    BarController,
-    BubbleController,
-    DoughnutController,
-    LineController,
-    PieController,
-    PolarAreaController,
-    RadarController,
-    ScatterController,
-    CategoryScale,
-    LinearScale,
-    LogarithmicScale,
-    RadialLinearScale,
-    TimeScale,
-    TimeSeriesScale,
-    Decimation,
-    Filler,
-    Legend,
-    Title,
-    Tooltip,
-    SubTitle,
-} from 'chart.js';
-import { Line } from 'react-chartjs-2';
+import ReactApexChart from "react-apexcharts";
+import { ApexOptions } from "apexcharts";
 import Neighbour from '../Neighbour';
 import { NavLink, Route } from 'react-router-dom';
-import { Type } from 'typescript';
-
-Chart.register(
-    ArcElement,
-    LineElement,
-    BarElement,
-    PointElement,
-    BarController,
-    BubbleController,
-    DoughnutController,
-    LineController,
-    PieController,
-    PolarAreaController,
-    RadarController,
-    ScatterController,
-    CategoryScale,
-    LinearScale,
-    LogarithmicScale,
-    RadialLinearScale,
-    TimeScale,
-    TimeSeriesScale,
-    Decimation,
-    Filler,
-    Legend,
-    Title,
-    Tooltip,
-    SubTitle,
-);
-
-Chart.register(zoomPlugin);
-Chart.register(annotationPlugin);
-
-export const options: any = {
-    // aspectRatio: 1.7,
-    spanGaps: 1000 * 60,
-    maintainAspectRatio: false,
-    responsive: true,
-    animation: false,
-    // {
-    // onComplete: (context: any) => {
-    //     if (!context.initial) {
-    //         const loader = document.getElementById('loader') as HTMLDivElement;
-    //         if (loader) loader.style.display = 'none';
-    //     }
-    // }
-    // },
-    interaction: {
-        intersect: false,
-        axis: 'xy',
-        mode: 'index',
-    },
-    plugins: {
-        annotation: {
-            annotations: {
-
-            }
-        },
-        htmlLegend: {
-            containerID: 'legend-container',
-        },
-        legend: {
-            display: false,
-        },
-        title: {
-            display: false,
-        },
-        decimation: {
-            algorithm: 'min-max',
-            enabled: true
-        },
-        zoom: {
-            mode: 'xy',
-            limits: {
-                x: { min: 'original', max: 'original' }
-            },
-        }
-    },
-    scales: {
-        x: {
-            type: 'time',
-            title: {
-                display: false,
-            },
-            time: {
-                stepSize: 5,
-                // minUnit: 'minute'
-            }
-        },
-        y: {
-            min: 210,
-            max: 310,
-            type: 'linear',
-            display: true,
-            position: 'left',
-            afterBuildTicks: (scale: any) => scale.ticks = scale.ticks.filter((t: { value: number }) => (t.value <= 250))
-        },
-        y1: {
-            min: -10,
-            max: 10.0,
-            type: 'linear',
-            display: true,
-            position: 'right',
-            afterBuildTicks: (scale: any) => scale.ticks = scale.ticks.filter((t: { value: number }) => (t.value >= -1)),
-            // grid line settings
-            grid: {
-                drawOnChartArea: false, // only want the grid lines for one axis to show up
-            },
-        },
-    }
-}
-
-
-const configData = (data: any) => {
-    const loader = document.getElementById('loader') as HTMLDivElement;
-    if (loader) loader.style.display = 'none';
-    return {
-        datasets: [
-            {
-                label: "L1 Voltage",
-                data: data ? data[0].voltage : {},
-                borderColor: 'rgba(255, 0, 0, 1.0)',
-                backgroundColor: 'rgba(255, 0, 0, 1.0)',
-                yAxisID: 'y',
-                pointRadius: 0,
-                pointStyle: 'rectRot',
-                pointBorderColor: 'rgb(255, 0, 0)',
-            },
-            {
-                label: "L1 Current",
-                data: data ? data[0].amperage : {},
-                borderColor: 'rgba(255, 0, 0, 1.0)',
-                backgroundColor: 'rgba(255, 0, 0, 1.0)',
-                yAxisID: 'y1',
-                pointRadius: 0,
-                pointStyle: 'rectRot',
-                pointBorderColor: 'rgb(0, 255, 0)',
-            },
-            {
-                label: "L2 Voltage",
-                data: data ? data[1].voltage : {},
-                borderColor: 'rgba(255, 255, 255, 1.0)',
-                backgroundColor: 'rgba(255, 255, 255, 1.0)',
-                yAxisID: 'y',
-                pointRadius: 0,
-                pointStyle: 'rectRot',
-                pointBorderColor: 'rgb(255, 0, 0)'
-            },
-            {
-                label: "L2 Current",
-                data: data ? data[1].amperage : {},
-                borderColor: 'rgba(255, 255, 255, 1.0)',
-                backgroundColor: 'rgba(255, 255, 255, 1.0)',
-                yAxisID: 'y1',
-                pointRadius: 0,
-                pointStyle: 'rectRot',
-                pointBorderColor: 'rgb(0, 255, 0)'
-            },
-            {
-                label: "L3 Voltage",
-                data: data ? data[2].voltage : {},
-                borderColor: 'rgba(0, 0, 255, 1.0)',
-                backgroundColor: 'rgba(0, 0, 255, 1.0)',
-                yAxisID: 'y',
-                pointRadius: 0,
-                pointStyle: 'rectRot',
-                pointBorderColor: 'rgb(255, 0, 0)'
-            },
-            {
-                label: "L3 Current",
-                data: data ? data[2].amperage : {},
-                borderColor: 'rgba(0, 0, 255, 1.0)',
-                backgroundColor: 'rgba(0, 0, 255, 1.0)',
-                yAxisID: 'y1',
-                pointRadius: 0,
-                pointStyle: 'rectRot',
-                pointBorderColor: 'rgb(0, 255, 0)'
-            },
-        ]
-    }
-};
-
-const getOrCreateLegendList = (chart: any, id: string) => {
-    const legendContainer = document.getElementById(id)!;
-    let listContainer = legendContainer.querySelector('ul');
-
-    if (!listContainer) {
-        listContainer = document.createElement('ul');
-        listContainer.style.display = 'flex';
-        listContainer.style.flexDirection = 'row';
-        listContainer.style.margin = '0';
-        listContainer.style.padding = '0';
-
-        legendContainer.appendChild(listContainer);
-    }
-
-    return listContainer;
-};
-
-const htmlLegendPlugin = {
-    id: 'htmlLegend',
-    afterUpdate(chart: any, args: any, options: any) {
-        const ul = getOrCreateLegendList(chart, options.containerID);
-
-        // Remove old legend items
-        while (ul.firstChild) {
-            ul.firstChild.remove();
-        }
-
-        // Reuse the built-in legendItems generator
-        const items = chart.options.plugins.legend.labels.generateLabels(chart);
-
-        items.forEach((item: any) => {
-            // Text
-            const textContainer = document.createElement('span');
-            textContainer.style.color = item.hidden ? 'black' : item.fillStyle;
-            textContainer.className = "roundedBox"
-
-            let text = '';
-            if (item.text.includes('Voltage')) text = 'V';
-            else if (item.text.includes('Current')) text = 'A';
-
-            textContainer.innerText = text;
-            textContainer.style.textDecoration = item.hidden ? 'line-through' : '';
-
-            textContainer.onclick = () => {
-                chart.setDatasetVisibility(item.datasetIndex, !chart.isDatasetVisible(item.datasetIndex));
-                chart.update();
-            };
-
-            ul.appendChild(textContainer);
-        });
-    }
-};
-
 
 interface Phase {
-    voltage: { y: number | string, x: Date }[]
-    amperage: { y: number | string, x: Date }[]
+    voltage: { y: number | string | null, x: Date }[]
+    amperage: { y: number | string | null, x: Date }[]
 }
 
 type AvgPeriod = '1s' | '5s' | '30s' | '60s';
@@ -289,7 +26,203 @@ const loadValue = (name: string) => {
 
 const saveValue = (name: string, value: any) => localStorage.setItem(name, value)
 
-export default function PageChart({ device }: { device: Neighbour }) {
+type InfluxRtn = {
+    phases: Phase[], annotations: {
+        y: string;
+        x: Date;
+        color: string;
+    }[]
+}
+
+const configData = (data: InfluxRtn | undefined | null) => {
+
+    const loader = document.getElementById('loader') as HTMLDivElement;
+    if (loader) loader.style.display = 'none';
+
+    return [
+        {
+            name: "L1 Voltage",
+            data: data ? data.phases[0].voltage : [],
+            type: 'line',
+        },
+        {
+            name: "L1 Current",
+            data: data ? data.phases[0].amperage : [],
+            type: 'line',
+        },
+        {
+            name: "L2 Voltage",
+            data: data ? data.phases[1].voltage : [],
+            type: 'line',
+        },
+        {
+            name: "L2 Current",
+            data: data ? data.phases[1].amperage : [],
+            type: 'line',
+        },
+        {
+            name: "L3 Voltage",
+            data: data ? data.phases[2].voltage : [],
+            type: 'line',
+        },
+        {
+            name: "L3 Current",
+            data: data ? data.phases[2].amperage : [],
+            type: 'line',
+        },
+    ]
+};
+
+
+const TravelDetailsView = ({ data }: { data: InfluxRtn | undefined | null }) => {
+
+    const series = configData(data)
+    let lowestVal = 250;
+    series[0].data.forEach((val) => {
+        if (typeof (val.y) === 'number' && val.y > 0 && val.y < lowestVal) lowestVal = val.y;
+    })
+
+    const chartVoltage: ApexOptions = {
+        chart: {
+            id: "mychart",
+            foreColor: 'white',
+            // group: 'social',
+            type: "area",
+            animations: {
+                enabled: false
+            },
+            toolbar: {
+                autoSelected: 'pan',
+                show: false
+            }
+        }, noData: {
+            text: 'Loading...'
+        },
+        colors: ['#FF0000', '#FFFFFF', '#0000FF'],
+        fill: {
+        },
+        legend: {
+            show: false
+        },
+        markers: {
+            size: 0,
+            colors: ['#7777ff'],
+            showNullDataPoints: false,
+        },
+        xaxis: {
+            type: 'datetime',
+        },
+        yaxis: [
+            {
+                seriesName: 'Voltage',
+                min: 230,
+                max: 250,
+                tickAmount: 3,
+                decimalsInFloat: 0,
+                title: {
+                    text: "Voltage"
+                },
+            }, {
+                seriesName: 'Current',
+                opposite: true,
+                title: {
+                    text: "Current"
+                },
+                min: 0,
+                max: 10,
+                tickAmount: 3,
+                decimalsInFloat: 0,
+            }, {
+                seriesName: 'Voltage',
+                show: false
+            }, {
+                seriesName: 'Current',
+                show: false
+            }, {
+                seriesName: 'Voltage',
+                show: false
+            }, {
+                seriesName: 'Current',
+                show: false
+            }
+        ]
+    };
+
+    const brushChartOptions: ApexOptions = {
+        chart: {
+            brush: {
+                target: 'mychart',
+                enabled: true
+            },
+            selection: {
+                enabled: true,
+                xaxis: {
+                    min: new Date('15 Sep 2022').getTime(),
+                    max: new Date('1 Oct 2022').getTime()
+                }
+            },
+        },
+        legend: {
+            show: false
+        },
+        xaxis: {
+            labels: {
+                show: false
+            },
+            axisTicks: {
+                show: false,
+            },
+            type: 'datetime',
+            tooltip: {
+                enabled: false
+            }
+        },
+        yaxis: [
+            {
+                seriesName: 'Voltage',
+                min: 230,
+                tickAmount: 3,
+                decimalsInFloat: 0,
+                labels: {
+                    show: false
+                },
+            }, {
+                seriesName: 'Current',
+                opposite: true,
+                labels: {
+                    show: false
+                },
+                min: 0,
+                max: 10,
+                tickAmount: 3,
+                decimalsInFloat: 0,
+            }, {
+                seriesName: 'Voltage',
+                show: false,
+                labels: {
+                    show: false
+                },
+            }, {
+                seriesName: 'Current',
+                show: false,
+            }, {
+                seriesName: 'Voltage',
+                show: false,
+            }, {
+                seriesName: 'Current',
+                show: false,
+            }
+        ],
+    }
+
+
+    return <div style={{ height: "70%" }}>
+        <ReactApexChart type="line" options={chartVoltage} series={series} height={"90%"} />
+        <ReactApexChart type="line" options={brushChartOptions} series={series} height={'12%'} width={'100%'} />
+    </div>;
+};
+
+function PageChart({ device }: { device: Neighbour }) {
 
     const { start, end } = Dates.GetDates();
 
@@ -300,12 +233,10 @@ export default function PageChart({ device }: { device: Neighbour }) {
     const [scrollPeriod, setScrollPeriod] = useState(loadValue('scrollPeriod') || '5m');
 
 
-    useEffect(() => {
-        saveValue('startDate', startDate.getTime())
-    }, [startDate])
-    useEffect(() => { saveValue('endDate', endDate.getTime()) }, [endDate])
-    useEffect(() => { saveValue('avgPeriod', avgPeriod) }, [avgPeriod])
-    useEffect(() => { saveValue('scrollPeriod', scrollPeriod) }, [scrollPeriod])
+    useEffect(() => saveValue('startDate', startDate.getTime()), [startDate])
+    useEffect(() => saveValue('endDate', endDate.getTime()), [endDate])
+    useEffect(() => saveValue('avgPeriod', avgPeriod), [avgPeriod])
+    useEffect(() => saveValue('scrollPeriod', scrollPeriod), [scrollPeriod])
 
     useEffect(() => {
         console.log(device, '- Has changed')
@@ -346,8 +277,6 @@ const ChartConfig = React.memo(function ChartConfig({ changePage, startDate, end
 
     const setAvg = (period: AvgPeriod) => avgPeriod.set(period)
     const getAvg = (period: AvgPeriod) => avgPeriod.value === period
-    const setScroll = (period: string) => scrollPeriod.set(period);
-    const getScroll = (period: string) => scrollPeriod.value === period;
 
     const setDateToNow = () => {
         const now = new Date();
@@ -364,9 +293,11 @@ const ChartConfig = React.memo(function ChartConfig({ changePage, startDate, end
             <div>
                 <label>Start</label>
                 <div className={`datePicker`}>
-                    <input required type="date" id="endDate" name="endDate" onChange={(e) => {
-                        const d = e.target.value + ' ' + startDate.value.toISOString().substring(11);
-                        startDate.set(new Date(d))
+                    <input required type="date" id="startDate" name="startDate" onChange={(e) => {
+                        if (e.target.value) {
+                            const d = e.target.value + ' ' + startDate.value.toISOString().substring(11);
+                            startDate.set(new Date(d))
+                        }
                     }} value={startDate.value.toISOString().substring(0, 10)} />
                     <input required type="time" id="endTime" name="endTime" onChange={(e) => {
                         const d = startDate.value.toISOString().substring(0, 10) + 'T' + e.target.value + ':00.000Z'
@@ -376,8 +307,10 @@ const ChartConfig = React.memo(function ChartConfig({ changePage, startDate, end
                 <label>End</label>
                 <div className={`datePicker`}>
                     <input required type="date" id="endDate" name="endDate" onChange={(e) => {
-                        const d = e.target.value + ' ' + endDate.value.toISOString().substring(11);
-                        endDate.set(new Date(d))
+                        if (e.target.value) {
+                            const d = e.target.value + ' ' + endDate.value.toISOString().substring(11);
+                            endDate.set(new Date(d))
+                        }
                     }} value={endDate.value.toISOString().substring(0, 10)} />
                     <input required type="time" id="endTime" name="endTime" onChange={(e) => {
                         const d = endDate.value.toISOString().substring(0, 10) + 'T' + e.target.value + ':00.000Z'
@@ -409,23 +342,15 @@ const ChartConfig = React.memo(function ChartConfig({ changePage, startDate, end
     </>
 });
 
+
 function ChartView({ device, chartConfig, startDate, endDate, avgPeriod }: { device: Neighbour, chartConfig: () => void, startDate: Date, endDate: Date, avgPeriod: AvgPeriod }) {
-    const chartRef: any = useRef(null)
-    const zoom = chartRef && chartRef!.current && chartRef!.current!.getZoomLevel() || 0
 
-    const delta = endDate.valueOf() - startDate.valueOf();
-    const [min, setMin] = useState(0);
-    const [max, setMax] = useState((zoom * 2) * 10);
-
-
-    const [data, setData] = useState<{
-        phases: Phase[], annotations: {
-            y: string;
-            x: Date;
-            color: string;
-        }[]
-    } | undefined | null>(null);
-    const [scrubValue, setScrubValue] = useState(min + (delta / 2));
+    const [data, setData] = useState<InfluxRtn | undefined | null>(null);
+    let [legendView, setLegendView] = useState<{ [index: string]: boolean }[]>([
+        { voltage: true, current: true },
+        { voltage: true, current: true },
+        { voltage: true, current: true }
+    ]);
 
     if (device && !data) {
         Influx.plugin.pollRange(device.db, startDate.toISOString(), endDate.toISOString(), avgPeriod).then((json) => {
@@ -436,67 +361,45 @@ function ChartView({ device, chartConfig, startDate, endDate, avgPeriod }: { dev
     let loader = true;
     if (data && data.phases.find(phase => phase.voltage.length === 0 && phase.amperage.length === 0)) loader = false;
 
-    if (data && data.annotations && data.annotations.length) {
-        data.annotations.forEach((a, i) => {
-            const annotation = {
-                type: 'line',
-                borderColor: a.color,
-                borderWidth: 5,
-                scaleID: 'x',
-                value: a.x,
-                label: {
-                    rotation: 'auto',
-                    content: a.y,
-                    display: true
-                },
-            };
-
-            options.plugins.annotation.annotations[i] = annotation;
-        });
-    } else {
-        // if (options.plugins.annotation.annotations) options.plugins.annotation.annotations = [];
-        options.plugins.annotation.annotations = {};
+    const handleHideClick = (phaseIndex: 1 | 2 | 3, category: "Voltage" | "Current") => {
+        ApexCharts.exec("mychart", "hideSeries", [`L${phaseIndex} ${category}`]);
+        legendView[phaseIndex - 1][category.toLowerCase()] = false;
+        legendView = [...legendView];
+        setLegendView(legendView);
+    };
+    const handleShowClick = (phaseIndex: 1 | 2 | 3, category: "Voltage" | "Current") => {
+        ApexCharts.exec("mychart", "showSeries", [`L${phaseIndex} ${category}`]);
+        legendView[phaseIndex - 1][category.toLowerCase()] = true;
+        legendView = [...legendView];
+        setLegendView(legendView);
+    };
+    const toggleLegendElement = (phaseIndex: 1 | 2 | 3, category: "Voltage" | "Current") => {
+        if (legendView[phaseIndex - 1][category.toLowerCase()]) {
+            handleHideClick(phaseIndex, category);
+        } else {
+            handleShowClick(phaseIndex, category);
+        }
     }
-
-    const chartZoom = (val: { x: number, y: number }) => {
-        const prevZoom = chartRef!.current!.getZoomLevel();
-        chartRef!.current!.zoom(val)
-        const newZoom = (val.x % 1) + prevZoom;
-        const decimal = parseFloat((newZoom % 1).toFixed(2));
-
-        setMax(decimal * 100);
-    }
-
-    const chartScrub = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const prevVal = scrubValue;
-        const val = parseFloat(e.target.value);
-        const delta = (prevVal - val) * 11;
-        chartRef!.current!.pan({ x: delta, y: 0 })
-
-        setScrubValue(val);
-    }
-
-    const phases = data?.phases;
 
     return (<>
         <Route exact path={'/chart'}>
-
             {loader && <div id="loader"></div>}
-            {data && data.phases.find(phase => phase.voltage.length === 0 && phase.amperage.length === 0) && <div id="chart-notify">No data in period {startDate.toLocaleString()} to {endDate.toLocaleString()}</div>}
-            <div style={{ width: "90%", height: "65%" }} className="chart-container">
-                <Line ref={chartRef} options={options} plugins={[htmlLegendPlugin]} data={configData(phases)} />
-            </div>
-            <input onChange={chartScrub} className=" PlotScroller" type="range" step="0.25" min={min} max={max} value={scrubValue} />
+            {data && data.phases.find(phase => phase.voltage.length === 2 && phase.amperage.length === 2) && <div id="chart-notify">No data in period {startDate.toLocaleString()} to {endDate.toLocaleString()}</div>}
+            <TravelDetailsView data={data} />
             <div className="pageRow2">
                 <span className="pageChartMenu" id="legend-container">
-                    <span className='roundedBox' onClick={() => chartZoom({ x: 1.1, y: 1 })}>+</span>
-                    <span className='roundedBox' onClick={() => chartZoom({ x: -1.01, y: 1 })}>-</span>
-                    <span className='roundedBox' onClick={chartConfig}><TuneIcon /></span>
+                    <span className='roundedBox icon' onClick={chartConfig}><TuneIcon /></span>
                     <span className='roundedBox'>
                         <NavLink to={`/chart/annotation`}>
                             <CommentIcon />
                         </NavLink>
                     </span>
+                    <span className={`roundedBox l1 ${legendView[1 - 1].voltage ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(1, "Voltage")}>V</span>
+                    <span className={`roundedBox l2 ${legendView[2 - 1].voltage ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(2, "Voltage")}>V</span>
+                    <span className={`roundedBox l3 ${legendView[3 - 1].voltage ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(3, "Voltage")}>V</span>
+                    <span className={`roundedBox l1 ${legendView[1 - 1].current ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(1, "Current")}>A</span>
+                    <span className={`roundedBox l2 ${legendView[2 - 1].current ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(2, "Current")}>A</span>
+                    <span className={`roundedBox l3 ${legendView[3 - 1].current ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(3, "Current")}>A</span>
                 </span>
             </div>
             <div style={{
@@ -576,3 +479,5 @@ const ChartAnnotation = ({ device }: { device: Neighbour }) => {
         </div>
     </>)
 }
+
+export default memo(PageChart)
