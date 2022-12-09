@@ -1,0 +1,193 @@
+{
+    "config": {
+        "CONFIG_PATH": "./default.json",
+        "DEFAULT_DEVICE_NAME": "my-distro"
+    },
+    "ip-settings": {
+        "interface": {
+            "priority": 0,
+            "readableName": "Interface",
+            "restart": "restart-server",
+            "value": "eth0"
+        },
+        "ip": {
+            "priority": 0,
+            "readableName": "IP Address",
+            "restart": "restart-server",
+            "value": "172.17.0.2"
+        },
+        "mask": {
+            "priority": 0,
+            "readableName": "Mask",
+            "restart": "restart-server",
+            "value": "255.255.0.0"
+        },
+        "gateway": {
+            "priority": 0,
+            "readableName": "Gateway",
+            "restart": "restart-server",
+            "value": "192.168.1.254"
+        },
+        "dhcp": {
+            "priority": 0,
+            "readableName": "DHCP",
+            "restart": "restart-server",
+            "value": 0,
+            "options": [
+                "true",
+                "false"
+            ]
+        }
+    },
+    "influx": {
+        "INFLUX_PORT": 8086,
+        "INFLUX_DOMAIN": "192.168.128.2"
+    },
+    "ota": {
+        "id": {
+            "priority": 0,
+            "readableName": "IP Address",
+            "restart": "restart-server",
+            "value": 1
+        },
+        "name": {
+            "priority": 0,
+            "readableName": "Mask",
+            "restart": "restart-server",
+            "value": "my-ota-device"
+        }
+    },
+    "mdns": {
+        "HTTP_PORT": 8200,
+        "HTTPS_PORT": 8210,
+        "MDNS_DOMAIN": ".local",
+        "HTTP_MDNS_SERVICE_NAME": "http-my-service",
+        "HTTPS_MDNS_SERVICE_NAME": "https-my-service",
+        "SERVICE_NAME": "my-service",
+        "ms": 20000,
+        "discover": {
+            "value": true,
+            "readableName": "Discoverable",
+            "restart": "restart-plugin",
+            "priority": 1
+        },
+        "advertise": true,
+        "device_name": {
+            "value": "hellooo!",
+            "readableName": "Device Name",
+            "restart": "restart-plugin",
+            "priority": 1
+        },
+        "MDNS_RECORD_TYPE": "SRV"
+    },
+    "warnings": {
+        "enable": {
+            "readableName": "Enable",
+            "value": 0,
+            "options": [
+                "true",
+                "false"
+            ]
+        },
+        "vSet": {
+            "readableName": "V Set",
+            "value": 247,
+            "min": 0,
+            "max": 300
+        },
+        "vmax": {
+            "readableName": "V Max",
+            "value": 5,
+            "min": 0,
+            "max": 300
+        },
+        "vmin": {
+            "readableName": "V Min",
+            "value": 10,
+            "min": 0,
+            "max": 300
+        },
+        "amax": {
+            "readableName": "A Max",
+            "value": 12,
+            "min": 0,
+            "max": 300
+        },
+        "HZset": {
+            "readableName": "HZ Set",
+            "value": 60,
+            "min": 0,
+            "max": 100
+        },
+        "hzmax": {
+            "readableName": "HZ Max",
+            "value": 1,
+            "min": 0,
+            "max": 100
+        },
+        "hzmin": {
+            "readableName": "HZ Min",
+            "value": 1,
+            "min": 0,
+            "max": 100
+        }
+    },
+    "time": {
+        "timezone": {
+            "readableName": "Time Zone",
+            "value": "GMT+8",
+            "options": [
+                "GMT+10",
+                "GMT+9",
+                "GMT+8"
+            ]
+        },
+        "timeformat": {
+            "readableName": "Time Format",
+            "value": "12H",
+            "options": [
+                "12H",
+                "24H"
+            ]
+        },
+        "dateformat": {
+            "readableName": "Date Format",
+            "value": "DMY",
+            "options": [
+                "DMY",
+                "MDY"
+            ]
+        }
+    },
+    "locale": {
+        "country": {
+            "readableName": "Country",
+            "value": "Australia"
+        }
+    },
+    "power": {
+        "restart": {
+            "readableName": "Restart",
+            "value": "%button"
+        },
+        "factoryreset": {
+            "readableName": "Factory Reset",
+            "value": "%button"
+        },
+        "memorywipe": {
+            "readableName": "Memory Wipe",
+            "value": "%button"
+        }
+    },
+    "system": {
+        "firmwarever": {
+            "readableName": "Firmware",
+            "value": "0.10.0"
+        },
+        "memory": {
+            "readableName": "Available Memory",
+            "value": "1.25gb"
+        }
+    },
+    "key": {}
+}

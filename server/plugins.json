@@ -1,0 +1,71 @@
+{
+    "plugins": [
+        {
+            "name": "config",
+            "path": "dist/config-plugin.js",
+            "enabled": true,
+            "options": {
+                "CONFIG_PATH": "./default.json",
+                "DEFAULT_DEVICE_NAME": "my-distro"
+            }
+        },
+        {
+            "name": "ip-settings",
+            "path": "dist/ip-plugin.js",
+            "enabled": true,
+            "options": {}
+        },
+        {
+            "name": "influx",
+            "path": "dist/influx-plugin.js",
+            "enabled": true,
+            "options": {
+                "INFLUX_PORT": {
+                    "priority": 1,
+                    "readableName": "Influx Port",
+                    "value": 8086,
+                    "restart": "no-restart"
+                },
+                "INFLUX_DOMAIN": {
+                    "priority": 1,
+                    "readableName": "Influx Domain",
+                    "value": "192.168.64.2",
+                    "restart": "no-restart"
+                }
+            }
+        },
+        {
+            "name": "ota",
+            "path": "dist/ota-plugin.js",
+            "enabled": true
+        },
+        {
+            "name": "mdns",
+            "path": "dist/mdns-plugin.js",
+            "enabled": true,
+            "options": {
+                "HTTP_PORT": 8080,
+                "HTTPS_PORT": 8081,
+                "MDNS_DOMAIN": ".local",
+                "HTTP_MDNS_SERVICE_NAME": "http-my-service",
+                "HTTPS_MDNS_SERVICE_NAME": "https-my-service",
+                "SERVICE_NAME": "my-service",
+                "MDNS_RECORD_TYPE": "SRV",
+                "ms": 20000,
+                "discover": {
+                    "value": true,
+                    "readableName": "Discoverable",
+                    "restart": "restart-plugin",
+                    "priority": 1
+                },
+                "advertise": true,
+                "device_name": {
+                    "value": "hellooo!",
+                    "readableName": "Device Name",
+                    "restart": "restart-plugin",
+                    "priority": 1
+                }
+            }
+        }
+    ]
+}
