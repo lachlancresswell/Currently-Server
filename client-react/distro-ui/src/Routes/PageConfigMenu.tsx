@@ -116,8 +116,11 @@ export default function PageConfigMenu({ device, times, updateConf }: { device: 
                     return Config.submitIP(device.urlFromIp(), dhcp, ip, prefix, gateway).then(updateConf)
                 }} />}
             </Route>
+            <Route path={`/cfg/time`}>
+                {conf && <PageTime device={device} conf={conf['time']} handleChange={(e) => handleChange(e, 'time')} submit={() => Config.submitConfig(device.urlFromIp(), { 'time': conf['time'] }).then(updateConf)} />}
+            </Route>
             <Route path={`/cfg/warnings`}>
-                {conf && <PageWarnings device={device} conf={conf['warnings']} handleChange={(e) => handleChange(e, 'warnings')} submit={() => Config.submitConfig(device.urlFromIp(), { ['warnings']: conf['warnings'] }).then(updateConf)} />}
+                {conf && <PageWarnings device={device} conf={conf['warnings']} handleChange={(e) => handleChange(e, 'warnings')} submit={() => Config.submitConfig(device.urlFromIp(), { 'warnings': conf['warnings'] }).then(updateConf)} />}
             </Route>
         </>
     )
@@ -133,6 +136,22 @@ function PageNetwork({ device, conf, handleChange, submit }: { device: Neighbour
         <TextInput setting={conf.mask as Types.OneStageValue} id={'mask'} handleChange={handleChange} disabled={dhcp} />
         <TextInput setting={conf.gateway as Types.OneStageValue} id={'gateway'} handleChange={handleChange} disabled={dhcp} />
         <CheckboxInput setting={conf.dhcp as Types.OneStageOptions} id={'dhcp'} handleChange={handleChange} />
+        <button onClick={submit}>Submit</button>
+    </>
+}
+
+function PageTime({ device, conf, handleChange, submit }: { device: Neighbour, conf: { [key: string]: Types.OneStageValue | Types.OneStageMinMax | Types.OneStageOptions }, handleChange: (e: any) => void, submit: (e: any) => void }) {
+    var now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    const date = now.toISOString().slice(0, -1);
+
+    return <>
+        <label>Time:</label>
+        <input type="datetime-local" id="time" name="time" value={date} disabled={(conf.automatic as Types.OneStageOptions).options[conf.automatic.value]} />
+        <DropdownInput setting={conf.timezone as Types.OneStageOptions} id={'timezone'} handleChange={handleChange} disabled={(conf.automatic as Types.OneStageOptions).options[conf.automatic.value]} />
+        <DropdownInput setting={conf.dateformat as Types.OneStageOptions} id={'dateformat'} handleChange={handleChange} />
+        <DropdownInput setting={conf.timeformat as Types.OneStageOptions} id={'timeformat'} handleChange={handleChange} />
+        <CheckboxInput setting={conf.automatic as Types.OneStageOptions} id={'automatic'} handleChange={handleChange} />
         <button onClick={submit}>Submit</button>
     </>
 }
