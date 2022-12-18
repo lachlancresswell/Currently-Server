@@ -135,7 +135,7 @@
     "time": {
         "timezone": {
             "readableName": "Time Zone",
-            "value": "GMT+8",
+            "value": 2,
             "options": [
                 "GMT+10",
                 "GMT+9",
@@ -144,7 +144,7 @@
         },
         "timeformat": {
             "readableName": "Time Format",
-            "value": "12H",
+            "value": 1,
             "options": [
                 "12H",
                 "24H"
@@ -152,10 +152,20 @@
         },
         "dateformat": {
             "readableName": "Date Format",
-            "value": "DMY",
+            "value": 1,
             "options": [
                 "DMY",
                 "MDY"
+            ]
+        },
+        "automatic": {
+            "value": 0,
+            "readableName": "Automatic",
+            "restart": "restart-plugin",
+            "priority": 1,
+            "options": [
+                "true",
+                "false"
             ]
         }
     },
