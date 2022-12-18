@@ -52,6 +52,8 @@ export default function PageConfigMenu({ device, times, updateConf }: { device: 
                         if (e.target.value) conf.value = parseInt(e.target.value)
                         if ((conf as Types.OneStageMinMax).max && conf.value > (conf as Types.OneStageMinMax).max) conf.value = (conf as Types.OneStageMinMax).max;
                         else if ((conf as Types.OneStageMinMax).min && conf.value < (conf as Types.OneStageMinMax).min) conf.value = (conf as Types.OneStageMinMax).min;
+                    } else if (e.target.type === 'select-one') {
+                        conf.value = (e.target as HTMLSelectElement).selectedIndex;
                     }
                     curConf[key][id] = conf;
                 }
@@ -184,6 +186,24 @@ function CheckboxInput({ setting, disabled = false, handleChange, id }: { settin
             <label className="switch">
                 <input id={id} type="checkbox" checked={checked} onChange={handleChange} />
                 <span className="slider round"></span>
+            </label>
+        </span>
+    </div>
+}
+
+function DropdownInput({ setting, disabled = false, handleChange, id }: { setting: Types.OneStageOptions, disabled?: boolean, handleChange: (e: any) => void, id: string }) {
+
+    return <div className='configRow'>
+        <span className="configItem">
+            {setting.readableName}
+        </span>
+        <span className="configItem">
+            <label className="select">
+                <select id={id} onChange={handleChange} disabled={disabled}>
+                    {setting.options.map((opt, i) => {
+                        return <option value={opt} selected={i === setting.value} >{opt}</option>
+                    })}
+                </select>
             </label>
         </span>
     </div>
