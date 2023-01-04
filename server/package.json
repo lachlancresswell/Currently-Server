@@ -26,7 +26,8 @@
     "http-proxy": "^1.18.1",
     "multicast-dns": "^7.2.4",
     "reboot": "^0.1.0",
-    "set-ip-address": "^1.1.0"
+    "set-ip-address": "^1.1.0",
+    "set-system-clock": "github:Inrixia/Set-System-Clock"
   },
   "devDependencies": {
     "@types/cors": "^2.8.12",

@@ -16,6 +16,12 @@
             "options": {}
         },
         {
+            "name": "util",
+            "path": "dist/util-plugin.js",
+            "enabled": true,
+            "options": {}
+        },
+        {
             "name": "influx",
             "path": "dist/influx-plugin.js",
             "enabled": true,

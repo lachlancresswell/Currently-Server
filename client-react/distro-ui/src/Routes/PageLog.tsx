@@ -40,7 +40,7 @@ export default function PageLog({ logs, attention, onLoad }: { logs: { app: Logg
         }} >
             {log.map((m) => {
                 return <samp style={{ display: 'block' }}>
-                    {m.date.toLocaleTimeString() + ' '}
+                    {m.date.toLocaleString() + ' '}
                     <span className={m.service}>{m.service}</span>
                     <span> </span>
                     <span className={m.level}>{m.level}</span>

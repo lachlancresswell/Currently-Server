@@ -10,6 +10,7 @@ import ReactApexChart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import Neighbour from '../Neighbour';
 import { NavLink, Route } from 'react-router-dom';
+import * as Config from '../Config';
 
 interface Phase {
     voltage: { y: number | string | null, x: Date }[]
@@ -74,7 +75,7 @@ const configData = (data: InfluxRtn | undefined | null) => {
 };
 
 
-const TravelDetailsView = ({ data }: { data: InfluxRtn | undefined | null }) => {
+const TravelDetailsView = ({ data, conf }: { data: InfluxRtn | undefined | null, conf?: { [key: string]: { [key: string]: Types.OneStageValue | Types.OneStageMinMax | Types.OneStageOptions } } }) => {
 
     const series = configData(data)
     let lowestVal = 250;
@@ -82,11 +83,31 @@ const TravelDetailsView = ({ data }: { data: InfluxRtn | undefined | null }) => 
         if (typeof (val.y) === 'number' && val.y > 0 && val.y < lowestVal) lowestVal = val.y;
     })
 
+    let format = "dd/MM/yy hh:mm:ss TT";
+    if (conf) {
+        const settings = conf['time'];
+        const dateformat = (settings.dateformat as Types.OneStageOptions).options[settings.dateformat.value];
+        const timeformat = (settings.timeformat as Types.OneStageOptions).options[settings.timeformat.value];
+
+        if (dateformat === 'MDY') {
+            format = `MM/dd/yy `;
+        } else {
+            format = `dd/MM/yy `;
+        }
+
+        if (timeformat === '24H') {
+            format += 'HH:mm:ss'
+        } else {
+            format += 'hh:mm:ss'
+        }
+
+        format += ' TT'
+    }
+
     const chartVoltage: ApexOptions = {
         chart: {
             id: "mychart",
             foreColor: 'white',
-            // group: 'social',
             type: "area",
             animations: {
                 enabled: false
@@ -108,6 +129,11 @@ const TravelDetailsView = ({ data }: { data: InfluxRtn | undefined | null }) => 
             size: 0,
             colors: ['#7777ff'],
             showNullDataPoints: false,
+        },
+        tooltip: {
+            x: {
+                format
+            }
         },
         xaxis: {
             type: 'datetime',
@@ -358,6 +384,14 @@ function ChartView({ device, chartConfig, startDate, endDate, avgPeriod }: { dev
         })
     }
 
+    const [conf, setConf] = useState<{ [key: string]: { [key: string]: Types.OneStageValue | Types.OneStageMinMax | Types.OneStageOptions } } | undefined>(undefined);
+    if (!conf && device) {
+        const ip = device.urlFromIp();
+        Config.getConfig(device.urlFromIp()).then((conf) => {
+            if (conf) setConf(conf);
+        })
+    }
+
     let loader = true;
     if (data && data.phases.find(phase => phase.voltage.length === 0 && phase.amperage.length === 0)) loader = false;
 
@@ -385,7 +419,7 @@ function ChartView({ device, chartConfig, startDate, endDate, avgPeriod }: { dev
         <Route exact path={'/chart'}>
             {loader && <div id="loader"></div>}
             {data && data.phases.find(phase => phase.voltage.length === 2 && phase.amperage.length === 2) && <div id="chart-notify">No data in period {startDate.toLocaleString()} to {endDate.toLocaleString()}</div>}
-            <TravelDetailsView data={data} />
+            <TravelDetailsView data={data} conf={conf} />
             <div className="pageRow2">
                 <span className="pageChartMenu" id="legend-container">
                     <span className='roundedBox icon' onClick={chartConfig}><TuneIcon /></span>

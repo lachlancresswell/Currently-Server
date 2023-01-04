@@ -144,7 +144,7 @@
         },
         "timeformat": {
             "readableName": "Time Format",
-            "value": 1,
+            "value": 0,
             "options": [
                 "12H",
                 "24H"
@@ -152,7 +152,7 @@
         },
         "dateformat": {
             "readableName": "Date Format",
-            "value": 1,
+            "value": 0,
             "options": [
                 "DMY",
                 "MDY"
@@ -172,7 +172,11 @@
     "locale": {
         "country": {
             "readableName": "Country",
-            "value": "Australia"
+            "value": "AUS",
+            "options": [
+                "AUS",
+                "US"
+            ]
         }
     },
     "power": {
@@ -199,5 +203,6 @@
             "value": "1.25gb"
         }
     },
-    "key": {}
+    "key": {},
+    "util": {}
 }
