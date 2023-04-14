@@ -35,6 +35,8 @@ export class PluginLoader {
         if (fs.existsSync(p)) {
             const configFileContent = fs.readFileSync(p).toString();
             this.pluginConfigs = JSON.parse(configFileContent);
+        } else {
+            console.log(`Config does not exist: ${p}`)
         }
     }
 
@@ -68,7 +70,7 @@ export class PluginLoader {
         try {
             const PluginClass = this.loadFromPath(pluginConfig.path);
 
-            const plugin = new PluginClass(this.app) as Plugin<any>;
+            const plugin = new PluginClass(this.app, pluginConfig.config) as Plugin<any>;
 
 
             // Listen for the configUpdated event
