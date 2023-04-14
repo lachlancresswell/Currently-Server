@@ -1,1 +1,0 @@
-declare module 'set-ip-address'
