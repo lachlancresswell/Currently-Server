@@ -1,0 +1,7 @@
+{
+    "MDNSPlugin": {
+        "path": "../../dist/mdns-plugin",
+        "enabled": true,
+        "config": {}
+    }
+}
