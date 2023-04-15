@@ -2,6 +2,7 @@ import { EventEmitter } from 'events';
 import { Routing } from './server';
 import * as moment from 'moment-timezone';
 import { RequestHandler } from 'express';
+import { ConfigVariableMetadata } from '../../Types';
 
 // Interfaces
 export interface Route {

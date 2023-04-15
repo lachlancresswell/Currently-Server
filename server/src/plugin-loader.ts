@@ -1,18 +1,8 @@
-import { Plugin, ConfigVariableMetadata } from './plugin';
+import { Plugin } from './plugin';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Routing } from './server'
-
-/**
- * Plugin configuration interface.
- */
-export interface PluginConfig {
-    path: string;
-    enabled: boolean;
-    config: {
-        [key: string | number]: ConfigVariableMetadata<any>
-    };
-}
+import { PluginConfig } from '../../Types';
 
 /**
  * Plugin Loader class.

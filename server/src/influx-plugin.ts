@@ -1,6 +1,7 @@
 // Influx-plugin.ts
-import { Plugin, PluginConfiguration, ConfigVariableMetadata } from './plugin';
+import { Plugin } from './plugin';
 import { Routing } from './server';
+import { PluginConfiguration, ConfigVariableMetadata } from '../../Types';
 
 /**
  * Options interface for the Influx plugin.

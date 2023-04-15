@@ -1,10 +1,11 @@
 // MDNSPlugin.ts
-import { Plugin, ConfigVariableMetadata, PluginConfiguration } from './plugin';
+import { Plugin } from './plugin';
 import multicastDns from 'multicast-dns';
 import { Answer } from "dns-packet";
 import { IncomingMessage, ServerResponse } from 'http';
 import { Routing } from './server';
 import { networkInterfaces } from 'os';
+import { PluginConfiguration, ConfigVariableMetadata } from '../../Types';
 
 interface Address {
     address: string,
