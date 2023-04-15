@@ -11,20 +11,6 @@ export interface Route {
     handler: RequestHandler;
 }
 
-export interface ConfigVariableMetadata<T> {
-    priority: number;
-    readableName: string;
-    type: string;
-    value: T;
-    options?: string[];
-    max?: number;
-    min?: number;
-}
-
-export interface PluginConfiguration {
-    [key: string | number]: ConfigVariableMetadata<any>
-}
-
 // Plugin Class
 /**
  * A generic class to be extended by plugins to provide unique features to the server.
@@ -45,7 +31,7 @@ export abstract class Plugin<T> extends EventEmitter {
         this.serverRouter = serverRouter;
 
         if (options) {
-            this.configuration = options;
+            this.loadInitialConfiguration(options);
         }
     }
 
@@ -115,6 +101,16 @@ export abstract class Plugin<T> extends EventEmitter {
         this.serverRouter.registerProxy(sourcePath, targetDomain, targetPort)
     }
 
+    /**
+     * Loads the initial configuration for the plugin.
+     */
+    protected loadInitialConfiguration(options: { [key: string | number]: ConfigVariableMetadata<any> }): void {
+        for (const key in options) {
+            const variable = options[key];
+            this.addConfigVariable(key, variable, variable.value);
+        }
+    }
+
 
     /**
      * Adds a configuration variable with its metadata.
@@ -122,8 +118,17 @@ export abstract class Plugin<T> extends EventEmitter {
      * @param {ConfigVariableMetadata} metadata - The metadata object associated with the configuration variable.
      * @param {any} value - The initial value of the configuration variable.
      */
-    addConfigVariable(key: string, metadata: ConfigVariableMetadata<any>, value: any): void {
-        (this.configuration as any)[key] = { ...metadata, value };
+    addConfigVariable(key: string, metadata: ConfigVariableMetadata<any>, value: any): boolean {
+        try {
+            if (this.validateValue(metadata, value)) {
+                (this.configuration as any)[key] = { ...metadata, value };
+                console.log(`${this.name} - Added ${key} as ${value}`)
+                return true;
+            }
+        } catch (e) {
+            console.log(e)
+        }
+        return false;
     }
 
     /**
@@ -134,11 +139,18 @@ export abstract class Plugin<T> extends EventEmitter {
      */
     updateConfigVariable(key: string, value: any, save = true): boolean {
         const metadata = (this.configuration as any)[key];
-        if (this.validateValue(metadata, value)) {
-            (this.configuration as any)[key].value = value;
 
-            if (save) this.emit('configUpdated', key, value);
-            return true;
+        try {
+            if (this.validateValue(metadata, value)) {
+                (this.configuration as any)[key].value = value;
+
+                console.log(`${this.name} - Updated ${key} as ${value}`)
+
+                if (save) this.emit('configUpdated', key, value);
+                return true;
+            }
+        } catch (e) {
+            throw (e)
         }
         return false;
     }
@@ -150,29 +162,27 @@ export abstract class Plugin<T> extends EventEmitter {
      * @returns {boolean} True if the new value is valid, otherwise false.
      */
     validateValue(metadata: ConfigVariableMetadata<any>, value: any): boolean {
-        // Type validation
-        if (typeof value !== metadata.type) return false;
 
         // Additional validation based on type
         switch (metadata.type) {
             case 'number':
-                if (metadata.min !== undefined && value < metadata.min) return false;
-                if (metadata.max !== undefined && value > metadata.max) return false;
+                if (metadata.min !== undefined && value < metadata.min) throw (`${value} is less than minimum allowed.`)
+                if (metadata.max !== undefined && value > metadata.max) throw (`${value} is larger than maximum allowed.`)
+                if (typeof value !== metadata.type) throw (`${value} is not a number.`)
                 break;
             case 'boolean':
-                if (typeof value !== 'boolean') return false;
+                if (typeof value !== metadata.type) throw (`${value} is not a boolean.`)
                 break;
             case 'string':
-                if (metadata.options && !metadata.options.includes(value)) return false;
+                if (metadata.options && !metadata.options.includes(value)) throw (`${value} is not a listed option.`)
+                if (typeof value !== metadata.type) throw (`${value} is not a string.`)
                 break;
             case ('timezone' as string):
-                if (!this.validateTimezone(value)) return false;
+                if (!this.validateTimezone(value)) throw (`${value} is not a valid timezone.`)
                 break;
             case ('ipaddress' as string):
-                if (!this.validateIPAddress(value)) return false;
+                if (!this.validateIPAddress(value)) throw (`${value} is not a valid ip address.`);
                 break;
-            default:
-                return false;
         }
         return true;
     }
