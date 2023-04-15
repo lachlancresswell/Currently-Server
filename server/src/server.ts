@@ -149,5 +149,3 @@ export class Server {
         });
     };
 }
-
-const server = new Server('./path/to/plugin-config-file.json');
