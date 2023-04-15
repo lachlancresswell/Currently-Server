@@ -15,6 +15,67 @@ export class PluginLoader {
     constructor(private configFilePath: string, app: Routing) {
         this.app = app;
         this.loadConfigs();
+        this.initRoutes();
+    }
+
+    /**
+     * Updates the configuration of a specific plugin.
+     * @param pluginName - The name of the plugin.
+     * @param newConfig - The new configuration object for the plugin.
+     */
+    private updatePluginConfig(pluginName: string, newConfig: object): void {
+        if (this.pluginConfigs[pluginName]) {
+            this.pluginConfigs[pluginName].config = { ...this.pluginConfigs[pluginName].config, ...newConfig };
+            this.saveConfigs();
+        }
+    }
+
+    /**
+     * Updates the configurations of all plugins.
+     * @param newConfigs - The new configurations object for all plugins.
+     */
+    private updateAllPluginConfigs(newConfigs: Record<string, PluginConfig>): void {
+        for (const pluginName in newConfigs) {
+            if (this.pluginConfigs[pluginName]) {
+                this.updatePluginConfig(pluginName, newConfigs[pluginName].config);
+            }
+        }
+    }
+
+
+    /**
+     * Initializes routes for the plugin configuration API.
+     */
+    private initRoutes(): void {
+        this.app.registerGetRoute('/config', (req, res) => {
+            res.json(this.pluginConfigs);
+        });
+
+        this.app.registerGetRoute('/config/:plugin', (req, res) => {
+            const pluginName = req.params.plugin;
+            if (this.pluginConfigs[pluginName]) {
+                res.json(this.pluginConfigs[pluginName].config);
+            } else {
+                res.status(404).json({ error: 'Plugin not found' });
+            }
+        });
+
+        this.app.registerPostRoute('/config', (req, res) => {
+            const newConfigs = req.body;
+            this.updateAllPluginConfigs(newConfigs);
+            res.status(200).json({ message: 'Configurations updated successfully' });
+        });
+
+        this.app.registerPostRoute('/config/:plugin', (req, res) => {
+            const pluginName = req.params.plugin;
+            const newConfig = req.body;
+            if (this.pluginConfigs[pluginName]) {
+                this.updatePluginConfig(pluginName, newConfig);
+                res.status(200).json({ message: 'Plugin configuration updated successfully' });
+            } else {
+                res.status(404).json({ error: 'Plugin not found' });
+            }
+        });
     }
 
     /**
