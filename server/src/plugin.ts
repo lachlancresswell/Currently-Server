@@ -120,7 +120,7 @@ export abstract class Plugin<T> extends EventEmitter {
      */
     addConfigVariable(key: string, metadata: ConfigVariableMetadata<any>, value: any): boolean {
         try {
-            if (this.validateValue(metadata, value)) {
+            if (Plugin.validateValue(metadata, value)) {
                 (this.configuration as any)[key] = { ...metadata, value };
                 console.log(`${this.name} - Added ${key} as ${value}`)
                 return true;
@@ -141,7 +141,7 @@ export abstract class Plugin<T> extends EventEmitter {
         const metadata = (this.configuration as any)[key];
 
         try {
-            if (this.validateValue(metadata, value)) {
+            if (Plugin.validateValue(metadata, value)) {
                 (this.configuration as any)[key].value = value;
 
                 console.log(`${this.name} - Updated ${key} as ${value}`)
@@ -161,7 +161,7 @@ export abstract class Plugin<T> extends EventEmitter {
      * @param {any} value - The value itself to be stored.
      * @returns {boolean} True if the new value is valid, otherwise false.
      */
-    validateValue(metadata: ConfigVariableMetadata<any>, value: any): boolean {
+    static validateValue(metadata: ConfigVariableMetadata<any>, value: any): boolean {
 
         // Additional validation based on type
         switch (metadata.type) {
@@ -178,10 +178,10 @@ export abstract class Plugin<T> extends EventEmitter {
                 if (typeof value !== metadata.type) throw (`${value} is not a string.`)
                 break;
             case ('timezone' as string):
-                if (!this.validateTimezone(value)) throw (`${value} is not a valid timezone.`)
+                if (!Plugin.validateTimezone(value)) throw (`${value} is not a valid timezone.`)
                 break;
             case ('ipaddress' as string):
-                if (!this.validateIPAddress(value)) throw (`${value} is not a valid ip address.`);
+                if (!Plugin.validateIPAddress(value)) throw (`${value} is not a valid ip address.`);
                 break;
         }
         return true;
@@ -192,7 +192,7 @@ export abstract class Plugin<T> extends EventEmitter {
    * @param {string} value - Timezone in string format.
    * @returns {boolean} True if the value is a valid timezone, otherwise false.
    */
-    validateTimezone(value: string): boolean {
+    static validateTimezone(value: string): boolean {
         return moment.tz.zone(value) !== null;
     }
 
@@ -201,7 +201,7 @@ export abstract class Plugin<T> extends EventEmitter {
      * @param address - Either IPv4 or IPv6 address in string format
      * @returns - True if the value is a valid IP address, otherwise false.
      */
-    validateIPAddress(address: string): boolean {
+    static validateIPAddress(address: string): boolean {
         const ipv4Pattern = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
         const ipv6Pattern = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:))$/;
 
