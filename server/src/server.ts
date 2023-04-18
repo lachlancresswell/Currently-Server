@@ -11,6 +11,7 @@ export interface Routing {
     registerGetRoute: (path: string, handler: (req: any, res: any) => void) => void;
     registerPostRoute: (path: string, handler: (req: any, res: any) => void) => void;
     registerAllRoute: (path: string, handler: (req: any, res: any) => void) => void;
+    registerPutRoute: (path: string, handler: (req: any, res: any) => void) => void;
     removeRoute: (path: string) => void;
     registerProxy: (sourcePath: string, targetDomain: string, targetPort: string | number) => void;
 }
@@ -40,6 +41,7 @@ export class Server {
             registerGetRoute: this.registerGetRoute.bind(this),
             registerPostRoute: this.registerPostRoute.bind(this),
             registerAllRoute: this.registerAllRoute.bind(this),
+            registerPutRoute: this.registerPutRoute.bind(this),
             removeRoute: this.removeRoute.bind(this),
             registerProxy: this.registerProxy.bind(this),
         };
@@ -58,7 +60,6 @@ export class Server {
             console.log(`HTTPS server started on port ${HTTPS_PORT}`);
         });
 
-        this.pluginLoader = new PluginLoader(configFilePath, this.Router);
         this.httpProxy = httpProxy.createProxyServer();
 
         this.app.use(express.static(path.join(__dirname, '..', 'client-react', 'distro-ui', 'build')));
@@ -120,6 +121,10 @@ export class Server {
      */
     public registerAllRoute = (path: string, handler: (req: Request, res: Response) => void): void => {
         this.app.all(path, handler);
+    };
+
+    public registerPutRoute = (path: string, handler: (req: Request, res: Response) => void): void => {
+        this.app.put(path, handler);
     };
 
     /**
