@@ -2,12 +2,14 @@ import { EventEmitter } from 'events';
 import { Routing } from './server';
 import * as moment from 'moment-timezone';
 import { RequestHandler } from 'express';
-import { ConfigVariableMetadata } from '../../Types';
+import { ConfigArray, ConfigVariableMetadata } from '../../Types';
+
+type method = 'GET' | 'POST' | 'ALL' | 'PUT';
 
 // Interfaces
 export interface Route {
     path: string;
-    type: 'GET' | 'POST' | 'ALL';
+    type: method;
     handler: RequestHandler;
 }
 
@@ -26,7 +28,7 @@ export abstract class Plugin<T> extends EventEmitter {
      * Constructor for the Plugin class.
      * @param {Router} serverRouter - The express Router object passed from the server.
      */
-    constructor(serverRouter: Routing, options?: T) {
+    constructor(serverRouter: Routing, options: ConfigArray) {
         super();
         this.serverRouter = serverRouter;
 
@@ -48,10 +50,10 @@ export abstract class Plugin<T> extends EventEmitter {
     /**
      * Registers a route with the server.
      * @param {string} path - The path to register the route.
-     * @param {'GET' | 'POST' | 'ALL'} type - The HTTP method of the route.
+     * @param {method} type - The HTTP method of the route.
      * @param {RequestHandler} handler - The request handler for the route.
      */
-    registerRoute = (path: string, type: 'GET' | 'POST' | 'ALL', handler: (req: any, res: any) => void): void => {
+    registerRoute = (path: string, type: method, handler: (req: any, res: any) => void): void => {
         const route: Route = { path, type, handler };
         this.routes.push(route);
         if (type === 'GET') {
@@ -60,6 +62,8 @@ export abstract class Plugin<T> extends EventEmitter {
             this.serverRouter.registerPostRoute(path, handler)
         } else if (type === 'ALL') {
             this.serverRouter.registerAllRoute(path, handler)
+        } else if (type === 'PUT') {
+            this.serverRouter.registerPutRoute(path, handler)
         }
     }
 
@@ -72,10 +76,10 @@ export abstract class Plugin<T> extends EventEmitter {
 
     /**
      * Removes the route from the server based on the provided HTTP method and path.
-     * @param {'GET' | 'POST' | 'ALL'} method - The HTTP method of the route to remove.
+     * @param {method} method - The HTTP method of the route to remove.
      * @param {string} path - The path of the route to remove.
      */
-    removeRoute(method: 'GET' | 'POST' | 'ALL', path: string): void {
+    removeRoute(method: method, path: string): void {
         this.routes = this.routes.filter((route) => route.type !== method || route.path !== path);
         this.serverRouter.removeRoute(path);
     }
