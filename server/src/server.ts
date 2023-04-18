@@ -25,7 +25,7 @@ export class Server {
     protected app: Express;
     protected pluginLoader: PluginLoader;
     protected httpServer: http.Server;
-    protected httpsServer: https.Server;
+    protected httpsServer?: https.Server;
     protected httpProxy: httpProxy;
     public Router: Routing;
 
@@ -45,16 +45,16 @@ export class Server {
         };
 
         this.httpServer = http.createServer(this.app);
-        this.httpsServer = https.createServer({
-            key: fs.readFileSync(path.join(__dirname, '../key.pem')),
-            cert: fs.readFileSync(path.join(__dirname, '../cert.pem')),
+        if (fs.existsSync(path.join(__dirname, '../../../key.pem')) && fs.existsSync(path.join(__dirname, '../../../cert.pem'))) this.httpsServer = https.createServer({
+            key: fs.readFileSync(path.join(__dirname, '../../../key.pem')),
+            cert: fs.readFileSync(path.join(__dirname, '../../../cert.pem')),
         }, this.app);
 
         this.httpServer.listen(HTTP_PORT, () => {
             console.log(`HTTP server started on port ${HTTP_PORT}`);
         });
 
-        this.httpsServer.listen(HTTPS_PORT, () => {
+        if (this.httpsServer) this.httpsServer.listen(HTTPS_PORT, () => {
             console.log(`HTTPS server started on port ${HTTPS_PORT}`);
         });
 
@@ -85,8 +85,8 @@ export class Server {
 
         if (this.httpsServer) {
             const p = new Promise<void>((resolve) => {
-                this.httpsServer.removeAllListeners();
-                this.httpsServer.close(() => resolve());
+                this.httpsServer!.removeAllListeners();
+                this.httpsServer!.close(() => resolve());
             });
             proms.push(p);
         }
