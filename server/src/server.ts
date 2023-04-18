@@ -66,6 +66,7 @@ export class Server {
         this.app.use(express.json());
         this.app.use(express.urlencoded({ extended: true }));
 
+        this.pluginLoader = new PluginLoader(configFilePath, this.Router);
         this.pluginLoader.loadPlugins();
     }
 
