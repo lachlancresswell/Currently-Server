@@ -33,22 +33,22 @@ export const SERVICE_NAME = 'your-service-name';
  * It serves all discovered neighboring OTA devices, their IP address, and their names via a JSON object.
  */
 class MDNSPlugin extends Plugin<MDNSConfig> {
-    protected mdns: multicastDns.MulticastDNS;
+    protected mdns?: multicastDns.MulticastDNS;
     protected neighbours: Neighbour[] = [];
     protected interval?: NodeJS.Timer;
-    public name = 'MDNS-Plugin';
+    public name = 'MDNSPlugin';
 
-    constructor(app: Routing, options?: Options) {
+    constructor(app: Routing, options: MDNSConfig) {
         super(app, options);
-        this.mdns = multicastDns({ loopback: true });
-        this.setupMulticastDns();
-        this.registerRoute('/neighbours', 'GET', this.handleNeighbours);
     }
 
     /**
      * Loads the MDNSPlugin and starts advertising the service, discovering neighbours, and registering routes.
-     */
-    public load() {
+    */
+    public load = () => {
+        this.mdns = multicastDns({ loopback: true });
+        this.setupMulticastDns();
+        this.registerRoute('/neighbours', 'GET', this.handleNeighbours);
     }
 
     /**
@@ -59,23 +59,27 @@ class MDNSPlugin extends Plugin<MDNSConfig> {
 
         if (this.interval) {
             clearInterval(this.interval);
+            this.interval = undefined;
         }
-        this.mdns.destroy();
+        if (this.mdns) {
+            this.mdns.destroy();
+            this.mdns = undefined;
+        }
     }
 
     /**
      * Sets up multicast DNS using the 'multicast-dns' package.
      */
-    private setupMulticastDns() {
+    protected setupMulticastDns() {
         const _this = this;
         const deviceName = this.configuration.deviceName.value;
 
-        const uniqueMacPortion = this.getUniqueMacPortion();
+        const uniqueMacPortion = MDNSPlugin.getUniqueMacPortion();
         const serviceSuffix = `${SERVICE_NAME}._tcp.local`;
         const serviceName = `${uniqueMacPortion}.${serviceSuffix}`;
 
-        this.mdns.on('query', (query) => {
-            const localIPAddresses = this.getLocalIPAddresses();
+        if (this.mdns) this.mdns.on('query', (query) => {
+            const localIPAddresses = MDNSPlugin.getLocalIPAddresses();
 
             const ttl = 10;
 
@@ -98,7 +102,7 @@ class MDNSPlugin extends Plugin<MDNSConfig> {
                 : localIPAddresses.map((ip) => resObj(JSON.stringify(ip)));
 
             if (query.questions.some((question) => question.type === 'PTR' && question.name.includes(serviceSuffix) && this.configuration.transmit.value)) {
-                this.mdns.respond([
+                if (this.mdns) this.mdns.respond([
                     {
                         name: serviceSuffix,
                         type: 'PTR',
@@ -120,13 +124,13 @@ class MDNSPlugin extends Plugin<MDNSConfig> {
         });
 
 
-        this.mdns.on('response', (response) => {
+        if (this.mdns) this.mdns.on('response', (response) => {
             this.updateNeighbours(response.answers);
         });
 
         this.interval = setInterval(() => {
-            if (this.configuration.receive.value) {
-                _this.mdns.query({ questions: [{ name: serviceName, type: 'PTR' }] });
+            if (_this.configuration.receive.value) {
+                if (_this.mdns) _this.mdns.query({ questions: [{ name: serviceName, type: 'PTR' }] });
             }
         }, this.configuration.txDelay.value);
     }
@@ -175,7 +179,7 @@ class MDNSPlugin extends Plugin<MDNSConfig> {
      * Retrieves the local IP addresses for all non-internal IPv4 network interfaces.
      * @returns {string[]} An array of local IP addresses as strings.
      */
-    protected getLocalIPAddresses(): Address[] {
+    static getLocalIPAddresses(): Address[] {
         const NICs = networkInterfaces();
         const addresses: {
             address: string,
@@ -199,7 +203,7 @@ class MDNSPlugin extends Plugin<MDNSConfig> {
      * Retrieves the unique portion of the MAC address.
      * @returns {string} The unique portion of the MAC address.
      */
-    private getUniqueMacPortion(): string {
+    static getUniqueMacPortion(): string {
         const nics = networkInterfaces();
 
         for (const key in nics) {

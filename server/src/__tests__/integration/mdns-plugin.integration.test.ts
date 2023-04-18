@@ -2,13 +2,14 @@
 /**
  * Some tests will fail unless run by themselves.
  */
-import MDNSPlugin, { Options } from '../../mdns-plugin';
+import MDNSPlugin, { MDNSConfig } from '../../mdns-plugin';
 import { Socket } from "net";
 import { IncomingMessage, ServerResponse } from 'http';
 import { Server } from "../../server";
 import request from 'supertest';
+import structuredClone from '@ungap/structured-clone';
 
-const defaultConfig: Options = {
+const defaultConfig: MDNSConfig = {
     transmit: {
         priority: 1,
         readableName: 'Transmit',
@@ -32,18 +33,22 @@ const defaultConfig: Options = {
         readableName: 'Discovery Period',
         type: 'number',
         value: 500,
+        restart: "plugin"
     }
 }
+
 
 /**
  * Class to expose protected functions for testing.
  */
 class TestMDNSPlugin extends MDNSPlugin {
     public testNeighbours = () => this.neighbours;
-    public testInterval = this.interval;
+    public testInterval = () => this.interval;
     public testHandleNeigbours = this.handleNeighbours;
-    public testGetLocalIPAddresses = this.getLocalIPAddresses;
-    public testMdns = this.mdns;
+    public testMdns = () => {
+        if (!this.mdns) throw ('asdasd')
+        else return (this.mdns)
+    };
 }
 
 let server: Server
@@ -85,11 +90,11 @@ describe('MDNSPlugin', () => {
 
     test('should unload the MDNSPlugin and stop the discovery process', () => {
 
-        expect((plugin.testInterval! as any)._destroyed).toBeFalsy();
+        expect((plugin.testInterval() as any)._destroyed).toBeFalsy();
 
         plugin.unload();
 
-        expect((plugin.testInterval! as any)._destroyed).toBeTruthy();
+        expect((plugin.testInterval() as any)).toBeFalsy();
     });
 
     test('/neighbours route should be accesible and should return a JSON object containing a neighbour', async () => {
@@ -106,9 +111,9 @@ describe('MDNSPlugin', () => {
         expect(res.setHeader).toHaveBeenCalledWith('Content-Type', 'application/json');
         expect(res.end).toHaveBeenCalled();
 
-        plugin.unload();
     });
 });
+
 
 describe('changing initial configuration variables should modify plugin behaviours', () => {
     let plugin: TestMDNSPlugin;
@@ -127,10 +132,11 @@ describe('changing initial configuration variables should modify plugin behaviou
         testConfig.receive.value = true;
 
         plugin = new TestMDNSPlugin(server.Router!, testConfig);
-        plugin.testMdns.query = jest.fn();
+        plugin.load()
+        plugin.testMdns().query = jest.fn();
 
         await new Promise((res) => setTimeout(res, testConfig.txDelay.value + 100));
-        expect(plugin.testMdns.query).toHaveBeenCalled();
+        expect(plugin.testMdns().query).toHaveBeenCalled();
     })
 
     test('receive false should prevent the plugin from querying the network', async () => {
@@ -138,10 +144,14 @@ describe('changing initial configuration variables should modify plugin behaviou
         testConfig.receive.value = false;
 
         plugin = new TestMDNSPlugin(server.Router!, testConfig);
-        plugin.testMdns.query = jest.fn();
+        plugin.load()
+        plugin.testMdns().query = jest.fn();
 
         await new Promise((res) => setTimeout(res, testConfig.txDelay.value + 100));
-        expect(plugin.testMdns.query).not.toHaveBeenCalled();
+        expect(plugin.testMdns().query).not.toHaveBeenCalled();
+
+        // TODO: remove this as state is being maintained between tests currently
+        testConfig.receive.value = true;
     })
 
     /**
@@ -152,10 +162,11 @@ describe('changing initial configuration variables should modify plugin behaviou
         testConfig.transmit.value = true;
 
         plugin = new TestMDNSPlugin(server.Router!, testConfig);
-        plugin.testMdns.respond = jest.fn();
+        plugin.load()
+        plugin.testMdns().respond = jest.fn();
 
         await new Promise((res) => setTimeout(res, testConfig.txDelay.value + 100));
-        expect(plugin.testMdns.respond).toHaveBeenCalled();
+        expect(plugin.testMdns().respond).toHaveBeenCalled();
     })
 
     test('transmit false should prevent the plugin from responding to incoming requests', async () => {
@@ -163,26 +174,41 @@ describe('changing initial configuration variables should modify plugin behaviou
         testConfig.transmit.value = false;
 
         plugin = new TestMDNSPlugin(server.Router!, testConfig);
-        plugin.testMdns.respond = jest.fn();
+        plugin.load()
+        plugin.testMdns().respond = jest.fn();
 
         await new Promise((res) => setTimeout(res, testConfig.txDelay.value + 100));
-        expect(plugin.testMdns.respond).not.toHaveBeenCalled();
+        expect(plugin.testMdns().respond).not.toHaveBeenCalled();
+
+        // TODO: remove this as state is being maintained between tests currently
+        testConfig.transmit.value = true;
     })
 
-    /**
-     * Fails if not run by itself
-     */
     test('txDelay 500 should allow the plugin to automatically query the network every 500ms', async () => {
-        const testConfig = { ...defaultConfig }
+        const testConfig = structuredClone(defaultConfig)
         testConfig.txDelay.value = 500;
 
         plugin = new TestMDNSPlugin(server.Router!, testConfig);
-        plugin.testMdns.respond = jest.fn();
+        plugin.load()
+        plugin.testMdns().respond = jest.fn();
 
-        expect(plugin.testMdns.respond).not.toHaveBeenCalled();
+        expect(plugin.testMdns().respond).not.toHaveBeenCalled();
         await new Promise((res) => setTimeout(res, testConfig.txDelay.value - 100));
-        expect(plugin.testMdns.respond).not.toHaveBeenCalled();
+        expect(plugin.testMdns().respond).not.toHaveBeenCalled();
         await new Promise((res) => setTimeout(res, testConfig.txDelay.value + 100));
-        expect(plugin.testMdns.respond).toHaveBeenCalled();
+        expect(plugin.testMdns().respond).toHaveBeenCalled();
+    })
+
+    test('updating txDelay should reload plugin', async () => {
+        const testConfig = structuredClone(defaultConfig)
+
+        plugin = new TestMDNSPlugin(server.Router!, testConfig);
+        plugin.load()
+        plugin.testMdns().respond = jest.fn();
+        plugin.reload = jest.fn();
+
+        testConfig.txDelay.value = 700;
+        plugin.updateEntireConfig(testConfig, false)
+        expect(plugin.reload).toHaveBeenCalled();
     })
 })
