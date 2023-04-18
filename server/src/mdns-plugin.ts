@@ -5,7 +5,7 @@ import { Answer } from "dns-packet";
 import { IncomingMessage, ServerResponse } from 'http';
 import { Routing } from './server';
 import { networkInterfaces } from 'os';
-import { PluginConfiguration, ConfigVariableMetadata } from '../../Types';
+import { ConfigArray, ConfigVariableMetadata } from '../../Types';
 
 interface Address {
     address: string,
@@ -17,7 +17,7 @@ interface Neighbour {
     addresses: Address[];
 }
 
-export interface Options extends PluginConfiguration {
+export interface MDNSConfig extends ConfigArray {
     transmit: ConfigVariableMetadata<boolean>;
     receive: ConfigVariableMetadata<boolean>;
     deviceName: ConfigVariableMetadata<string>;
@@ -32,7 +32,7 @@ export const SERVICE_NAME = 'your-service-name';
  * listens for and discovers other 'OTA Network' devices, and registers the '/neighbours' route.
  * It serves all discovered neighboring OTA devices, their IP address, and their names via a JSON object.
  */
-class MDNSPlugin extends Plugin<Options> {
+class MDNSPlugin extends Plugin<MDNSConfig> {
     protected mdns: multicastDns.MulticastDNS;
     protected neighbours: Neighbour[] = [];
     protected interval?: NodeJS.Timer;

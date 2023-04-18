@@ -1,21 +1,22 @@
 // Influx-plugin.ts
 import { Plugin } from './plugin';
 import { Routing } from './server';
-import { PluginConfiguration, ConfigVariableMetadata } from '../../Types';
+import { ConfigArray, ConfigVariableMetadata } from '../../Types';
 
 /**
  * Options interface for the Influx plugin.
  */
-export interface Options extends PluginConfiguration {
-    INFLUX_PORT: ConfigVariableMetadata<number>;
-    INFLUX_DOMAIN: ConfigVariableMetadata<string>;
+export interface InfluxOptions extends ConfigArray {
+    databasePort: ConfigVariableMetadata<number>;
+    databaseDomain: ConfigVariableMetadata<string>;
+    rxDelay: ConfigVariableMetadata<number>;
 }
 
 /**
  * Influx plugin for forwarding requests to the Influx server.
  * @extends Plugin
  */
-class Influx extends Plugin<Options> {
+class Influx extends Plugin<InfluxOptions> {
 
     /**
      * Influx plugin constructor.
