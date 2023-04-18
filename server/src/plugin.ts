@@ -31,10 +31,7 @@ export abstract class Plugin<T> extends EventEmitter {
     constructor(serverRouter: Routing, options: ConfigArray) {
         super();
         this.serverRouter = serverRouter;
-
-        if (options) {
-            this.loadInitialConfiguration(options);
-        }
+        this.loadInitialConfiguration(options);
     }
 
     /**
@@ -46,6 +43,14 @@ export abstract class Plugin<T> extends EventEmitter {
      * Method for unloading the plugin.
      */
     public unload() { this.removeAllRoutes() };
+
+    /**
+     * Reloads the plugin.
+     */
+    public reload(): void {
+        this.unload();
+        this.load();
+    }
 
     /**
      * Registers a route with the server.
@@ -141,22 +146,37 @@ export abstract class Plugin<T> extends EventEmitter {
      * @param {any} value - The new value of the configuration variable.
      * @returns {boolean} True if the new value is valid, otherwise false.
      */
-    updateConfigVariable(key: string, value: any, save = true): boolean {
-        const metadata = (this.configuration as any)[key];
+    updateConfigVariable(key: string, value: any, save = true): true | void {
+        const metadata = (this.configuration as ConfigArray)[key];
 
         try {
             if (Plugin.validateValue(metadata, value)) {
-                (this.configuration as any)[key].value = value;
+                (this.configuration as ConfigArray)[key].value = value;
 
                 console.log(`${this.name} - Updated ${key} as ${value}`)
 
                 if (save) this.emit('configUpdated', key, value);
+
+                if ((this.configuration as ConfigArray)[key].restart === 'plugin') {
+                    this.reload();
+                }
+
                 return true;
             }
         } catch (e) {
             throw (e)
         }
-        return false;
+    }
+
+    updateEntireConfig(newConfig: ConfigArray, save = true): void {
+        for (const key in (this.configuration as ConfigArray)) {
+            const curVariable = (this.configuration as ConfigArray)[key];
+            const newVariable = newConfig[key];
+
+            if (curVariable && newVariable && curVariable.value !== newVariable.value) {
+                this.updateConfigVariable(key, newVariable.value, save);
+            }
+        }
     }
 
     /**
