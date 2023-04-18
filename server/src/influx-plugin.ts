@@ -23,10 +23,13 @@ class Influx extends Plugin<InfluxOptions> {
      * @param serverRouter - Express Router object from the server
      * @param options - Influx plugin options containing port and domain information
      */
-    constructor(serverRouter: Routing, options?: Options) {
+    constructor(serverRouter: Routing, options: InfluxOptions) {
         super(serverRouter, options);
 
-        this.registerProxy("/influx/*", this.configuration.INFLUX_DOMAIN.value, this.configuration.INFLUX_PORT.value);
+    }
+
+    load = () => {
+        this.registerProxy("/influx/*", this.configuration.databaseDomain.value, this.configuration.databasePort.value);
     }
 }
 

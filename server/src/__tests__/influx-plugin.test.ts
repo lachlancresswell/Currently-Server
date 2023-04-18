@@ -1,21 +1,27 @@
-import Influx, { Options } from '../influx-plugin';
+import Influx, { InfluxOptions } from '../influx-plugin';
 import express, { Express, Request, Response } from 'express';
 import request from 'supertest';
 import http from 'http';
 import * as Server from '../server'
 
-const testConfig: Options = {
-    INFLUX_PORT: {
+const testConfig: InfluxOptions = {
+    databasePort: {
         priority: 1,
         readableName: 'Influx Port',
         type: 'number',
         value: 4000,
     },
-    INFLUX_DOMAIN: {
+    databaseDomain: {
         priority: 1,
         readableName: 'Influx Domain',
         type: 'string',
         value: 'localhost',
+    },
+    rxDelay: {
+        priority: 1,
+        readableName: 'Request Period',
+        type: 'number',
+        value: 1000,
     }
 }
 
@@ -36,11 +42,12 @@ describe('HTTP Proxy', () => {
         });
 
         // Start test server to host test app
-        targetServer = http.createServer(targetApp).listen(testConfig.INFLUX_PORT.value, done);
+        targetServer = http.createServer(targetApp).listen(testConfig.databasePort.value, done);
     });
 
     beforeEach(() => {
         plugin = new Influx(server.Router, testConfig);
+        plugin.load()
     })
 
     afterAll(() => {
