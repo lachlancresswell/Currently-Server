@@ -1,14 +1,16 @@
-import { PluginLoader, PluginConfig } from '../plugin-loader';
+import { PluginLoader } from '../plugin-loader';
+import { PluginConfig } from '../../../Types'
 import * as fs from 'fs';
-jest.mock('fs');
+import { mockServerRouting } from './__mocks__/mock-server'
+import MockPlugin from './__mocks__/mock-plugin';
 
+jest.mock('fs')
 
-import { mockServerRouting } from './__mocks__/server'
-import MockPlugin from './mock-plugin';
 
 class TestPluginLoader extends PluginLoader {
     testLoadPlugin = this.loadPlugin;
     testPlugins = this.plugins;
+    testPluginConfig = this.pluginConfigs
     setTestPlugins = (plugins: any[]) => this.plugins = plugins;
 }
 
@@ -16,19 +18,19 @@ const mockPluginConfig: PluginConfig = {
     path: 'string',
     enabled: true,
     config: {
-        testVar1: {
+        "testVar1": {
             priority: 1,
             value: 1,
             type: 'number',
             readableName: 'Test Var 1',
         },
-        testVar2: {
+        "testVar2": {
             priority: 1,
             value: 2,
             type: 'number',
             readableName: 'Test Var 2',
         },
-        testVar3: {
+        "testVar3": {
             priority: 1,
             value: 3,
             type: 'number',
@@ -44,14 +46,17 @@ const mockPluginConfig: PluginConfig = {
 describe('PluginLoader', () => {
     let pluginLoader: TestPluginLoader
 
+    beforeEach(() => {
+        pluginLoader = new TestPluginLoader('__tests__/plugin-config.json', mockServerRouting);
+    })
+
     afterEach(() => {
         pluginLoader.unloadPlugins();
+        jest.clearAllMocks();
         jest.restoreAllMocks();
     });
 
     test('loadPlugins should call loadPlugin for each enabled plugin in the config', () => {
-        pluginLoader = pluginLoader = new TestPluginLoader('__tests__/plugin-config.json', mockServerRouting);
-
         const mockConfig = {
             'MockPlugin1': { path: 'mock-plugin1', enabled: true, config: {} },
             'MockPlugin2': { path: 'mock-plugin2', enabled: false, config: {} }
@@ -66,7 +71,7 @@ describe('PluginLoader', () => {
     });
 
     test('unloadPlugins should unload all loaded plugins and empty the plugins array', () => {
-        pluginLoader = pluginLoader = new TestPluginLoader('__tests__/plugin-config.json', mockServerRouting);
+        pluginLoader = new TestPluginLoader('__tests__/plugin-config.json', mockServerRouting);
 
         const mockPlugin1 = new MockPlugin();
         const mockPlugin2 = new MockPlugin();
@@ -79,29 +84,32 @@ describe('PluginLoader', () => {
         expect(pluginLoader.testPlugins).toHaveLength(0);
     });
 
-    test('loads enabled plugins and sets initial configuration', () => {
-        pluginLoader = pluginLoader = new TestPluginLoader('__tests__/plugin-config.json', mockServerRouting);
-
-        pluginLoader.loadFromPath = jest.fn(() => MockPlugin);
+    test('loadPlugin should load plugin and set initial configuration', () => {
+        PluginLoader.loadFromPath = jest.fn(() => MockPlugin);
         pluginLoader.testLoadPlugin('myplug', mockPluginConfig);
 
         // Access loaded module
-        const loadedMockPlugin = pluginLoader.testPlugins[0];
-        expect(loadedMockPlugin.configuration).toMatchObject(mockPluginConfig.config);
+        const loadedPlugin = pluginLoader.testPlugins[0];
+        expect(TestPluginLoader.loadFromPath).toHaveBeenCalledTimes(1);
+        expect(loadedPlugin.configuration).toMatchObject(mockPluginConfig.config!);
+    });
 
-        expect(loadedMockPlugin.configuration).toMatchObject(mockPluginConfig.config)
+    test('loadPlugin should not load a plugin if it does not exist', () => {
+        TestPluginLoader.loadFromPath = jest.fn(() => undefined);
+        const loaded = pluginLoader.testLoadPlugin('myplug', mockPluginConfig)
+        expect(loaded).toBeFalsy()
+        expect(pluginLoader.testPlugins.length).toBeLessThan(1)
     });
 
     test('saves plugin configuration to disk when value updated', () => {
-        pluginLoader = pluginLoader = new TestPluginLoader('__tests__/plugin-config.json', mockServerRouting);
 
         // Override plugin loading
-        pluginLoader.loadFromPath = jest.fn(() => MockPlugin);
+        PluginLoader.loadFromPath = jest.fn(() => MockPlugin);
         pluginLoader.testLoadPlugin('myplug', mockPluginConfig);
 
         // Access loaded module
         const loadedMockPlugin = pluginLoader.testPlugins[0];
-        expect(loadedMockPlugin.configuration).toMatchObject(mockPluginConfig.config);
+        expect(loadedMockPlugin.configuration).toMatchObject(mockPluginConfig.config!);
 
         // New config should be written to disk when the event is emitted
         expect(fs.writeFileSync).toHaveBeenCalledTimes(0);
@@ -109,8 +117,9 @@ describe('PluginLoader', () => {
         expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
     });
 
+
     test('skips disabled plugins', () => {
-        pluginLoader = pluginLoader = new TestPluginLoader('__tests__/plugin-config.json', mockServerRouting);
+        pluginLoader = new TestPluginLoader('__tests__/plugin-config.json', mockServerRouting);
 
         const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => { });
 
@@ -122,7 +131,7 @@ describe('PluginLoader', () => {
     });
 
     test('unloads all loaded plugins', () => {
-        pluginLoader = pluginLoader = new TestPluginLoader('__tests__/plugin-config.json', mockServerRouting);
+        pluginLoader = new TestPluginLoader('__tests__/plugin-config.json', mockServerRouting);
 
         const mockPlug = {
             unload: jest.fn()
