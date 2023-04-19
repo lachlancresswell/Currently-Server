@@ -59,7 +59,7 @@ describe('MDNSPlugin', () => {
 
 
     beforeEach(() => {
-        server = new Server('./test-plugin-config.json');
+        server = new Server('./__tests__/mdns-plugin-config.json');
         plugin = new TestMDNSPlugin(server.Router!, defaultConfig);
         plugin.load();
     });
@@ -119,7 +119,7 @@ describe('changing initial configuration variables should modify plugin behaviou
     let plugin: TestMDNSPlugin;
 
     beforeEach(() => {
-        server = new Server('./test-plugin-config.json');
+        server = new Server('./__tests__/mdns-plugin-config.json');
     });
 
     afterEach(async () => {

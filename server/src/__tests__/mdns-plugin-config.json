@@ -1,0 +1,37 @@
+{
+  "MDNSPlugin": {
+    "path": "../mdns-plugin",
+    "enabled": true,
+    "config": {
+      "transmit": {
+        "priority": 1,
+        "display": true,
+        "readableName": "Transmit",
+        "type": "boolean",
+        "value": true
+      },
+      "receive": {
+        "priority": 1,
+        "display": true,
+        "readableName": "Receive",
+        "type": "boolean",
+        "value": true
+      },
+      "deviceName": {
+        "priority": 1,
+        "display": true,
+        "readableName": "Device Name",
+        "type": "string",
+        "value": "Lachlan's Devicesdf"
+      },
+      "txDelay": {
+        "priority": 1,
+        "display": true,
+        "readableName": "Transmit Delay",
+        "type": "number",
+        "value": 4996,
+        "restart": "plugin"
+      }
+    }
+  }
+}

@@ -2,7 +2,8 @@ import { EventEmitter } from 'events';
 import { Routing } from './server';
 import * as moment from 'moment-timezone';
 import { RequestHandler } from 'express';
-import { ConfigArray, ConfigVariableMetadata } from '../../Types';
+import { Request, Response } from 'express';
+import { ConfigArray, ConfigValue, ConfigVariableMetadata } from '../../Types';
 
 type method = 'GET' | 'POST' | 'ALL' | 'PUT';
 
@@ -25,7 +26,7 @@ export abstract class Plugin<T> extends EventEmitter {
     public name = 'plugin';
 
     /**
-     * Constructor for the Plugin class.
+     * Constructor for the Plugin class. Do not register routes here.
      * @param {Router} serverRouter - The express Router object passed from the server.
      */
     constructor(serverRouter: Routing, options: ConfigArray) {
@@ -35,7 +36,7 @@ export abstract class Plugin<T> extends EventEmitter {
     }
 
     /**
-     * Method for loading the plugin.
+     * Method for loading the plugin. Also called on reload. Register routes here.
      */
     public load(): void { };
 
@@ -58,7 +59,7 @@ export abstract class Plugin<T> extends EventEmitter {
      * @param {method} type - The HTTP method of the route.
      * @param {RequestHandler} handler - The request handler for the route.
      */
-    registerRoute = (path: string, type: method, handler: (req: any, res: any) => void): void => {
+    registerRoute = (path: string, type: method, handler: (req: Request, res: Response) => void): void => {
         const route: Route = { path, type, handler };
         this.routes.push(route);
         if (type === 'GET') {
@@ -113,7 +114,7 @@ export abstract class Plugin<T> extends EventEmitter {
     /**
      * Loads the initial configuration for the plugin.
      */
-    protected loadInitialConfiguration(options: { [key: string | number]: ConfigVariableMetadata<any> }): void {
+    protected loadInitialConfiguration(options: { [key: string | number]: ConfigVariableMetadata<ConfigValue> }): void {
         for (const key in options) {
             const variable = options[key];
             this.addConfigVariable(key, variable, variable.value);
@@ -127,7 +128,7 @@ export abstract class Plugin<T> extends EventEmitter {
      * @param {ConfigVariableMetadata} metadata - The metadata object associated with the configuration variable.
      * @param {any} value - The initial value of the configuration variable.
      */
-    addConfigVariable(key: string, metadata: ConfigVariableMetadata<any>, value: any): boolean {
+    addConfigVariable(key: string, metadata: ConfigVariableMetadata<ConfigValue>, value: any): boolean {
         try {
             if (Plugin.validateValue(metadata, value)) {
                 (this.configuration as any)[key] = { ...metadata, value };
@@ -185,7 +186,7 @@ export abstract class Plugin<T> extends EventEmitter {
      * @param {any} value - The value itself to be stored.
      * @returns {boolean} True if the new value is valid, otherwise false.
      */
-    static validateValue(metadata: ConfigVariableMetadata<any>, value: any): boolean {
+    static validateValue(metadata: ConfigVariableMetadata<ConfigValue>, value: any): boolean {
 
         // Additional validation based on type
         switch (metadata.type) {

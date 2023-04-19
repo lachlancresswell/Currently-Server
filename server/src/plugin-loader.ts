@@ -142,7 +142,8 @@ export class PluginLoader {
      * Expanded here to allow overriding for tests
      */
     static loadFromPath(pluginPath: string) {
-        const PluginClass = require(path.join(__dirname + '/__tests__', pluginPath)).default;
+        const p = path.join(__dirname + '/__tests__', pluginPath);
+        const PluginClass = require(p).default;
 
         return PluginClass;
     }

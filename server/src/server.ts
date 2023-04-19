@@ -8,10 +8,10 @@ import * as path from 'path';
 import httpProxy from 'http-proxy';
 
 export interface Routing {
-    registerGetRoute: (path: string, handler: (req: any, res: any) => void) => void;
-    registerPostRoute: (path: string, handler: (req: any, res: any) => void) => void;
-    registerAllRoute: (path: string, handler: (req: any, res: any) => void) => void;
-    registerPutRoute: (path: string, handler: (req: any, res: any) => void) => void;
+    registerGetRoute: (path: string, handler: (req: Request, res: Response) => void) => void;
+    registerPostRoute: (path: string, handler: (req: Request, res: Response) => void) => void;
+    registerAllRoute: (path: string, handler: (req: Request, res: Response) => void) => void;
+    registerPutRoute: (path: string, handler: (req: Request, res: Response) => void) => void;
     removeRoute: (path: string) => void;
     registerProxy: (sourcePath: string, targetDomain: string, targetPort: string | number) => void;
 }
