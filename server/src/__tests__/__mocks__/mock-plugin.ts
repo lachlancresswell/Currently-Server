@@ -1,15 +1,15 @@
-import { Plugin } from '../plugin';
 import { EventEmitter } from 'events';
+import { PluginConfig } from '../../../../Types';
+import { Routing } from '../../server';
 
 export default class MockPlugin extends EventEmitter {
     public name = 'MOCK PLUGIN';
-    public configuration: {
-        [key: string | number]: any
-    };
+    public configuration: PluginConfig;
 
-    constructor() {
+    constructor(serverRouter?: Routing, options?: PluginConfig) {
         super();
-        this.configuration = {};
+        this.configuration = {} as any;
+        if (options) this.configuration = options;
 
         console.log('Mock Plugin Constructor');
     }
@@ -22,7 +22,7 @@ export default class MockPlugin extends EventEmitter {
     });
 
     updateConfigVariable = (key: string, value: any) => {
-        this.configuration[key] = value;
-        console.log(`Set ${key} to ${value}`);
+        // this.configuration[key] = value;
+        // console.log(`Set ${key} to ${value}`);
     }
 }

@@ -5,6 +5,7 @@ export const mockServerRouting: Routing = {
     registerGetRoute: (path: string, handler: (req: any, res: any) => void) => console.log('registerGetRoute'),
     registerPostRoute: (path: string, handler: (req: any, res: any) => void) => console.log('registerPostRoute'),
     registerAllRoute: (path: string, handler: (req: any, res: any) => void) => console.log('registerPostRoute'),
+    registerPutRoute: (path: string, handler: (req: any, res: any) => void) => console.log('registerPutRoute'),
     removeRoute: (path: string) => console.log('removeRoute'),
     registerProxy: (sourcePath: string, targetDomain: string, targetPort: string | number) => console.log('registerProxy'),
 }
@@ -26,6 +27,7 @@ export default class MockServer {
             registerGetRoute: jest.fn(),
             registerPostRoute: jest.fn(),
             registerAllRoute: jest.fn(),
+            registerPutRoute: jest.fn(),
             removeRoute: jest.fn(),
             registerProxy: jest.fn(),
         };
