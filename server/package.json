@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "tsc -w & nodemon --inspect=0.0.0.0:9229 --ignore '*.json' ./dist/app.js"
   },
   "author": "",
   "license": "ISC",
@@ -18,18 +19,21 @@
     "@types/multicast-dns": "^7.2.1",
     "@types/node": "^18.15.11",
     "@types/supertest": "^2.0.12",
+    "@types/ungap__structured-clone": "^0.3.0",
     "jest": "^29.5.0",
+    "nodemon": "^2.0.22",
     "supertest": "^6.3.3",
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.3"
   },
   "dependencies": {
+    "@ungap/structured-clone": "^1.0.2",
     "express": "^4.18.2",
     "http-proxy": "^1.18.1",
     "ip": "^1.1.8",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.43",
-    "multicast-dns": "^7.2.5"
+    "multicast-dns": "^7.2.5",
   }
 }
