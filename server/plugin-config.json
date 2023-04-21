@@ -60,5 +60,55 @@
         "value": 1000
       }
     }
+  },
+  "IPPlugin": {
+    "path": "../ip-plugin",
+    "enabled": true,
+    "config": {
+      "ipaddress": {
+        "priority": 1,
+        "display": true,
+        "readableName": "IP Address",
+        "type": "ipaddress"
+      },
+      "gateway": {
+        "priority": 1,
+        "display": true,
+        "readableName": "Gateway",
+        "type": "ipaddress"
+      },
+      "prefix": {
+        "priority": 1,
+        "display": true,
+        "readableName": "Network Prefix",
+        "type": "number"
+      },
+      "dhcp": {
+        "priority": 1,
+        "display": false,
+        "readableName": "DHCP",
+        "type": "boolean"
+      },
+      "dns": {
+        "priority": 1,
+        "display": true,
+        "readableName": "DNS Servers",
+        "type": "strings"
+      },
+      "iface": {
+        "priority": 1,
+        "display": true,
+        "readableName": "Network Interface",
+        "type": "string",
+        "value": "enp0s2"
+      },
+      "filePath": {
+        "priority": 1,
+        "display": true,
+        "readableName": "Systemd Config Filepath",
+        "type": "string",
+        "value": "/etc/systemd/network/20-wired.network"
+      }
+    }
   }
 }
