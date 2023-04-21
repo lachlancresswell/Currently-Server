@@ -29,6 +29,7 @@ export interface ConfigVariableMetadata<T> extends VariableMetadata<T> {
 export interface EphemeralVariableMetaData<T> extends ConfigVariableMetadata<T> {
     getter?: () => T | undefined;
     setter?: () => void;
+    toJSON?: () => EphemeralVariableMetaData<T>;
 }
 
 export interface ConfigArray {

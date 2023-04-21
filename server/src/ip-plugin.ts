@@ -1,114 +1,216 @@
 // Influx-plugin.ts
-import { Plugin, Route } from './plugin';
-import { ConfigArray, ConfigVariableMetadata } from '../../Types';
-import { exec, execSync } from 'child_process';
+import { Plugin } from './plugin';
+import { ConfigArray, ConfigVariableMetadata, EphemeralVariableMetaData, ipaddress, prefix } from '../../Types';
+import { execSync } from 'child_process';
 import dns from 'dns';
 import { networkInterfaces } from 'os';
 import fs from 'fs';
 
 export interface IPOptions extends ConfigArray {
-    ipAddress: ConfigVariableMetadata<'ipaddress'>;
-    subnetMask: ConfigVariableMetadata<'subnetmask'>;
-    gateway: ConfigVariableMetadata<'ipaddress'>;
-    dnsServer1: ConfigVariableMetadata<'ipaddress'>;
-    dnsServer2: ConfigVariableMetadata<'ipaddress'>;
-    dhcp: ConfigVariableMetadata<boolean>;
     filePath: ConfigVariableMetadata<string>;
     iface: ConfigVariableMetadata<string>;
+    ipaddress: EphemeralVariableMetaData<ipaddress | undefined>;
+    prefix: EphemeralVariableMetaData<prefix>;
+    gateway: EphemeralVariableMetaData<ipaddress>;
+    dns: EphemeralVariableMetaData<ipaddress[]>;
+    dhcp: EphemeralVariableMetaData<boolean>;
 }
 
 export interface Address {
+    [key: number | string]: boolean | string | number | string[] | undefined;
     internal: boolean;
     dhcp: boolean;
     ipaddress?: string;
     gateway?: string;
-    networkprefix?: number;
+    prefix?: number;
     dns?: string[];
 }
+
+type NetFileSection = 'Address' | 'Gateway' | 'DNS' | 'DHCP';
 
 class IPPlugin extends Plugin<IPOptions> {
     name = 'IPPlugin';
 
-    constructor(serverRouter: any, options: any) {
+    constructor(serverRouter: any, options: IPOptions) {
         super(serverRouter, options);
-    }
 
-    load = () => {
-        this.registerRoutes();
-    }
+        const _this = this;
 
-    registerRoutes = () => {
-        const routes: Route[] = [
-            { path: '/ip', type: 'POST', handler: this.ipHandler },
-            { path: '/get-ip', type: 'GET', handler: this.getIpHandler },
-        ];
+        /**
+         * Assigns a toJSON method to each ephemeral configuration parameter otherwise getters and setters will not be included in the JSON response.
+         */
+        this.configuration.ipaddress.toJSON = () => IPPlugin.jsonConverter(_this.configuration.ipaddress);
+        this.configuration.dhcp.toJSON = () => IPPlugin.jsonConverter(_this.configuration.dhcp);
+        this.configuration.gateway.toJSON = () => IPPlugin.jsonConverter(_this.configuration.gateway);
+        this.configuration.prefix.toJSON = () => IPPlugin.jsonConverter(_this.configuration.prefix);
+        this.configuration.dns.toJSON = () => IPPlugin.jsonConverter(_this.configuration.dns);
 
-        routes.forEach((route) => this.registerRoute(route.path, route.type, route.handler as any));
-    };
+        /**
+        * Sets the value of a network configuration parameter in a network file, creating the file if it does not exist. It also restarts the network service.
+        * @param value - The value to set. Can be a string, number, boolean, an array of strings, or undefined.
+        * @param key - The key of the configuration parameter to set.
+        * @param netFileKey - The key of the section in the network file where the configuration parameter should be set. Can be Address, Gateway, DNS, or DHCP.
+        * @param netFileValue - Optional. A string value other than val to set key to in the network file. If not provided, val will be used. Example: If updating IP address, val2 would be a string containing both the IP address and the prefix combined.
+        * @returns void
+        */
+        function netSetter(value: string | number | boolean | string[] | undefined, key: string, netFileKey: NetFileSection, netFileValue?: string) {
+            if (!netFileValue) netFileValue = value as string;
+            if (fs.existsSync(_this.configuration.filePath.value!)) {
+                IPPlugin.updateSystemdNetworkFile(netFileKey, `${netFileValue}`, _this.configuration.filePath.value!)
+            } else {
+                const config: Address = {
+                    internal: false,
+                    dhcp: _this.configuration.dhcp.value!,
+                    ipaddress: _this.configuration.ipaddress.value,
+                    prefix: _this.configuration.prefix.value,
+                    gateway: _this.configuration.gateway.value,
+                    dns: _this.configuration.dns.value,
+                };
 
-    protected ipHandler = async (req: any, res: any) => {
-        const ipSettings: Address = req.body;
+                config[key] = value;
 
-        try {
-            IPPlugin.createNetworkFile(ipSettings, this.configuration.filePath.value)
-            await this.restartNetworkD()
-            res.status(200).send('Network settings updated and system restarted.');
-        } catch (e) {
-            res.status(500).send(e);
+                IPPlugin.createNetworkFile(config, _this.configuration.filePath.value!)
+            }
+
+            _this.restartNetworkD()
         }
-    };
 
+        /**
+         * Assign getters and setters to each ephemeral configuration parameter.
+         */
+        // IP Address
+        Object.defineProperty(this.configuration.ipaddress, "value", {
+            get(): ipaddress {
+                const addresses = IPPlugin.getIpAddresses();
+                const address = addresses.find((a) => a.nic === _this.configuration.iface.value);
+
+                if (address) return address.ipaddress;
+                else return '';
+            },
+
+            set(address: ipaddress) { netSetter(address, 'ipaddress', 'Address', `${address}/${_this.configuration.prefix.value}`) }
+        });
+
+        // Prefix
+        Object.defineProperty(this.configuration.prefix, "value", {
+            get(): prefix {
+                const addresses = IPPlugin.getIpAddresses().find((a) => a.nic === _this.configuration.iface.value);
+
+                if (addresses) return addresses.networkprefix as prefix;
+                else return 32;
+            },
+
+            set(prefix: prefix) { netSetter(prefix, 'prefix', 'Address', `${_this.configuration.ipaddress.value}/${prefix}`) }
+        });
+
+        // Gateway
+        Object.defineProperty(this.configuration.gateway, "value", {
+            get(): ipaddress {
+                return IPPlugin.getGatewayIP();
+            },
+
+            set(gateway: ipaddress) { netSetter(gateway, 'gateway', 'Gateway') }
+        });
+
+        // DNS
+        Object.defineProperty(this.configuration.dns, "value", {
+            get(): ipaddress[] {
+                return dns.getServers();
+            },
+
+            set(dns: ipaddress[]) {
+                if (!Array.isArray(dns)) {
+                    dns = [dns];
+                }
+                netSetter(dns, 'dns', 'DNS', dns.join(' '));
+            }
+        });
+
+        // DHCP
+        Object.defineProperty(this.configuration.dhcp, "value", {
+            get(): boolean {
+                return IPPlugin.hasDynamicIpAddress(_this.configuration.iface.value!);
+            },
+
+            set(dhcp: boolean) { netSetter(dhcp, 'dhcp', 'DHCP', dhcp ? 'yes' : 'no') }
+        });
+
+
+    }
+
+    /**
+     * Creates a systemd network file with the provided IP address settings. Deletes any existing network file at the same file path.
+     * @param ipSettings Object containing the IP address settings to set in the network file.
+     * @param filePath The file path of the network file to create.
+     */
     protected static createNetworkFile = (ipSettings: Address, filePath: string) => {
         if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
 
-        const data = `
-        [Match]
-        Type=ether
-        
-        [Network]
-        DHCP=${ipSettings.dhcp ? 'yes' : 'no'}
-        Address=${ipSettings.ipaddress}/${ipSettings.networkprefix}
-        Gateway=${ipSettings.gateway}
-        DNS=${ipSettings.dns?.join()}
-        `
-        return fs.writeFileSync(filePath, data);
+        const data = `[Match]
+Name=${'enp0s2'}
+
+[Network]
+DHCP=${ipSettings.dhcp ? 'yes' : 'no'}
+Address=${ipSettings.ipaddress}/${ipSettings.prefix}
+Gateway=${ipSettings.gateway}
+DNS=${ipSettings.dns?.join(' ')}`
+        fs.writeFileSync(filePath, data);
     };
 
-    protected restartNetworkD = () => new Promise((resolve, reject) => {
-        const cmd = 'sudo systemctl restart systemd-networkd.service'
+    /**
+     * Updates the IP address set within an existing systemd network file.
+     * If the file does not have an existing [Network] section or Address field,
+     * this function inserts the new IP address under the [Network] section.
+     * @param ipAddress The new IP address to set in the network file.
+     * @param filePath The file path of the network file to update.
+     * @returns void
+     */
+    protected static updateSystemdNetworkFile = (field: NetFileSection, value: ipaddress, filePath: string) => {
+        // Read the contents of the network file
+        const networkFileContents = fs.readFileSync(filePath, 'utf8');
 
+        // Split the network file contents into lines
+        const lines = networkFileContents.split('\n');
 
-        exec(cmd, (error: any, stdout: any, stderr: any) => {
-            if (error) {
-                console.error(`exec error: ${error} `);
-                return reject(error);
+        // Find the index of the [Network] section
+        const networkSectionIndex = lines.findIndex(line => line.trim() === '[Network]');
+
+        // If the [Network] section isn't present in the file, add it to the end of the file
+        if (networkSectionIndex === -1) {
+            lines.push('[Network]');
+            lines.push(`${field}=${value}`);
+        } else {
+            // Find the index of the field to update within the [Network] section
+            const fieldIndex = lines.findIndex(
+                (line, index) =>
+                    index > networkSectionIndex &&
+                    line.trim().startsWith(field) &&
+                    !line.trim().startsWith('#')
+            );
+
+            // If the field isn't present in the file, insert it into the [Network] section
+            if (fieldIndex === -1) {
+                const insertIndex = lines.findIndex(
+                    (line, index) => index > networkSectionIndex && !line.trim().startsWith('#')
+                );
+                lines.splice(insertIndex, 0, `${field}=${value}`);
+            } else {
+                // Replace the old field value with the new field value
+                lines[fieldIndex] = `${field}=${value}`;
             }
-
-            console.log(`stdout: ${stdout} `);
-            console.error(`stderr: ${stderr} `);
-
-            resolve('Network service restarted.');
-        });
-    })
-
-    protected getIpHandler = async (req: any, res: any) => {
-        try {
-            const ipAddresses = IPPlugin.getIpAddresses();
-            const gateway = await IPPlugin.getGatewayIP();
-            const dnsServers = dns.getServers();
-
-            const NIC = ipAddresses.find((a) => a.nic === this.configuration.iface.value)!
-            const output: Address = {
-                ...NIC,
-                dns: dnsServers,
-                gateway
-            }
-            res.status(200).send(output);
-        } catch (e) {
-            res.status(500).send(e);
         }
 
-    };
+        // Write the updated network file contents back to the file
+        fs.writeFileSync(filePath, lines.join('\n'), 'utf8');
+    }
+
+    /**
+     * Restarts the systemd-networkd service.
+     */
+    protected restartNetworkD = () => {
+        const cmd = 'sudo systemctl restart systemd-networkd.service'
+        execSync(cmd);
+    }
 
     /**
      * Retrieves the local IP addresses for all non-internal IPv4 network interfaces.
@@ -118,7 +220,7 @@ class IPPlugin extends Plugin<IPOptions> {
         const NICs = networkInterfaces();
         const addresses: {
             nic: string,
-            ipaddress: string,
+            ipaddress: ipaddress,
             internal: boolean,
             networkprefix: number,
             dhcp: boolean
@@ -140,11 +242,14 @@ class IPPlugin extends Plugin<IPOptions> {
                 }
             }
         }
-
-
         return addresses;
     }
 
+    /**
+     * Checks if the specified network interface has a dynamic IP address.
+     * @param interfaceName interface to check
+     * @returns true if interface has dynamic IP, false otherwise
+     */
     static hasDynamicIpAddress = (interfaceName: string): boolean => {
         try {
             // Execute the command to get the IP addresses for the specified network interface
@@ -159,19 +264,31 @@ class IPPlugin extends Plugin<IPOptions> {
         }
     }
 
-    static getGatewayIP = (): Promise<string> =>
-        new Promise((resolve, reject) => {
-            exec('ip route | grep default | awk \'{print $3}\'', (err, stdout, stderr) => {
-                if (err) {
-                    reject(err);
-                } else if (stderr) {
-                    reject(stderr);
-                } else {
-                    const gatewayIP = stdout.trim();
-                    resolve(gatewayIP);
-                }
-            });
-        });
+    /**
+     * Retrieves the default gateway IP address.
+     * @returns {string} The default gateway IP address.
+    */
+    static getGatewayIP = () => {
+        const stdout = execSync('ip route').toString()
+        const defaultRouteMatch = stdout.match(/^default\s+via\s+(\S+)\s+/m);
+
+        return defaultRouteMatch![1]
+    };
+
+    /**
+     * Removes getter from object
+     * @param obj object to remove getter from
+     */
+    static jsonConverter = <T>(obj: T) => {
+        const properties = Object.getOwnPropertyNames(obj);
+        const jsonObject: any = {};
+
+        for (const property of properties) {
+            jsonObject[property] = (obj as any)[property];
+        }
+
+        return jsonObject as T;
+    }
 }
 
 export default IPPlugin;
