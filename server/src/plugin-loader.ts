@@ -29,8 +29,9 @@ export class PluginLoader {
 
         this.app.registerGetRoute('/config/:plugin', (req, res) => {
             const pluginName = req.params.plugin;
-            if (this.pluginConfigs[pluginName]) {
-                res.json(this.pluginConfigs[pluginName].config);
+            const plugin = this.plugins.find((plug) => plug.name === pluginName);
+            if (plugin && plugin.configuration) {
+                res.json(plugin.configuration);
             } else {
                 res.status(404).json({ error: 'Plugin not found' });
             }

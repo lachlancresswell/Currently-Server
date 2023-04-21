@@ -117,7 +117,13 @@ export abstract class Plugin<T> extends EventEmitter {
     protected loadInitialConfiguration(options: { [key: string | number]: ConfigVariableMetadata<ConfigValue> }): void {
         for (const key in options) {
             const variable = options[key];
-            this.addConfigVariable(key, variable, variable.value);
+
+            // Don't set .value for ephemeral variables
+            if (variable.value) {
+                this.addConfigVariable(key, variable, variable.value);
+            } else {
+                (this.configuration as any)[key] = variable;
+            }
         }
     }
 
