@@ -1,6 +1,6 @@
 // Influx-plugin.ts
 import { Plugin } from './plugin';
-import { ConfigArray, ConfigVariableMetadata, EphemeralVariableMetaData, ipaddress, prefix } from '../../Types';
+import { ConfigArray, ConfigValue, ConfigVariableMetadata, EphemeralVariableMetaData, ipaddress, prefix } from '../../Types';
 import { execSync } from 'child_process';
 import dns from 'dns';
 import { networkInterfaces } from 'os';
@@ -9,7 +9,7 @@ import fs from 'fs';
 export interface IPOptions extends ConfigArray {
     filePath: ConfigVariableMetadata<string>;
     iface: ConfigVariableMetadata<string>;
-    ipaddress: EphemeralVariableMetaData<ipaddress | undefined>;
+    ipaddress: EphemeralVariableMetaData<ipaddress>;
     prefix: EphemeralVariableMetaData<prefix>;
     gateway: EphemeralVariableMetaData<ipaddress>;
     dns: EphemeralVariableMetaData<ipaddress[]>;
@@ -37,15 +37,54 @@ class IPPlugin extends Plugin<IPOptions> {
         const _this = this;
 
         /**
-         * Assigns a toJSON method to each ephemeral configuration parameter otherwise getters and setters will not be included in the JSON response.
+         * Assign getters and setters to each ephemeral configuration parameter.
          */
-        this.configuration.ipaddress.toJSON = () => IPPlugin.jsonConverter(_this.configuration.ipaddress);
-        this.configuration.dhcp.toJSON = () => IPPlugin.jsonConverter(_this.configuration.dhcp);
-        this.configuration.gateway.toJSON = () => IPPlugin.jsonConverter(_this.configuration.gateway);
-        this.configuration.prefix.toJSON = () => IPPlugin.jsonConverter(_this.configuration.prefix);
-        this.configuration.dns.toJSON = () => IPPlugin.jsonConverter(_this.configuration.dns);
+        // IP Address
+        this.setEphemeralVariable(this.configuration.ipaddress, () => {
+            const addresses = IPPlugin.getIpAddresses();
+            const address = addresses.find((a) => a.nic === _this.configuration.iface.value);
 
-        /**
+            if (address) return address.ipaddress;
+            else return '';
+        },
+            (address: ipaddress) => this.netSetter(address, 'ipaddress', 'Address', `${address}/${_this.configuration.prefix.value}`)
+        )
+
+        // Prefix
+        this.setEphemeralVariable(this.configuration.prefix, () => {
+            const addresses = IPPlugin.getIpAddresses().find((a) => a.nic === _this.configuration.iface.value);
+
+            if (addresses) return addresses.networkprefix as prefix;
+            else return 32;
+        },
+            (prefix: prefix) => this.netSetter(prefix, 'prefix', 'Address', `${_this.configuration.ipaddress.value}/${prefix}`)
+        );
+
+        // Gateway
+        this.setEphemeralVariable(this.configuration.gateway, IPPlugin.getGatewayIP,
+            (gateway: ipaddress) => this.netSetter(gateway, 'gateway', 'Gateway')
+        );
+
+        // DNS
+        this.setEphemeralVariable(this.configuration.dns, dns.getServers,
+            (dns: ipaddress[]) => {
+                if (!Array.isArray(dns)) {
+                    dns = [dns];
+                }
+                return this.netSetter(dns, 'dns', 'DNS', dns.join(' '));
+            }
+        );
+
+        // DHCP
+        this.setEphemeralVariable(this.configuration.dhcp, () => IPPlugin.hasDynamicIpAddress(_this.configuration.iface.value!),
+
+            (dhcp: boolean) => this.netSetter(dhcp, 'dhcp', 'DHCP', dhcp ? 'yes' : 'no')
+        );
+
+
+    }
+
+    /**
         * Sets the value of a network configuration parameter in a network file, creating the file if it does not exist. It also restarts the network service.
         * @param value - The value to set. Can be a string, number, boolean, an array of strings, or undefined.
         * @param key - The key of the configuration parameter to set.
@@ -53,89 +92,26 @@ class IPPlugin extends Plugin<IPOptions> {
         * @param netFileValue - Optional. A string value other than val to set key to in the network file. If not provided, val will be used. Example: If updating IP address, val2 would be a string containing both the IP address and the prefix combined.
         * @returns void
         */
-        function netSetter(value: string | number | boolean | string[] | undefined, key: string, netFileKey: NetFileSection, netFileValue?: string) {
-            if (!netFileValue) netFileValue = value as string;
-            if (fs.existsSync(_this.configuration.filePath.value!)) {
-                IPPlugin.updateSystemdNetworkFile(netFileKey, `${netFileValue}`, _this.configuration.filePath.value!)
-            } else {
-                const config: Address = {
-                    internal: false,
-                    dhcp: _this.configuration.dhcp.value!,
-                    ipaddress: _this.configuration.ipaddress.value,
-                    prefix: _this.configuration.prefix.value,
-                    gateway: _this.configuration.gateway.value,
-                    dns: _this.configuration.dns.value,
-                };
+    netSetter = (value: string | number | boolean | string[] | undefined, key: string, netFileKey: NetFileSection, netFileValue?: string) => {
+        if (!netFileValue) netFileValue = value as string;
+        if (fs.existsSync(this.configuration.filePath.value!)) {
+            IPPlugin.updateSystemdNetworkFile(netFileKey, `${netFileValue}`, this.configuration.filePath.value!)
+        } else {
+            const config: Address = {
+                internal: false,
+                dhcp: this.configuration.dhcp.value!,
+                ipaddress: this.configuration.ipaddress.value,
+                prefix: this.configuration.prefix.value,
+                gateway: this.configuration.gateway.value,
+                dns: this.configuration.dns.value,
+            };
 
-                config[key] = value;
+            config[key] = value;
 
-                IPPlugin.createNetworkFile(config, _this.configuration.filePath.value!)
-            }
-
-            _this.restartNetworkD()
+            IPPlugin.createNetworkFile(config, this.configuration.filePath.value!)
         }
 
-        /**
-         * Assign getters and setters to each ephemeral configuration parameter.
-         */
-        // IP Address
-        Object.defineProperty(this.configuration.ipaddress, "value", {
-            get(): ipaddress {
-                const addresses = IPPlugin.getIpAddresses();
-                const address = addresses.find((a) => a.nic === _this.configuration.iface.value);
-
-                if (address) return address.ipaddress;
-                else return '';
-            },
-
-            set(address: ipaddress) { netSetter(address, 'ipaddress', 'Address', `${address}/${_this.configuration.prefix.value}`) }
-        });
-
-        // Prefix
-        Object.defineProperty(this.configuration.prefix, "value", {
-            get(): prefix {
-                const addresses = IPPlugin.getIpAddresses().find((a) => a.nic === _this.configuration.iface.value);
-
-                if (addresses) return addresses.networkprefix as prefix;
-                else return 32;
-            },
-
-            set(prefix: prefix) { netSetter(prefix, 'prefix', 'Address', `${_this.configuration.ipaddress.value}/${prefix}`) }
-        });
-
-        // Gateway
-        Object.defineProperty(this.configuration.gateway, "value", {
-            get(): ipaddress {
-                return IPPlugin.getGatewayIP();
-            },
-
-            set(gateway: ipaddress) { netSetter(gateway, 'gateway', 'Gateway') }
-        });
-
-        // DNS
-        Object.defineProperty(this.configuration.dns, "value", {
-            get(): ipaddress[] {
-                return dns.getServers();
-            },
-
-            set(dns: ipaddress[]) {
-                if (!Array.isArray(dns)) {
-                    dns = [dns];
-                }
-                netSetter(dns, 'dns', 'DNS', dns.join(' '));
-            }
-        });
-
-        // DHCP
-        Object.defineProperty(this.configuration.dhcp, "value", {
-            get(): boolean {
-                return IPPlugin.hasDynamicIpAddress(_this.configuration.iface.value!);
-            },
-
-            set(dhcp: boolean) { netSetter(dhcp, 'dhcp', 'DHCP', dhcp ? 'yes' : 'no') }
-        });
-
-
+        this.restartNetworkD()
     }
 
     /**
@@ -317,20 +293,6 @@ DNS=${ipSettings.dns?.join(' ')}`
         return defaultRouteMatch![1]
     };
 
-    /**
-     * Removes getter from object
-     * @param obj object to remove getter from
-     */
-    static jsonConverter = <T>(obj: T) => {
-        const properties = Object.getOwnPropertyNames(obj);
-        const jsonObject: any = {};
-
-        for (const property of properties) {
-            jsonObject[property] = (obj as any)[property];
-        }
-
-        return jsonObject as T;
-    }
 }
 
 export default IPPlugin;

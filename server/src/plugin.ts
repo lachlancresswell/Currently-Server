@@ -3,7 +3,7 @@ import { Routing } from './server';
 import * as moment from 'moment-timezone';
 import { RequestHandler } from 'express';
 import { Request, Response } from 'express';
-import { ConfigArray, ConfigValue, ConfigVariableMetadata } from '../../Types';
+import { ConfigArray, ConfigValue, ConfigVariableMetadata, EphemeralVariableMetaData } from '../../Types';
 
 type method = 'GET' | 'POST' | 'ALL' | 'PUT';
 
@@ -237,5 +237,38 @@ export abstract class Plugin<T> extends EventEmitter {
         const ipv6Pattern = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:))$/;
 
         return ipv4Pattern.test(address) || ipv6Pattern.test(address);
+    }
+
+    /**
+     * Removes getter from object
+     * @param obj object to remove getter from
+     */
+    static jsonConverter = <T>(obj: T) => {
+        const properties = Object.getOwnPropertyNames(obj);
+        const jsonObject: any = {};
+
+        for (const property of properties) {
+            jsonObject[property] = (obj as any)[property];
+        }
+
+        return jsonObject as T;
+    }
+
+    /**
+    * Attaches getters and setters for an ephemeral variable
+     * @param variable Ephermeral object to configure
+     * @param getter Getter to attach to object
+     * @param setter Setter to attach to objectr
+     */
+    setEphemeralVariable = <T>(variable: EphemeralVariableMetaData<ConfigValue>, getter: () => T, setter: (val: T) => void) => {
+        Object.defineProperty(variable, "value", {
+            get: getter,
+            set: setter
+        });
+
+        /**
+         * Assigns a toJSON method to each ephemeral configuration parameter otherwise getters and setters will not be included in the JSON response.
+         */
+        variable.toJSON = () => Plugin.jsonConverter(variable);
     }
 }
