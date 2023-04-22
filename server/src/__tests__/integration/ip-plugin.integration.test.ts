@@ -62,6 +62,8 @@ jest.mock('dns', () => {
     }
 })
 
+let DHCP_STATUS = true;
+
 /**
  * Mocks the child_process module to return a network configuration of our choosing.
  */
@@ -83,9 +85,9 @@ jest.mock("child_process", () => {
                 192.168.64.0/24 dev enp0s1 proto kernel scope link src 192.168.64.4 metric 100 `
             } else return `2: enp0s1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
                 link/ether 42:85:ff:dd:82:53 brd ff:ff:ff:ff:ff:ff
-                inet ${DEVICE_IP}/24 brd 192.168.64.255 scope global dynamic noprefixroute enp0s1
+                inet ${DEVICE_IP}/24 brd 192.168.64.255 scope global ${DHCP_STATUS ? 'dynamic' : ''} noprefixroute enp0s1
                    valid_lft 50745sec preferred_lft 50745sec
-                inet6 fdfc:b5bb:4718:11f6:347f:d2bb:644d:f114/64 scope global dynamic noprefixroute 
+                inet6 fdfc:b5bb:4718:11f6:347f:d2bb:644d:f114/64 scope global ${DHCP_STATUS ? 'dynamic' : ''} noprefixroute 
                    valid_lft 2591960sec preferred_lft 604760sec
                 inet6 fe80::ee8f:3e9e:80e1:d47c/64 scope link noprefixroute 
                    valid_lft forever preferred_lft forever`
@@ -189,7 +191,7 @@ describe('TestPlugin', () => {
                 "display": false,
                 "readableName": "dhcp",
                 "type": "boolean",
-                "value": true
+                "value": false
             },
             "dns": {
                 "priority": 1,
@@ -228,6 +230,80 @@ describe('TestPlugin', () => {
         expect(contents).toContain(`${newOptions.ipaddress.value}/${newOptions.prefix.value}`)
         expect(contents).toContain(newOptions.gateway.value)
         expect(contents).toContain(newOptions.dns.value.join(' '))
+        fs.unlinkSync(newOptions.filePath.value)
+        expect(fs.existsSync(newOptions.filePath.value)).not.toBeTruthy();
+    });
+
+    it('should create a valid .network file with address info missing if dhcp is set to true from a PUT request', async () => {
+
+        DHCP_STATUS = false;
+
+        const newOptions = {
+            "ipaddress": {
+                "priority": 1,
+                "display": true,
+                "readableName": "ipaddress",
+                "type": "ipaddress",
+                "value": DEVICE_IP
+            },
+            "gateway": {
+                "priority": 1,
+                "display": true,
+                "readableName": "gateway",
+                "type": "ipaddress",
+                "value": randomIp()
+            },
+            "prefix": {
+                "priority": 1,
+                "display": true,
+                "readableName": "prefix",
+                "type": "number",
+                "value": randomPrefix()
+            },
+            "dhcp": {
+                "priority": 1,
+                "display": false,
+                "readableName": "dhcp",
+                "type": "boolean",
+                "value": true
+            },
+            "dns": {
+                "priority": 1,
+                "display": true,
+                "readableName": "dns",
+                "type": "strings",
+                "value": DNS_SERVERS
+            },
+            "iface": {
+                "priority": 1,
+                "display": true,
+                "readableName": "Interface",
+                "type": "string",
+                "value": "enp0s1"
+            },
+            "filePath": {
+                "priority": 1,
+                "display": true,
+                "readableName": "Systemd Config Filepath",
+                "type": "string",
+                "value": "/etc/systemd/network/20-wired.network"
+            }
+        }
+
+        if (fs.existsSync(newOptions.filePath.value)) fs.unlinkSync(newOptions.filePath.value)
+
+        const response = await request(server['app'])
+            .put('/config/IPPlugin')
+            .send(newOptions);
+
+        expect(response.status).toBe(200);
+        expect(execSync).toHaveBeenCalled();
+        expect(os.networkInterfaces).toHaveBeenCalled();
+        expect(fs.existsSync(newOptions.filePath.value)).toBeTruthy();
+        const contents = fs.readFileSync(newOptions.filePath.value).toString();
+        expect(contents).not.toContain(`${newOptions.ipaddress.value}/${newOptions.prefix.value}`)
+        expect(contents).not.toContain(newOptions.gateway.value)
+        expect(contents).not.toContain(newOptions.dns.value.join(' '))
         fs.unlinkSync(newOptions.filePath.value)
         expect(fs.existsSync(newOptions.filePath.value)).not.toBeTruthy();
     });

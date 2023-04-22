@@ -160,7 +160,8 @@ DNS=${ipSettings.dns?.join(' ')}`
     /**
      * Updates the IP address set within an existing systemd network file.
      * If the file does not have an existing [Network] section or Address field,
-     * this function inserts the new IP address under the [Network] section.
+     * this function inserts the new IP address under the [Network] section. If 
+     * DHCP is enabled, IP address, gateway and DNS settings will not be added
      * @param ipAddress The new IP address to set in the network file.
      * @param filePath The file path of the network file to update.
      * @returns void
@@ -170,7 +171,7 @@ DNS=${ipSettings.dns?.join(' ')}`
         const networkFileContents = fs.readFileSync(filePath, 'utf8');
 
         // Split the network file contents into lines
-        const lines = networkFileContents.split('\n');
+        let lines = networkFileContents.split('\n');
 
         // Find the index of the [Network] section
         const networkSectionIndex = lines.findIndex(line => line.trim() === '[Network]');
@@ -193,16 +194,57 @@ DNS=${ipSettings.dns?.join(' ')}`
                 const insertIndex = lines.findIndex(
                     (line, index) => index > networkSectionIndex && !line.trim().startsWith('#')
                 );
-                lines.splice(insertIndex, 0, `${field}=${value}`);
+
+                // Skip if DHCP is enabled
+                if (!lines.find((line) => line.startsWith('DHCP=yes'))) {
+                    lines.splice(insertIndex, 0, `${field}=${value}`);
+                }
             } else {
                 // Replace the old field value with the new field value
                 lines[fieldIndex] = `${field}=${value}`;
+
+                // If the field is 'DHCP' and 'value' is 'yes', remove all other address information from the [Netowork] section
+                if (field === 'DHCP' && value === 'yes') {
+                    const networkSectionIndex = lines.findIndex(line => line.trim() === '[Network]');
+                    console.log(networkSectionIndex);
+                    if (networkSectionIndex !== -1) {
+                        lines = IPPlugin.trimNetworkFileToDhcp(lines);
+                    }
+                }
             }
         }
 
         // Write the updated network file contents back to the file
         fs.writeFileSync(filePath, lines.join('\n'), 'utf8');
     }
+
+    /**
+     * Removes IP address, gateway and DNS lines from a .network file and leaves DHCP configured
+     * @param lines string array containing lines from a .network file
+     * @returns string array containing original file contents with all fields
+     * under [Network] removed except for the DHCP setting
+     */
+    static trimNetworkFileToDhcp = (lines: string[]) => {
+        let inNetworkSection = false;
+        const filteredArr: string[] = [];
+
+        for (const item of lines) {
+            if (item === "[Network]") {
+                inNetworkSection = true;
+            } else if (item.startsWith("[")) {
+                inNetworkSection = false;
+            }
+
+            if (inNetworkSection && !item.includes("[Network]") && !item.includes("DHCP")) {
+                continue;
+            }
+
+            filteredArr.push(item);
+        }
+
+        return filteredArr;
+    }
+
 
     /**
      * Restarts the systemd-networkd service.

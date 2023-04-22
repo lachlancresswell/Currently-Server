@@ -2,7 +2,7 @@ import { Plugin } from './plugin';
 import * as fs from 'fs';
 import * as path from 'path';
 import { Routing } from './server'
-import { PluginConfig, ConfigArray, PluginJSON } from '../../Types';
+import { PluginConfig, ConfigArray, PluginJSON, EphemeralVariableMetaData, ConfigValue } from '../../Types';
 
 /**
  * Plugin Loader class.
