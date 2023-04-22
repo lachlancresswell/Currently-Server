@@ -67,10 +67,19 @@ export class PluginLoader {
     }
 
     /**
-     * Saves the plugin configurations to a JSON file.
-     */
+    * Saves the plugin configurations to a JSON file while skipping the value property of EphemeralVariableMetaData variables.
+    */
     private saveConfigs(): void {
-        const configFileContent = JSON.stringify(this.pluginConfigs, null, 2);
+
+        // Ephermeral values have a toJSON method, so we can skip them
+        function replacer(this: any, key: string, value: any) {
+            if (key === 'value' && !!(this as unknown as EphemeralVariableMetaData<ConfigValue>).toJSON) {
+                return undefined;
+            }
+            return value;
+        };
+
+        const configFileContent = JSON.stringify(this.pluginConfigs, replacer, 2);
         const p = path.join(__dirname, this.configFilePath);
         fs.writeFileSync(p, configFileContent, 'utf8');
         console.log(`Config written to ${p}`)
