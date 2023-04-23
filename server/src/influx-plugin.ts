@@ -29,7 +29,7 @@ class Influx extends Plugin<InfluxOptions> {
     }
 
     load = () => {
-        this.registerProxy("/influx/*", this.configuration.databaseDomain.value, this.configuration.databasePort.value);
+        this.registerProxy("/influx/*", this.configuration.databaseDomain.value!, this.configuration.databasePort.value);
     }
 }
 

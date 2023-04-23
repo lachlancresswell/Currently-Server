@@ -72,7 +72,7 @@ class MDNSPlugin extends Plugin<MDNSConfig> {
      */
     protected setupMulticastDns() {
         const _this = this;
-        const deviceName = this.configuration.deviceName.value;
+        const deviceName = this.configuration.deviceName.value!;
 
         const uniqueMacPortion = MDNSPlugin.getUniqueMacPortion();
         const serviceSuffix = `${SERVICE_NAME}._tcp.local`;
