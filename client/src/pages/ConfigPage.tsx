@@ -3,7 +3,13 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { PluginJSON } from '../../../Types';
 import ConfigForm from './ConfigForm';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import SettingsEthernetIcon from '@mui/icons-material/SettingsEthernet';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import ReportProblemIcon from '@mui/icons-material/ReportProblem';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
+import HelpIcon from '@mui/icons-material/Help';
 
 /**
  * ConfigPage component fetches the master configuration from the server and displays an icon for each plugin discovered.
@@ -24,21 +30,44 @@ const ConfigPage: React.FC = () => {
         fetchPlugins();
     }, []);
 
-    const handlePluginIconClick = (pluginName: string) => {
-        navigate(`/options/${pluginName}`);
-    };
-
     return (
-        <div>
-            <>
-                <h2>Select a plugin to configure:</h2>
-                {Object.keys(plugins).map((pluginName) => (
-                    <div key={pluginName} onClick={() => handlePluginIconClick(pluginName)}>
-                        {/* Replace this div with an icon component of your choice. */}
-                        <div>{pluginName}</div>
-                    </div>
-                ))}
-            </>
+        <div className='pageParent pageConfig'>
+            <div className='pageCol'>
+                <div className={`pageRow}`}>
+                    <Link style={{ color: 'white' }} to={`/options/warnings`}>
+                        <ReportProblemIcon />
+                    </Link>
+                </div>
+                <div className={`pageRow}`}>
+                    <Link style={{ color: 'white' }} to={`/options/IPPlugin`}>
+                        <SettingsEthernetIcon />
+                    </Link>
+                </div>
+            </div>
+            <div className='pageCol'>
+                <div className={`pageRow}`}>
+                    <Link style={{ color: 'white' }} to={`/options/time`}>
+                        <AccessTimeIcon />
+                    </Link>
+                </div>
+                <div className={`pageRow}`}>
+                    <Link style={{ color: 'white' }} to={`/options/locale`}>
+                        <LocationOnIcon />
+                    </Link>
+                </div>
+            </div>
+            <div className='pageCol'>
+                <div className={`pageRow}`}>
+                    <Link style={{ color: 'white' }} to={`/options/power`}>
+                        <PowerSettingsNewIcon />
+                    </Link>
+                </div>
+                <div className={`pageRow}`}>
+                    <Link style={{ color: 'white' }} to={`/options/system`}>
+                        <HelpIcon />
+                    </Link>
+                </div>
+            </div>
         </div>
     );
 };

@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { DistroData, Neighbour } from './../../Types';
-import { ClientOptions, FluxTableMetaData, InfluxDB, Point, QueryApi, WriteApi, } from '@influxdata/influxdb-client-browser'
-import { SetupAPI, OrgsAPI } from '@influxdata/influxdb-client-apis';
+import { ClientOptions, InfluxDB, QueryApi } from '@influxdata/influxdb-client-browser'
 
 
 export interface Phase {

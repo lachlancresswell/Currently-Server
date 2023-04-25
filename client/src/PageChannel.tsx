@@ -3,6 +3,7 @@ import { NeighbourDataProvider, useNeighbourDataContext } from './neighbourDataC
 import { useEffect, useState } from 'react';
 import { PhaseData, Phase } from '../../Types';
 import { useParams } from 'react-router-dom';
+import { Warning } from './Warnings';
 
 interface PageBasicProps {
 }
@@ -32,39 +33,73 @@ export const PageChannel = ({ }: PageBasicProps) => {
     }
 
     return (
-        <div>
-            <h1>Phase {phaseNumber} Data for {selectedNeighbour.name}</h1>
-            {selectedPhase ? (
-                <div>
-                    <h2>Voltage:</h2>
-                    <ul>
-                        <li>
-                            {neighbourData?.phases[phaseNumber].voltage}V
-                        </li>
-                    </ul>
-                    <h2>Amperage:</h2>
-                    <ul>
-                        <li>
-                            {neighbourData?.phases[phaseNumber].amperage}A
-                        </li>
-                    </ul>
-                    <h2>pf:</h2>
-                    <ul>
-                        <li>
-                            {neighbourData?.pf}pf
-                        </li>
-                    </ul>
-                    <h2>hz:</h2>
-                    <ul>
-                        <li>
-                            {neighbourData?.hz}hz
-                        </li>
-                    </ul>
+        <div className='pageParent pageBasic'>
+            <div className='pageCol val fontLarge'>
+                <div className={`pageRow l${(phaseNumber || 0) + 1}`}>
+                    <span className='value'>
+                        {neighbourData?.phases[phaseNumber].voltage}
+                    </span>
                 </div>
-            ) : (
-                <p>No data available</p>
-            )
-            }
-        </div >
+                <div className={`pageRow l${(phaseNumber || 0) + 1}`}>
+                    <span className='value'>
+                        {neighbourData?.phases[phaseNumber].amperage}
+                    </span>
+                </div>
+            </div>
+            <div className='pageCol denomin fontLarge'>
+                <div className={`pageRow l${(phaseNumber || 0) + 1}`}>
+                    <span>
+                        V
+                    </span>
+                </div>
+                <div className={`pageRow l${(phaseNumber || 0) + 1}`}>
+                    <span>
+                        A
+                    </span>
+                </div>
+            </div>
+            <div className='pageCol'>
+                <div className='pageRow'>
+                    {neighbourData && <Warning data={neighbourData} type={'voltage'} phaseIndex={phaseNumber as 0 | 1 | 2} />}
+                </div>
+                <div className='pageRow'>
+                    {neighbourData && <Warning data={neighbourData} type={'amperage'} phaseIndex={phaseNumber as 0 | 1 | 2} />}
+                </div>
+            </div>
+            <div className='pageCol val  fontSmall'>
+                <div className={`pageRow pf`}>
+                    <span className='value'>
+                        {neighbourData && neighbourData.pf}
+                    </span>
+                </div>
+                <div className='pageRow kva'>
+                    <span className='value'>
+                        {neighbourData && neighbourData.kva}
+                    </span>
+                </div>
+            </div>
+            <div className='pageCol denomin fontSmall'>
+                <div className={`pageRow pf`}>
+                    <span>
+                        pF
+                    </span>
+                </div>
+                <div className={`pageRow kva`}>
+                    <span>
+                        kVA
+                    </span>
+                </div>
+            </div>
+            <div className='pageCol'>
+                <div className='pageRow'>
+                    <span className='circle green'>
+                    </span>
+                </div>
+                <div className='pageRow'>
+                    <span className='circle orange'>
+                    </span>
+                </div>
+            </div>
+        </div>
     );
 };

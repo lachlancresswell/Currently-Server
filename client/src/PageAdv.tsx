@@ -2,15 +2,14 @@ import { useNeighbourContext } from './neighbourContext';
 import { useNeighbourDataContext } from './neighbourDataContext';
 import { useEffect, useState } from 'react';
 import { PhaseData, Phase } from '../../Types';
-import { Warning } from './Warnings';
 
-interface PageBasicProps {
+interface PageAdvProps {
 }
 
-export const PageBasic = ({ }: PageBasicProps) => {
+export const PageAdv = ({ }: PageAdvProps) => {
     const { selectedNeighbour } = useNeighbourContext();
     const { neighbourData } = useNeighbourDataContext();
-    const [selectedPhase, setSelectedPhase] = useState<PhaseData | null>(null);
+    const [_selectedPhase, setSelectedPhase] = useState<PhaseData | null>(null);
 
 
     useEffect(() => {
@@ -33,17 +32,17 @@ export const PageBasic = ({ }: PageBasicProps) => {
             <div className='pageCol val'>
                 <div className='pageRow l1'>
                     <span className='value'>
-                        {neighbourData?.phases[0].voltage}
+                        {(neighbourData?.phases[0]!.voltage! > -1 && neighbourData?.phases[0]!.voltage)}
                     </span>
                 </div>
                 <div className='pageRow l2'>
                     <span className='value'>
-                        {neighbourData?.phases[1].voltage}
+                        {(neighbourData?.phases[1]!.voltage! > -1 && neighbourData?.phases[1]!.voltage)}
                     </span>
                 </div>
                 <div className='pageRow l3'>
                     <span className='value'>
-                        {neighbourData?.phases[2].voltage}
+                        {(neighbourData?.phases[2]!.voltage! > -1 && neighbourData?.phases[2]!.voltage)}
                     </span>
                 </div>
             </div>
@@ -67,17 +66,17 @@ export const PageBasic = ({ }: PageBasicProps) => {
             <div className='pageCol val'>
                 <div className='pageRow l1'>
                     <span className='value'>
-                        {neighbourData?.phases[0].amperage}
+                        {(neighbourData?.phases[0]!.amperage! > -1 ? neighbourData?.phases[0]!.amperage : '-')}
                     </span>
                 </div>
                 <div className='pageRow l2'>
                     <span className='value'>
-                        {neighbourData?.phases[1].amperage}
+                        {(neighbourData?.phases[1]!.amperage! > -1 ? neighbourData?.phases[1]!.amperage : '-')}
                     </span>
                 </div>
                 <div className='pageRow l3'>
                     <span className='value'>
-                        {neighbourData?.phases[2].amperage}
+                        {(neighbourData?.phases[2]!.amperage! > -1 ? neighbourData?.phases[2]!.amperage : '-')}
                     </span>
                 </div>
             </div>
@@ -98,17 +97,40 @@ export const PageBasic = ({ }: PageBasicProps) => {
                     </span>
                 </div>
             </div>
-            <div className='pageCol'>
-                <div className='pageRow'>
-                    {neighbourData && <Warning data={neighbourData} type={'va'} phaseIndex={0} />}
+            <div className='pageCol val  fontSmall'>
+                <div className={`pageRow pf`}>
+                    <span className='value'>
+                        {neighbourData?.pf}
+                    </span>
                 </div>
-                <div className='pageRow'>
-                    {neighbourData && <Warning data={neighbourData} type={'va'} phaseIndex={1} />}
+                <div className='pageRow kva'>
+                    <span className='value'>
+                        {neighbourData?.kva}
+                    </span>
                 </div>
-                <div className='pageRow'>
-                    {neighbourData && <Warning data={neighbourData} type={'va'} phaseIndex={2} />}
+                <div className='pageRow hz'>
+                    <span className='value'>
+                        {neighbourData?.hz}
+                    </span>
+                </div>
+            </div>
+            <div className='pageCol denomin fontSmall'>
+                <div className={`pageRow pf`}>
+                    <span>
+                        pF
+                    </span>
+                </div>
+                <div className={`pageRow kva`}>
+                    <span>
+                        kVA
+                    </span>
+                </div>
+                <div className={`pageRow hz`}>
+                    <span>
+                        hz
+                    </span>
                 </div>
             </div>
         </div>
     );
-};
+}

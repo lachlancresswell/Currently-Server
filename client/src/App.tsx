@@ -2,16 +2,28 @@ import { useEffect, useState } from 'react';
 import { PageChannel } from './PageChannel'
 import ConfigPage from './pages/ConfigPage';
 import { PageBasic } from './PageBasic';
+import { PageAdv } from './PageAdv';
+import { PageHome } from './PageHome';
 import {
   createBrowserRouter,
   RouterProvider,
-  NavLink,
   Outlet,
-  Link
+  Link,
+  NavLink
 } from "react-router-dom";
 import { NeighbourProvider, useNeighbourContext } from './neighbourContext';
-import { NeighbourDataProvider, useNeighbourDataContext } from './neighbourDataContext';
+import { NeighbourDataProvider } from './neighbourDataContext';
+import { ConfigDataProvider } from './configContext';
 import ConfigForm from './pages/ConfigForm';
+import './Styles/App.css';
+import './Styles/Page.css';
+import './Styles/Button.css';
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import ShowChartIcon from '@mui/icons-material/ShowChart';
+import HomeIcon from '@mui/icons-material/Home';
+import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
+import PageChart from './PageChart';
+import Status from './Status';
 
 
 const NeighbourSelector = () => {
@@ -41,55 +53,49 @@ const NeighbourSelector = () => {
 const router = createBrowserRouter([{
   path: '/',
   element: <>
-    <NeighbourSelector />
-    <nav>
-      <ul>
-        <li>
-          <Link to={"/"}>Home</Link>
-        </li>
-        <li>
-          <Link to={"/channel"}>Channel</Link>
-        </li>
-        <li>
-          <Link to={"/plot"}>Plot</Link>
-        </li>
-        <li>
-          <Link to={"/options"}>Options</Link>
-        </li>
-      </ul>
-    </nav>
+    <div className={"menu "}>
+      <NavLink to={"/"}>
+        <HomeIcon />
+      </NavLink>
+      <Link to={"/channel/basic"}>
+        <FormatListNumberedIcon />
+      </Link>
+      <Link to={"/chart"}>
+        <ShowChartIcon />
+      </Link>
+      <Link to={"/options"}>
+        <SettingsOutlinedIcon />
+      </Link>
+    </div>
     <Outlet /></>,
   children: [{
     path: "/channel",
     element: <>
-      <nav>
-        <ul>
-          <li>
-            <Link to={"/channel/basic"}>Basic</Link>
-          </li>
-          <li>
-            <Link to={"/channel/phase/1"}>Phase 1</Link>
-          </li>
-          <li>
-            <Link to={"/channel/phase/2"}>Phase 2</Link>
-          </li>
-          <li>
-            <Link to={"/channel/phase/3"}>Phase 3</Link>
-          </li>
-          <li>
-            <Link to={"/channel/Adv"}>Adv</Link>
-          </li>
-          <Outlet />
-        </ul>
-      </nav>
+      <Outlet />
+      <div className={'menu footer'}>
+        <Link to={"/channel/basic"}>Basic</Link>
+        <Link to={"/channel/phase/1"}>L1</Link>
+        <Link to={"/channel/phase/2"}>L2</Link>
+        <Link to={"/channel/phase/3"}>L3</Link>
+        <Link to={"/channel/adv"}>Adv</Link>
+      </div>
     </>,
     children: [{
       path: "/channel/basic",
       element: <PageBasic />
     }, {
+      path: "/channel/adv",
+      element: <PageAdv />
+    }, {
       path: "/channel/phase/:phase",
       element: <PageChannel />
     }]
+  }, {
+    path: "/",
+    element: <PageHome />
+  }, {
+    path: "/chart",
+    element: <PageChart />
   }, {
     path: "/options",
     element: <ConfigPage />
@@ -110,13 +116,19 @@ const AppWrapper = () => {
   return (
     <div id='single-page' className='single-page'>
       <NeighbourDataProvider neighbour={selectedNeighbour!}>
-        <RouterProvider router={router} />
+        <ConfigDataProvider>
+          <RouterProvider router={router} />
+        </ConfigDataProvider>
       </NeighbourDataProvider>
     </div>
   );
 };
 
 const App = () => {
+
+  document.body.dataset.theme = 'dark';
+
+
   return (
     <NeighbourProvider>
       <AppWrapper />
