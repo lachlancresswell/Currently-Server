@@ -6,7 +6,7 @@ export type timezone = string;
 /**
  * Possible config value types that can be stored.
  */
-export type ConfigValue = string | number | boolean | ipaddress | ipaddress[] | timezone | subnetmask | prefix | undefined;
+export type ConfigValue = string | number | boolean | ipaddress | ipaddress[] | timezone | subnetmask | prefix | Date | undefined;
 
 /**
  * Plugin variable and it's related metadata
@@ -50,4 +50,26 @@ export interface PluginConfig {
  */
 export interface PluginJSON {
     [key: string]: PluginConfig
+}
+
+export interface Neighbour {
+    name: string; // Device name
+    date: Date; // Date of last discovery
+    address: ipaddress; // IP address of device
+}
+
+export interface PhaseData {
+    voltage?: number,
+    amperage?: number,
+    phase: Phase,
+}
+
+export type Phase = 1 | 2 | 3;
+
+export interface DistroData {
+    time: Date,
+    pf?: number,
+    kva?: number,
+    hz?: number,
+    phases: PhaseData[]
 }
