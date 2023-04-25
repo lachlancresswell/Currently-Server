@@ -5,17 +5,9 @@ import { Answer } from "dns-packet";
 import { IncomingMessage, ServerResponse } from 'http';
 import { Routing } from './server';
 import { networkInterfaces } from 'os';
-import { ConfigArray, ConfigVariableMetadata } from '../../Types';
+import { ConfigArray, ConfigVariableMetadata, Neighbour, ipaddress } from '../../Types';
 
-interface Address {
-    address: string,
-    local: boolean
-}
 
-interface Neighbour {
-    name: string;
-    addresses: Address[];
-}
 
 export interface MDNSConfig extends ConfigArray {
     transmit: ConfigVariableMetadata<boolean>;
@@ -99,7 +91,7 @@ class MDNSPlugin extends Plugin<MDNSConfig> {
 
             const dataResponse = isQueryFromSelf
                 ? [resObj('127.0.0.1')]
-                : localIPAddresses.map((ip) => resObj(JSON.stringify(ip)));
+                : localIPAddresses.find((ip) => ip.address !== '127.0.0.1');
 
             if (query.questions.some((question) => question.type === 'PTR' && question.name.includes(serviceSuffix) && this.configuration.transmit.value)) {
                 if (this.mdns) this.mdns.respond([
@@ -118,7 +110,7 @@ class MDNSPlugin extends Plugin<MDNSConfig> {
                             target: uniqueMacPortion,
                         },
                     },
-                    ...dataResponse,
+                    ...dataResponse as any,
                 ]);
             }
         });
@@ -146,10 +138,16 @@ class MDNSPlugin extends Plugin<MDNSConfig> {
             if (answer.type === 'SRV') {
                 const deviceName = answer.name;
                 if (!deviceMap.has(deviceName)) {
-                    deviceMap.set(deviceName, { name: deviceName, addresses: [] });
+                    deviceMap.set(deviceName, {
+                        name: deviceName,
+                        date: new Date(),
+                        address: '',
+                    });
                 }
             }
         });
+
+
 
         answers.forEach((answer) => {
             if (answer.type === 'A') {
@@ -157,7 +155,7 @@ class MDNSPlugin extends Plugin<MDNSConfig> {
                 const device = deviceMap.get(deviceName);
 
                 if (device) {
-                    device.addresses.push((answer as any).data);
+                    device.address = (answer as any).data;
                 }
             }
         });
@@ -179,7 +177,10 @@ class MDNSPlugin extends Plugin<MDNSConfig> {
      * Retrieves the local IP addresses for all non-internal IPv4 network interfaces.
      * @returns {string[]} An array of local IP addresses as strings.
      */
-    static getLocalIPAddresses(): Address[] {
+    static getLocalIPAddresses(): {
+        address: string,
+        local: boolean
+    }[] {
         const NICs = networkInterfaces();
         const addresses: {
             address: string,
