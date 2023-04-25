@@ -1,78 +1,126 @@
-import React from 'react';
-import {
-  BrowserRouter as Router,
-  Route,
-  Link,
-  Outlet,
-  Routes,
-} from 'react-router-dom';
-import { AppBar, Box, Toolbar, IconButton, Container } from '@mui/material';
-
-import {
-  Home as HomeIcon,
-  Tv as DisplayIcon,
-  ViewStream as ChannelIcon,
-  ShowChart as ChartIcon,
-  Settings as ConfigIcon,
-} from '@mui/icons-material';
-
-import HomePage from './pages/HomePage';
-import DisplayPage from './pages/DisplayPage';
-import ChannelPage from './pages/ChannelPage';
-import ChartPage from './pages/ChartPage';
+import { useEffect, useState } from 'react';
+import { PageChannel } from './PageChannel'
 import ConfigPage from './pages/ConfigPage';
+import { PageBasic } from './PageBasic';
+import {
+  createBrowserRouter,
+  RouterProvider,
+  NavLink,
+  Outlet,
+  Link
+} from "react-router-dom";
+import { NeighbourProvider, useNeighbourContext } from './neighbourContext';
+import { NeighbourDataProvider, useNeighbourDataContext } from './neighbourDataContext';
 import ConfigForm from './pages/ConfigForm';
 
-/**
- * `App` is the main application component that sets up routing and navigation.
- *
- * The navigation menu is created with Material-UI components
- * and contains icons that link to the Home, Display, Channel, Chart, and Config pages.
- *
- * @returns JSX.Element - The App component with navigation and routes.
- */
-const App: React.FC = () => {
+
+const NeighbourSelector = () => {
+  const { neighbours, selectedNeighbour, setSelectedNeighbour } = useNeighbourContext();
+
+  const handleSelectNeighbour = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedAddress = event.target.value;
+    const selectedNeighbour = neighbours.find((neighbour) => neighbour.address === selectedAddress);
+    setSelectedNeighbour(selectedNeighbour!);
+  };
 
   return (
-    <Router>
-      <Box sx={{ flexGrow: 1 }}>
-        <AppBar position="static">
-          <Toolbar>
-            <Box sx={{ flexGrow: 1 }}>
-              {/* Home icon button */}
-              <IconButton color="inherit" component={Link} to="/">
-                <HomeIcon />
-              </IconButton>
-              {/* Display icon button */}
-              <IconButton color="inherit" component={Link} to="/display">
-                <DisplayIcon />
-              </IconButton>
-              {/* Channel icon button */}
-              <IconButton color="inherit" component={Link} to="/channel">
-                <ChannelIcon />
-              </IconButton>
-              {/* Chart icon button */}
-              <IconButton color="inherit" component={Link} to="/chart">
-                <ChartIcon />
-              </IconButton>
-              {/* Config icon button */}
-              <IconButton color="inherit" component={Link} to="/options">
-                <ConfigIcon />
-              </IconButton>
-            </Box>
-          </Toolbar>
-        </AppBar>
-      </Box>
-      {/* Router routes for handling page content */}
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/display" element={<DisplayPage />} />
-        <Route path="/channel" element={<ChannelPage />} />
-        <Route path="/chart" element={<ChartPage />} />
-        <Route path="/options/:pluginName" element={<ConfigForm />} />
-        <Route path="/options" element={<ConfigPage />} />
-      </Routes>
-    </Router>
+    <div>
+      <h1>Neighbour:</h1>
+      <select value={selectedNeighbour?.address || ''} onChange={handleSelectNeighbour}>
+        <option value="">Select</option>
+        {neighbours.map((neighbour) => (
+          <option key={neighbour.address} value={neighbour.address}>
+            {neighbour.name}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+};
+
+const router = createBrowserRouter([{
+  path: '/',
+  element: <>
+    <NeighbourSelector />
+    <nav>
+      <ul>
+        <li>
+          <Link to={"/"}>Home</Link>
+        </li>
+        <li>
+          <Link to={"/channel"}>Channel</Link>
+        </li>
+        <li>
+          <Link to={"/plot"}>Plot</Link>
+        </li>
+        <li>
+          <Link to={"/options"}>Options</Link>
+        </li>
+      </ul>
+    </nav>
+    <Outlet /></>,
+  children: [{
+    path: "/channel",
+    element: <>
+      <nav>
+        <ul>
+          <li>
+            <Link to={"/channel/basic"}>Basic</Link>
+          </li>
+          <li>
+            <Link to={"/channel/phase/1"}>Phase 1</Link>
+          </li>
+          <li>
+            <Link to={"/channel/phase/2"}>Phase 2</Link>
+          </li>
+          <li>
+            <Link to={"/channel/phase/3"}>Phase 3</Link>
+          </li>
+          <li>
+            <Link to={"/channel/Adv"}>Adv</Link>
+          </li>
+          <Outlet />
+        </ul>
+      </nav>
+    </>,
+    children: [{
+      path: "/channel/basic",
+      element: <PageBasic />
+    }, {
+      path: "/channel/phase/:phase",
+      element: <PageChannel />
+    }]
+  }, {
+    path: "/options",
+    element: <ConfigPage />
+  }, {
+    path: "/options/:pluginName",
+    element: <ConfigForm />
+  }]
+}]);
+
+const AppWrapper = () => {
+  const { selectedNeighbour } = useNeighbourContext();
+  const [_selectedNeighbourId, setSelectedNeighbourId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSelectedNeighbourId(selectedNeighbour?.address ?? null);
+  }, [selectedNeighbour]);
+
+  return (
+    <div id='single-page' className='single-page'>
+      <NeighbourDataProvider neighbour={selectedNeighbour!}>
+        <RouterProvider router={router} />
+      </NeighbourDataProvider>
+    </div>
+  );
+};
+
+const App = () => {
+  return (
+    <NeighbourProvider>
+      <AppWrapper />
+    </NeighbourProvider>
   );
 };
 
