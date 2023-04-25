@@ -43,14 +43,14 @@
         "display": true,
         "readableName": "Database Port",
         "type": "number",
-        "value": 8002
+        "value": 8086
       },
       "databaseDomain": {
         "priority": 1,
         "display": true,
         "readableName": "Database Domain",
         "type": "string",
-        "value": "localhost"
+        "value": "192.168.128.1"
       },
       "rxDelay": {
         "priority": 1,
@@ -81,7 +81,9 @@
         "priority": 1,
         "display": true,
         "readableName": "Network Prefix",
-        "type": "number"
+        "type": "number",
+        "max": 32,
+        "min": 1
       },
       "dhcp": {
         "priority": 1,
@@ -108,6 +110,52 @@
         "readableName": "Systemd Config Filepath",
         "type": "string",
         "value": "/etc/systemd/network/20-wired.network"
+      }
+    }
+  },
+  "TimeZonePlugin": {
+    "path": "../timezone-plugin",
+    "enabled": true,
+    "config": {
+      "date": {
+        "priority": 0,
+        "readableName": "Date",
+        "type": "string",
+        "display": true
+      },
+      "timezone": {
+        "priority": 0,
+        "readableName": "Timezone",
+        "type": "string",
+        "display": true
+      },
+      "ntpServers": {
+        "priority": 0,
+        "readableName": "NTP Servers",
+        "type": "strings",
+        "display": true
+      },
+      "dateFormat": {
+        "priority": 0,
+        "readableName": "Date Format",
+        "type": "string",
+        "display": true,
+        "value": "d/m/y",
+        "options": [
+          "d/m/y",
+          "my/d/y"
+        ]
+      },
+      "timeFormat": {
+        "priority": 0,
+        "readableName": "Time Format",
+        "type": "string",
+        "display": true,
+        "value": "24h",
+        "options": [
+          "24h",
+          "12h"
+        ]
       }
     }
   }
