@@ -1,6 +1,7 @@
 // Server.ts
 import express, { Express, Request, Response } from 'express';
 import { PluginLoader } from './plugin-loader';
+import cors from 'cors';
 import * as https from 'https';
 import * as http from 'http';
 import * as fs from 'fs';
@@ -16,8 +17,12 @@ export interface Routing {
     registerProxy: (sourcePath: string, targetDomain: string, targetPort: string | number) => void;
 }
 
-const HTTP_PORT = process.env.NODE_ENV === 'test' ? 0 : 8001;
-const HTTPS_PORT = process.env.NODE_ENV === 'test' ? 0 : 8002;
+const HTTP_PORT = process.env.NODE_ENV === 'test' ? 0
+    : process.env.NODE_ENV === 'production' ? 80
+        : 8001;
+const HTTPS_PORT = process.env.NODE_ENV === 'test' ? 0
+    : process.env.NODE_ENV === 'production' ? 443
+        : 8002;
 
 /**
  * Server class for hosting the application.
@@ -36,6 +41,12 @@ export class Server {
      */
     constructor(private configFilePath: string) {
         this.app = express();
+        this.app.use(cors({
+            'allowedHeaders': ['Content-Type'],
+            'origin': '*',
+            'preflightContinue': true
+        }));
+
 
         this.Router = {
             registerGetRoute: this.registerGetRoute.bind(this),
@@ -61,10 +72,11 @@ export class Server {
         });
 
         this.httpProxy = httpProxy.createProxyServer();
+        this.app.use(express.static(path.join(__dirname, '..', 'client', 'build')));
 
-        this.app.use(express.static(path.join(__dirname, '..', 'client-react', 'distro-ui', 'build')));
-
-        this.app.use(express.json());
+        this.app.use(express.json({
+            type: (req) => !(req.url?.includes('influx') || req.url?.includes('.'))
+        }));
         this.app.use(express.urlencoded({ extended: true }));
 
         this.pluginLoader = new PluginLoader(configFilePath, this.Router);
@@ -119,8 +131,8 @@ export class Server {
      * @param path - The path for the POST route.
      * @param handler - The handler function for the POST route.
      */
-    public registerAllRoute = (path: string, handler: (req: Request, res: Response) => void): void => {
-        this.app.all(path, handler);
+    public registerAllRoute = (path: string, handler: (req: Request, res: Response) => void) => {
+        return this.app.all(path, handler);
     };
 
     public registerPutRoute = (path: string, handler: (req: Request, res: Response) => void): void => {
@@ -138,7 +150,7 @@ export class Server {
     };
 
     registerProxy = (sourcePath: string, targetDomain: string, targetPort: string | number = '80') => {
-        this.registerAllRoute(sourcePath, (req, res) => {
+        return this.registerAllRoute(sourcePath, (req, res) => {
             let target = (req.socket as any).encrypted ? 'https://' : 'http://';
             target += `${targetDomain}:${targetPort}`;
 
@@ -148,10 +160,13 @@ export class Server {
             }
             req.url = req.url.substring(req.url.indexOf(sourcePath) + sourcePath.length);
 
-            this.httpProxy.web(req, res, {
+            return this.httpProxy.web(req, res, {
+                ssl: false,
                 target,
                 secure: false // Prevents errors with self-signed certß
-            }, (e: Error) => console.log(e))
+            }, (e: Error) => {
+                return console.log(e)
+            })
         });
     };
 }
