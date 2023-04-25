@@ -284,13 +284,17 @@ DNS=${ipSettings.dns?.join(' ')}`
 
     /**
      * Retrieves the default gateway IP address.
-     * @returns {string} The default gateway IP address.
+     * @returns {string | undefined} The default gateway IP address.
     */
-    static getGatewayIP = () => {
+    static getGatewayIP = (): string | undefined => {
         const stdout = execSync('ip route').toString()
         const defaultRouteMatch = stdout.match(/^default\s+via\s+(\S+)\s+/m);
 
-        return defaultRouteMatch![1]
+        if (defaultRouteMatch && defaultRouteMatch.length > 1) {
+            return defaultRouteMatch[1]
+        } else {
+            return undefined;
+        }
     };
 
 }
