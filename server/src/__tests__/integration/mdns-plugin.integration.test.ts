@@ -70,7 +70,7 @@ describe('MDNSPlugin', () => {
     });
 
     test('should load the MDNSPlugin and discover itself', async () => {
-        await new Promise((r) => setTimeout(r, defaultConfig.txDelay.value * 2));
+        await new Promise((r) => setTimeout(r, defaultConfig.txDelay.value! * 2));
 
         const response = await request(server['app']).get('/neighbours');
         const neighbours = JSON.parse(response.text);
@@ -82,10 +82,8 @@ describe('MDNSPlugin', () => {
         const neighbour = neighbours[0];
 
         expect(neighbour).toHaveProperty('name')
-        expect(neighbour).toHaveProperty('addresses')
-        expect(neighbour.addresses.length).toBe(1)
-        expect(neighbour.addresses[0]).toBe('127.0.0.1')
-
+        expect(neighbour).toHaveProperty('address')
+        expect(neighbour.address.ip).toBe('127.0.0.1')
     });
 
     test('should unload the MDNSPlugin and stop the discovery process', () => {
@@ -135,7 +133,7 @@ describe('changing initial configuration variables should modify plugin behaviou
         plugin.load()
         plugin.testMdns().query = jest.fn();
 
-        await new Promise((res) => setTimeout(res, testConfig.txDelay.value + 100));
+        await new Promise((res) => setTimeout(res, testConfig.txDelay.value! + 100));
         expect(plugin.testMdns().query).toHaveBeenCalled();
     })
 
@@ -147,7 +145,7 @@ describe('changing initial configuration variables should modify plugin behaviou
         plugin.load()
         plugin.testMdns().query = jest.fn();
 
-        await new Promise((res) => setTimeout(res, testConfig.txDelay.value + 100));
+        await new Promise((res) => setTimeout(res, testConfig.txDelay.value! + 100));
         expect(plugin.testMdns().query).not.toHaveBeenCalled();
 
         // TODO: remove this as state is being maintained between tests currently
@@ -165,7 +163,7 @@ describe('changing initial configuration variables should modify plugin behaviou
         plugin.load()
         plugin.testMdns().respond = jest.fn();
 
-        await new Promise((res) => setTimeout(res, testConfig.txDelay.value + 100));
+        await new Promise((res) => setTimeout(res, testConfig.txDelay.value! + 100));
         expect(plugin.testMdns().respond).toHaveBeenCalled();
     })
 
@@ -177,7 +175,7 @@ describe('changing initial configuration variables should modify plugin behaviou
         plugin.load()
         plugin.testMdns().respond = jest.fn();
 
-        await new Promise((res) => setTimeout(res, testConfig.txDelay.value + 100));
+        await new Promise((res) => setTimeout(res, testConfig.txDelay.value! + 100));
         expect(plugin.testMdns().respond).not.toHaveBeenCalled();
 
         // TODO: remove this as state is being maintained between tests currently
@@ -193,9 +191,9 @@ describe('changing initial configuration variables should modify plugin behaviou
         plugin.testMdns().respond = jest.fn();
 
         expect(plugin.testMdns().respond).not.toHaveBeenCalled();
-        await new Promise((res) => setTimeout(res, testConfig.txDelay.value - 100));
+        await new Promise((res) => setTimeout(res, testConfig.txDelay.value! - 100));
         expect(plugin.testMdns().respond).not.toHaveBeenCalled();
-        await new Promise((res) => setTimeout(res, testConfig.txDelay.value + 100));
+        await new Promise((res) => setTimeout(res, testConfig.txDelay.value! + 100));
         expect(plugin.testMdns().respond).toHaveBeenCalled();
     })
 

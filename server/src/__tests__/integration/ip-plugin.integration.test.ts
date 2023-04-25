@@ -63,6 +63,7 @@ jest.mock('dns', () => {
 })
 
 let DHCP_STATUS = true;
+let GATEWAY_STATUS = true;
 
 /**
  * Mocks the child_process module to return a network configuration of our choosing.
@@ -79,10 +80,16 @@ jest.mock("child_process", () => {
         }),
         execSync: jest.fn((cmd: string) => {
             if (cmd.includes('ip route')) {
-                return `default via 192.168.64.1 dev enp0s1 proto dhcp metric 100 
-                172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1 linkdown 
+                let str = '';
+                if (GATEWAY_STATUS) {
+                    str += `default via 192.168.64.1 dev enp0s1 proto dhcp metric 100`
+
+                }
+                str += `172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1 linkdown 
                 172.18.0.0/16 dev br-786958bb02ca proto kernel scope link src 172.18.0.1 linkdown 
-                192.168.64.0/24 dev enp0s1 proto kernel scope link src 192.168.64.4 metric 100 `
+                192.168.64.0/24 dev enp0s1 proto kernel scope link src 192.168.64.4 metric 100 `;
+
+                return str
             } else return `2: enp0s1: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
                 link/ether 42:85:ff:dd:82:53 brd ff:ff:ff:ff:ff:ff
                 inet ${DEVICE_IP}/24 brd 192.168.64.255 scope global ${DHCP_STATUS ? 'dynamic' : ''} noprefixroute enp0s1
@@ -112,6 +119,7 @@ describe('TestPlugin', () => {
 
     beforeEach(() => {
         DEVICE_IP = randomIp();
+        GATEWAY_STATUS = true;
         server = new Server('./__tests__/ipplugin-plugin-config.json');
         plugin = server['pluginLoader']['plugins'][0] as any;
     });
@@ -318,6 +326,17 @@ describe('TestPlugin', () => {
         expect(rtn).toHaveProperty('dns');
         expect(rtn).toHaveProperty('dhcp');
         expect(rtn).toHaveProperty('prefix');
+    });
+
+    test('should handle gateway not being set', () => {
+        plugin.unload();
+        server.end()
+
+        GATEWAY_STATUS = false
+        server = new Server('./__tests__/ipplugin-plugin-config.json');
+        plugin = server['pluginLoader']['plugins'][0] as any;
+
+        expect(plugin.configuration.gateway.value).toBe(undefined);
     });
 
 });
