@@ -1,7 +1,6 @@
 // Server.ts
 import express, { Express, Request, Response } from 'express';
 import { PluginLoader } from './plugin-loader';
-import cors from 'cors';
 import * as https from 'https';
 import * as http from 'http';
 import * as fs from 'fs';
@@ -41,11 +40,6 @@ export class Server {
      */
     constructor(private configFilePath: string) {
         this.app = express();
-        this.app.use(cors({
-            'allowedHeaders': ['Content-Type'],
-            'origin': '*',
-            'preflightContinue': true
-        }));
 
 
         this.Router = {

@@ -158,5 +158,57 @@
         ]
       }
     }
+  },
+  "warnings": {
+    "path": "../warnings",
+    "enabled": true,
+    "config": {
+      "enable": {
+        "readableName": "Enable",
+        "value": true
+      },
+      "vSet": {
+        "readableName": "V Set",
+        "value": 247,
+        "min": 0,
+        "max": 300
+      },
+      "vmax": {
+        "readableName": "V Max",
+        "value": 5,
+        "min": 0,
+        "max": 300
+      },
+      "vmin": {
+        "readableName": "V Min",
+        "value": 10,
+        "min": 0,
+        "max": 300
+      },
+      "amax": {
+        "readableName": "A Max",
+        "value": 12,
+        "min": 0,
+        "max": 300
+      },
+      "HZset": {
+        "readableName": "HZ Set",
+        "value": 60,
+        "min": 0,
+        "max": 100
+      },
+      "hzmax": {
+        "readableName": "HZ Max",
+        "value": 1,
+        "min": 0,
+        "max": 100
+      },
+      "hzmin": {
+        "readableName": "HZ Min",
+        "value": 1,
+        "min": 0,
+        "max": 100
+      }
+    }
   }
 }
