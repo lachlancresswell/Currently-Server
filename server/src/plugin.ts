@@ -107,9 +107,7 @@ export abstract class Plugin<T> extends EventEmitter {
      * @param res 
      * @returns 
      */
-    public registerProxy = (sourcePath: string, targetDomain: string, targetPort: string | number = '80') => {
-        this.serverRouter.registerProxy(sourcePath, targetDomain, targetPort)
-    }
+    public registerProxy = (sourcePath: string, targetDomain: string, targetPort: string | number = '80') => this.serverRouter.registerProxy(sourcePath, targetDomain, targetPort)
 
     /**
      * Loads the initial configuration for the plugin.
@@ -260,7 +258,7 @@ export abstract class Plugin<T> extends EventEmitter {
      * @param getter Getter to attach to object
      * @param setter Setter to attach to objectr
      */
-    setEphemeralVariable = <T>(variable: EphemeralVariableMetaData<ConfigValue>, getter: () => T, setter: (val: T) => void) => {
+    setEphemeralVariable = (variable: EphemeralVariableMetaData<ConfigValue>, getter: () => any, setter: (val: any) => void) => {
         Object.defineProperty(variable, "value", {
             get: getter,
             set: setter
