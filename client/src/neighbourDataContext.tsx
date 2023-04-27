@@ -27,7 +27,6 @@ interface props {
     children: React.ReactNode;
 }
 
-const url = `http://localhost:3000/influx`
 const token = `EoENRkYCQuPJaPKtwM2D9sqle14ocDcPufGuncmfhEa4uK8PogPuC87dk8zJ9sPm6yzncZj2xToYxZ2dj37yAg==`
 const org = `onestage`;
 
