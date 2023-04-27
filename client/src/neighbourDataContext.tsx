@@ -38,6 +38,7 @@ export const NeighbourDataProvider: React.FC<props> = ({ neighbour, children }) 
     const [neighbourData, setNeighbourData] = useState<DistroData | null>(null);
 
     const pollServer = async () => {
+        const url = window.location.protocol + '//' + window.location.host + '/influx'
         const hostConfig: ClientOptions = {
             url,
             token,

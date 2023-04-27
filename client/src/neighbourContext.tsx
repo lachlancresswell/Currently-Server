@@ -33,7 +33,7 @@ export const NeighbourProvider: React.FC<props> = ({ children }) => {
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const response = await fetch(`http://${process.env.REACT_APP_SERVER_DOMAIN}:${process.env.REACT_APP_SERVER_PORT}/neighbours`)
+        const response = await fetch(`/neighbours`)
         const neighbours = await response.json();
         if (!selectedNeighbour) setSelectedNeighbour(neighbours[0]);
         setNeighbours(neighbours)
