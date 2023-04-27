@@ -19,7 +19,7 @@ export const ConfigDataProvider: React.FC<props> = ({ children }) => {
     const [configData, setConfigData] = useState<PluginJSON | null>(null);
 
     const pollServer = async () => {
-        const response = await fetch(`http://${process.env.REACT_APP_SERVER_DOMAIN}:${process.env.REACT_APP_SERVER_PORT}/config`)
+        const response = await fetch(`/config`)
 
         const data = await response.json();
 
