@@ -23,7 +23,6 @@ import ShowChartIcon from '@mui/icons-material/ShowChart';
 import HomeIcon from '@mui/icons-material/Home';
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
 import PageChart from './PageChart';
-import Status from './Status';
 
 
 const NeighbourSelector = () => {
