@@ -10,7 +10,7 @@ export function Warning({ data, type, phaseIndex }: { data: DistroData, type: 'v
     const { configData } = useConfigDataContext();
 
     let colour = '';
-    if (configData) {
+    if (configData && data) {
 
         const enable = configData!.warnings.config!.enable as ConfigVariableMetadata<boolean>;
         const visible = enable.value;
