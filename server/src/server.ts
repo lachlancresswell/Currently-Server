@@ -66,7 +66,9 @@ export class Server {
         });
 
         this.httpProxy = httpProxy.createProxyServer();
-        this.app.use(express.static(path.join(__dirname, '..', 'client', 'build')));
+        const p = path.join(__dirname, '../../../../', 'client', 'build');
+        console.log(`Statically serving ${p}`)
+        this.app.use(express.static(p));
 
         this.app.use(express.json({
             type: (req) => !(req.url?.includes('influx') || req.url?.includes('.'))
