@@ -1,0 +1,214 @@
+{
+  "MDNSPlugin": {
+    "path": "../mdns-plugin",
+    "enabled": true,
+    "config": {
+      "transmit": {
+        "priority": 1,
+        "display": true,
+        "readableName": "Transmit",
+        "type": "boolean",
+        "value": true
+      },
+      "receive": {
+        "priority": 1,
+        "display": true,
+        "readableName": "Receive",
+        "type": "boolean",
+        "value": true
+      },
+      "deviceName": {
+        "priority": 1,
+        "display": true,
+        "readableName": "Device Name",
+        "type": "string",
+        "value": "Lachlan's Devicesdf"
+      },
+      "txDelay": {
+        "priority": 1,
+        "display": true,
+        "readableName": "Transmit Delay",
+        "type": "number",
+        "value": 4996,
+        "restart": "plugin"
+      }
+    }
+  },
+  "InfluxPlugin": {
+    "path": "../influx-plugin",
+    "enabled": true,
+    "config": {
+      "databasePort": {
+        "priority": 1,
+        "display": true,
+        "readableName": "Database Port",
+        "type": "number",
+        "value": 8086
+      },
+      "databaseDomain": {
+        "priority": 1,
+        "display": true,
+        "readableName": "Database Domain",
+        "type": "string",
+        "value": "192.168.128.1"
+      },
+      "rxDelay": {
+        "priority": 1,
+        "display": true,
+        "readableName": "Request Delay",
+        "type": "number",
+        "value": 1000
+      }
+    }
+  },
+  "IPPlugin": {
+    "path": "../ip-plugin",
+    "enabled": true,
+    "config": {
+      "ipaddress": {
+        "priority": 1,
+        "display": true,
+        "readableName": "IP Address",
+        "type": "ipaddress"
+      },
+      "gateway": {
+        "priority": 1,
+        "display": true,
+        "readableName": "Gateway",
+        "type": "ipaddress"
+      },
+      "prefix": {
+        "priority": 1,
+        "display": true,
+        "readableName": "Network Prefix",
+        "type": "number",
+        "max": 32,
+        "min": 1
+      },
+      "dhcp": {
+        "priority": 1,
+        "display": false,
+        "readableName": "DHCP",
+        "type": "boolean"
+      },
+      "dns": {
+        "priority": 1,
+        "display": true,
+        "readableName": "DNS Servers",
+        "type": "strings"
+      },
+      "iface": {
+        "priority": 1,
+        "display": true,
+        "readableName": "Network Interface",
+        "type": "string",
+        "value": "enp0s2"
+      },
+      "filePath": {
+        "priority": 1,
+        "display": true,
+        "readableName": "Systemd Config Filepath",
+        "type": "string",
+        "value": "/etc/systemd/network/20-wired.network"
+      }
+    }
+  },
+  "TimeZonePlugin": {
+    "path": "../timezone-plugin",
+    "enabled": true,
+    "config": {
+      "date": {
+        "priority": 0,
+        "readableName": "Date",
+        "type": "string",
+        "display": true
+      },
+      "timezone": {
+        "priority": 0,
+        "readableName": "Timezone",
+        "type": "string",
+        "display": true
+      },
+      "ntpServers": {
+        "priority": 0,
+        "readableName": "NTP Servers",
+        "type": "strings",
+        "display": true
+      },
+      "dateFormat": {
+        "priority": 0,
+        "readableName": "Date Format",
+        "type": "string",
+        "display": true,
+        "value": "d/m/y",
+        "options": [
+          "d/m/y",
+          "my/d/y"
+        ]
+      },
+      "timeFormat": {
+        "priority": 0,
+        "readableName": "Time Format",
+        "type": "string",
+        "display": true,
+        "value": "24h",
+        "options": [
+          "24h",
+          "12h"
+        ]
+      }
+    }
+  },
+  "warnings": {
+    "path": "../warnings",
+    "enabled": true,
+    "config": {
+      "enable": {
+        "readableName": "Enable",
+        "value": true
+      },
+      "vSet": {
+        "readableName": "V Set",
+        "value": 247,
+        "min": 0,
+        "max": 300
+      },
+      "vmax": {
+        "readableName": "V Max",
+        "value": 5,
+        "min": 0,
+        "max": 300
+      },
+      "vmin": {
+        "readableName": "V Min",
+        "value": 10,
+        "min": 0,
+        "max": 300
+      },
+      "amax": {
+        "readableName": "A Max",
+        "value": 12,
+        "min": 0,
+        "max": 300
+      },
+      "HZset": {
+        "readableName": "HZ Set",
+        "value": 60,
+        "min": 0,
+        "max": 100
+      },
+      "hzmax": {
+        "readableName": "HZ Max",
+        "value": 1,
+        "min": 0,
+        "max": 100
+      },
+      "hzmin": {
+        "readableName": "HZ Min",
+        "value": 1,
+        "min": 0,
+        "max": 100
+      }
+    }
+  }
+}

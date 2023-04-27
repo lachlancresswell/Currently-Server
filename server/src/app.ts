@@ -1,3 +1,5 @@
 import { Server } from './server'
 
-const server = new Server('../../../plugin-config.json');
+const pluginConfigPath = process.env.NODE_ENV === 'production' ? '../../../plugin-config.prod.json' : '../../../plugin-config.dev.json'
+
+const server = new Server(pluginConfigPath);
