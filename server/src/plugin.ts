@@ -256,13 +256,19 @@ export abstract class Plugin<T> extends EventEmitter {
     * Attaches getters and setters for an ephemeral variable
      * @param variable Ephermeral object to configure
      * @param getter Getter to attach to object
-     * @param setter Setter to attach to objectr
+     * @param setter Optional setter to attach to object
      */
-    setEphemeralVariable = (variable: EphemeralVariableMetaData<ConfigValue>, getter: () => any, setter: (val: any) => void) => {
-        Object.defineProperty(variable, "value", {
-            get: getter,
-            set: setter
-        });
+    setEphemeralVariable = (variable: EphemeralVariableMetaData<ConfigValue>, getter: () => any, setter?: (val: any) => void) => {
+        if (setter) {
+            Object.defineProperty(variable, "value", {
+                get: getter,
+                set: setter
+            });
+        } else {
+            Object.defineProperty(variable, "value", {
+                get: getter
+            });
+        }
 
         /**
          * Assigns a toJSON method to each ephemeral configuration parameter otherwise getters and setters will not be included in the JSON response.
