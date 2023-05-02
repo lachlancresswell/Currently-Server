@@ -5,6 +5,7 @@ import { execSync } from 'child_process';
 import dns from 'dns';
 import { networkInterfaces } from 'os';
 import fs from 'fs';
+import axios from 'axios'
 
 export interface IPOptions extends ConfigArray {
     filePath: ConfigVariableMetadata<string>;
@@ -14,6 +15,8 @@ export interface IPOptions extends ConfigArray {
     gateway: EphemeralVariableMetaData<ipaddress>;
     dns: EphemeralVariableMetaData<ipaddress[]>;
     dhcp: EphemeralVariableMetaData<boolean>;
+    internetStatus: EphemeralVariableMetaData<boolean>;
+    internetPollMs: ConfigVariableMetadata<number>;
 }
 
 export interface Address {
@@ -35,6 +38,11 @@ class IPPlugin extends Plugin<IPOptions> {
         super(serverRouter, options);
 
         const _this = this;
+
+        this.scheduleTask(async () => {
+            const rtn = await IPPlugin.checkInternet();
+            this.configuration.internetStatus.value = rtn;
+        }, this.configuration.internetPollMs.value || 1000); // poll every 5 seconds
 
         /**
          * Assign getters and setters to each ephemeral configuration parameter.
@@ -297,6 +305,23 @@ DNS=${ipSettings.dns?.join(' ')}`
         }
     };
 
+
+    /**
+     * Checks if internet is available by making a request to google.com
+     * @returns {boolean} true if internet is available, false otherwise
+     */
+    static async checkInternet(): Promise<boolean> {
+        try {
+            const response = await axios.get('http://www.google.com');
+            if (response.status === 200) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (error) {
+            return false;
+        }
+    }
 }
 
 export default IPPlugin;

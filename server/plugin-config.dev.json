@@ -110,6 +110,19 @@
         "readableName": "Systemd Config Filepath",
         "type": "string",
         "value": "/etc/systemd/network/20-wired.network"
+      },
+      "internetStatus": {
+        "priority": 1,
+        "display": true,
+        "readableName": "Internet Connected",
+        "type": "boolean"
+      },
+      "internetPollMs": {
+        "priority": 1,
+        "display": true,
+        "readableName": "Internet Poll Frequency",
+        "type": "number",
+        "value": 2000
       }
     }
   },
