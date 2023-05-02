@@ -21,6 +21,7 @@ export interface Route {
  */
 export abstract class Plugin<T> extends EventEmitter {
     protected routes: Route[] = [];
+    protected tasks: NodeJS.Timeout[] = [];
     public configuration: T = {} as T;
     protected serverRouter: Routing;
     public name = 'plugin';
@@ -43,7 +44,10 @@ export abstract class Plugin<T> extends EventEmitter {
     /**
      * Method for unloading the plugin.
      */
-    public unload() { this.removeAllRoutes() };
+    public unload() {
+        this.removeAllRoutes()
+        this.removeAllTasks();
+    };
 
     /**
      * Reloads the plugin.
@@ -274,5 +278,25 @@ export abstract class Plugin<T> extends EventEmitter {
          * Assigns a toJSON method to each ephemeral configuration parameter otherwise getters and setters will not be included in the JSON response.
          */
         variable.toJSON = () => Plugin.jsonConverter(variable);
+    }
+
+    /**
+     * Schedules a task to be performed periodically
+     * @param task Function to be performed periodically
+     * @param ms Time in milliseconds between each execution
+     */
+    protected scheduleTask = (task: () => Promise<any>, ms: number) => {
+        const interval = setInterval(task, ms); // poll every 5 seconds
+        this.tasks.push(interval)
+    }
+
+    /**
+     * Removes all tasks from the task list
+     */
+    protected removeAllTasks = () => {
+        this.tasks = this.tasks.filter((interval) => {
+            clearInterval(interval)
+            return false;
+        })
     }
 }
