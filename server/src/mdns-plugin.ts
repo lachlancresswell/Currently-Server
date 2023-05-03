@@ -120,6 +120,8 @@ class MDNSPlugin extends Plugin<MDNSConfig> {
             this.updateNeighbours(response.answers);
         });
 
+        _this.mdns?.query({ questions: [{ name: serviceName, type: 'PTR' }] });
+
         this.interval = setInterval(() => {
             if (_this.configuration.receive.value) {
                 if (_this.mdns) _this.mdns.query({ questions: [{ name: serviceName, type: 'PTR' }] });
