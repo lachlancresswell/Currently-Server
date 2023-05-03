@@ -57,6 +57,7 @@ export class PluginLoader {
      */
     private loadConfigs(): void {
         const p = path.join(__dirname, this.configFilePath)
+        console.log(`Loading config from ${p}`)
         if (fs.existsSync(p)) {
             const configFileContent = fs.readFileSync(p).toString();
 
