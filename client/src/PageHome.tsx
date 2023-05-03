@@ -7,6 +7,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import PublicIcon from '@mui/icons-material/Public';
 import { Warning } from './Warnings';
+import { useConfigDataContext } from './configContext';
 
 interface PageAdvProps {
 }
@@ -14,19 +15,7 @@ interface PageAdvProps {
 export const PageHome = ({ }: PageAdvProps) => {
     const { selectedNeighbour } = useNeighbourContext();
     const { neighbourData } = useNeighbourDataContext();
-    const [_selectedPhase, setSelectedPhase] = useState<PhaseData | null>(null);
-
-
-    useEffect(() => {
-        if (neighbourData) {
-            const PHASE = 1;
-            setSelectedPhase({
-                voltage: neighbourData.phases[PHASE].voltage!,
-                amperage: neighbourData.phases[PHASE].amperage,
-                phase: PHASE,
-            });
-        }
-    }, [neighbourData]);
+    const { configData } = useConfigDataContext();
 
     if (!selectedNeighbour) {
         return null;
@@ -137,7 +126,7 @@ export const PageHome = ({ }: PageAdvProps) => {
                 </div>
             </div>
             <div className='pageCol'>
-                <div className='pageRow'>
+                <div className={`pageRow`}>
                     <SettingsEthernetIcon />
                 </div>
                 <div className='pageRow'>
@@ -153,7 +142,7 @@ export const PageHome = ({ }: PageAdvProps) => {
             <div className='pageCol'>
                 <div className='pageRow'>
                     <span className=''>
-                        ❌
+                        <ValueStatusSymbol status={configData?.IPPlugin?.config?.ipaddress.value} />
                     </span>
                 </div>
                 <div className='pageRow'>
@@ -167,11 +156,19 @@ export const PageHome = ({ }: PageAdvProps) => {
                     </span>
                 </div>
                 <div className='pageRow'>
-                    <span className='' style={{ color: 'green' }}>
-                        ✔
-                    </span>
+                    <ValueStatusSymbol status={configData?.IPPlugin?.config?.internetStatus.value} />
                 </div>
             </div>
         </div>
     );
+}
+
+const ValueStatusSymbol = ({ status }: { status: any }) => {
+    return <>{
+        status ? (
+            <span style={{ color: 'green' }}>✔</span>
+        ) : (
+            <span style={{ color: 'red' }}>❌</span>
+        )
+    }</>
 }
