@@ -3,6 +3,49 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ConfigVariableMetadata, ConfigArray } from '../../../Types';
 import { useParams } from 'react-router-dom';
+import '../Styles/Config.css';
+import Switch from '@mui/material/Switch';
+import { styled } from '@mui/material/styles';
+
+const MaterialUISwitch = styled(Switch)(({ theme }) => ({
+    width: 124,
+    height: 68,
+    padding: 14,
+    '& .MuiSwitch-switchBase': {
+        margin: 2,
+        padding: 0,
+        transform: 'translateX(6px)',
+        '&.Mui-checked': {
+            color: '#fff',
+            transform: 'translateX(44px)',
+            '& + .MuiSwitch-track': {
+                opacity: 1,
+                backgroundColor: theme.palette.mode === 'dark' ? '#8796A5' : '#aab4be',
+            },
+        },
+    },
+    '& .MuiSwitch-thumb': {
+        backgroundColor: theme.palette.mode === 'dark' ? '#003892' : '#001e3c',
+        width: 64,
+        height: 64,
+        '&:before': {
+            content: "''",
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            left: 0,
+            top: 0,
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center',
+        },
+    },
+    '& .MuiSwitch-track': {
+        opacity: 1,
+        backgroundColor: theme.palette.mode === 'dark' ? '#8796A5' : '#aab4be',
+        borderRadius: 40 / 2,
+    },
+}));
+
 
 /**
  * ConfigForm component fetches the configuration for a specific plugin and lists all variables with `display` set to `true`.
@@ -10,19 +53,22 @@ import { useParams } from 'react-router-dom';
  */
 const ConfigForm: React.FC = () => {
     const { pluginName } = useParams<{ pluginName: string }>();
+    const [startPluginConfig, setStartPluginConfig] = useState<ConfigArray | null>(null);
     const [pluginConfig, setPluginConfig] = useState<ConfigArray | null>(null);
+    const [refresh, setRefresh] = useState<boolean>(true);;
 
     useEffect(() => {
         async function fetchPluginConfig() {
             try {
                 const response = await axios.get<ConfigArray>(`/config/${pluginName}`);
+                setStartPluginConfig(response.data);
                 setPluginConfig(response.data);
             } catch (error) {
                 console.error(`Error fetching config for plugin ${pluginName}:`, error);
             }
         }
         fetchPluginConfig();
-    }, [pluginName]);
+    }, [refresh]);
 
     const handleInputChange = (
         key: string,
@@ -54,8 +100,14 @@ const ConfigForm: React.FC = () => {
             } catch (error) {
                 console.error(`Error updating config for plugin ${pluginName}:`, error);
             }
+
+            setRefresh(!refresh);
         }
     };
+
+    const handleCancel = async () => {
+        setPluginConfig(startPluginConfig);
+    }
 
     if (!pluginConfig) {
         return <div>Loading...</div>;
@@ -69,15 +121,17 @@ const ConfigForm: React.FC = () => {
         (a, b) => pluginConfig![b].priority! - pluginConfig![a].priority!
     );
 
+    const modified = JSON.stringify(startPluginConfig) !== JSON.stringify(pluginConfig);
+
     const renderInputField = (key: string, variableMetadata: ConfigVariableMetadata<any>) => {
         switch (variableMetadata.type) {
             case 'boolean':
                 return (
-                    <input
-                        type="checkbox"
+                    <div><MaterialUISwitch
+                        size="medium"
                         checked={variableMetadata.value}
-                        onChange={(e) => handleInputChange(key, e.target.checked)}
-                    />
+                        onChange={(e) => handleInputChange(key, e.target.checked)} />
+                    </div>
                 );
             default:
                 return (
@@ -91,20 +145,36 @@ const ConfigForm: React.FC = () => {
     };
 
     return (
-        <div>
-            <h2>{pluginName} Configuration</h2>
-            {displayedConfigKeys.map((key) => {
-                const variableMetadata = pluginConfig![key];
-                return (
-                    <div key={key}>
-                        <label>
+        <div className='pageParent pageCfgForm'>
+            <div className='cfgFormCol cfgFormRowRight'>
+                {displayedConfigKeys.map((key) => {
+                    const variableMetadata = pluginConfig![key];
+                    return (
+                        <div className='configTitle'>
                             {variableMetadata.readableName}
-                            {renderInputField(key, variableMetadata)}
-                        </label>
+                        </div>
+                    );
+                })}
+                <button style={{
+                    color: modified ? 'red' : 'grey'
+                }}
+                    disabled={!modified}
+                    onClick={handleCancel}>X</button>
+            </div>
+            <div className='cfgFormCol cfgFormRowLeft'>
+                {displayedConfigKeys.map((key) => {
+                    const variableMetadata = pluginConfig![key];
+                    return (<div>
+                        {renderInputField(key, variableMetadata)}
                     </div>
-                );
-            })}
-            <button onClick={handleConfirm}>Confirm</button>
+                    );
+                })}
+                <button style={{
+                    color: modified ? 'green' : 'grey'
+                }}
+                    disabled={!modified}
+                    onClick={handleConfirm}>✔</button>
+            </div>
         </div>
     );
 
