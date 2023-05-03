@@ -2,8 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { PluginJSON } from '../../../Types';
-import ConfigForm from './ConfigForm';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import SettingsEthernetIcon from '@mui/icons-material/SettingsEthernet';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import ReportProblemIcon from '@mui/icons-material/ReportProblem';
@@ -15,8 +14,7 @@ import HelpIcon from '@mui/icons-material/Help';
  * ConfigPage component fetches the master configuration from the server and displays an icon for each plugin discovered.
  */
 const ConfigPage: React.FC = () => {
-    const [plugins, setPlugins] = useState<PluginJSON>({});
-    const navigate = useNavigate();
+    const [_plugins, setPlugins] = useState<PluginJSON>({});
 
     useEffect(() => {
         async function fetchPlugins() {
