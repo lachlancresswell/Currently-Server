@@ -3,6 +3,7 @@ import { PageChannel } from './PageChannel'
 import ConfigPage from './pages/ConfigPage';
 import { PageBasic } from './PageBasic';
 import { PageAdv } from './PageAdv';
+import { Status } from './Status';
 import { PageHome } from './PageHome';
 import {
   createBrowserRouter,
@@ -52,6 +53,7 @@ const NeighbourSelector = () => {
 const router = createBrowserRouter([{
   path: '/',
   element: <>
+    <Status />
     <div className={"menu "}>
       <NavLink to={"/"}>
         <HomeIcon />
