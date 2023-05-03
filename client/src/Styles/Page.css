@@ -43,7 +43,7 @@
 }
 
 .fontLarge {
-    font-size: 28vh
+    font-size: 26vh
 }
 
 .fontSmall {
@@ -52,7 +52,7 @@
 
 .denomin {
     align-items: baseline;
-    flex-grow: 0.1 !important;
+    flex-basis: 0px;
 }
 
 .denominator {
@@ -62,7 +62,31 @@
 
 .val {
     align-items: end;
-    flex-grow: 0.5 !important;
+}
+
+.val-voltage {
+    align-items: end;
+    flex-basis: 25%;
+}
+
+.val-voltage-channel {
+    align-items: end;
+    flex-basis: 45%;
+}
+
+.val-amperage {
+    align-items: end;
+    flex-basis: 15%;
+}
+
+.val-other {
+    align-items: end;
+    flex-basis: 6%;
+}
+
+.val-other-channel {
+    align-items: end;
+    flex-basis: 12%;
 }
 
 .denomin>.pageRow>span {
@@ -74,8 +98,8 @@
 
 /* Indicators */
 .circle {
-    height: 0.6em;
-    width: 0.6em;
+    height: 0.5em;
+    width: 0.5em;
     border-radius: 50%;
     display: inline-block;
 }

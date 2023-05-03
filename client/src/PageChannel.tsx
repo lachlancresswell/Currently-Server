@@ -34,7 +34,7 @@ export const PageChannel = ({ }: PageBasicProps) => {
 
     return (
         <div className='pageParent pageBasic'>
-            <div className='pageCol val fontLarge'>
+            <div className='pageCol val-voltage-channel fontLarge'>
                 <div className={`pageRow l${(phaseNumber || 0) + 1}`}>
                     <span className='value'>
                         {neighbourData?.phases[phaseNumber].voltage}
@@ -66,7 +66,7 @@ export const PageChannel = ({ }: PageBasicProps) => {
                     {neighbourData && <Warning data={neighbourData} type={'amperage'} phaseIndex={phaseNumber as 0 | 1 | 2} />}
                 </div>
             </div>
-            <div className='pageCol val  fontSmall'>
+            <div className='pageCol val-other-channel fontSmall'>
                 <div className={`pageRow pf`}>
                     <span className='value'>
                         {neighbourData && neighbourData.pf}

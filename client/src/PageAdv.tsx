@@ -29,7 +29,7 @@ export const PageAdv = ({ }: PageAdvProps) => {
 
     return (
         <div className='pageParent pageBasic'>
-            <div className='pageCol val'>
+            <div className='pageCol val-voltage'>
                 <div className='pageRow l1'>
                     <span className='value'>
                         {(neighbourData?.phases[0]!.voltage! > -1 && neighbourData?.phases[0]!.voltage)}
@@ -63,7 +63,7 @@ export const PageAdv = ({ }: PageAdvProps) => {
                     </span>
                 </div>
             </div>
-            <div className='pageCol val'>
+            <div className='pageCol val-amperage'>
                 <div className='pageRow l1'>
                     <span className='value'>
                         {(neighbourData?.phases[0]!.amperage! > -1 ? neighbourData?.phases[0]!.amperage : '-')}
@@ -97,7 +97,7 @@ export const PageAdv = ({ }: PageAdvProps) => {
                     </span>
                 </div>
             </div>
-            <div className='pageCol val  fontSmall'>
+            <div className='pageCol val-other  fontSmall'>
                 <div className={`pageRow pf`}>
                     <span className='value'>
                         {neighbourData?.pf}

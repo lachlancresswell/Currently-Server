@@ -34,7 +34,7 @@ export const PageHome = ({ }: PageAdvProps) => {
 
     return (
         <div className='pageParent pageHome'>
-            <div className='pageCol val'>
+            <div className='pageCol val-voltage'>
                 <div className='pageRow l1'>
                     <span className='value'>
                         {neighbourData?.phases[0].voltage}
@@ -78,7 +78,7 @@ export const PageHome = ({ }: PageAdvProps) => {
                     </span>
                 </div>
             </div>
-            <div className='pageCol val'>
+            <div className='pageCol val-amperage'>
                 <div className='pageRow l1'>
                     <span className='value'>
                         {neighbourData?.phases[0].amperage}

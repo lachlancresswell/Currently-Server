@@ -155,9 +155,10 @@ body {
   }
 }
 
-a>svg {
-  height: 1em;
-  width: 1em;
+a>svg,
+div>svg {
+  height: 1em !important;
+  width: 1em !important;
   font-size: 1em !important;
 }
 
