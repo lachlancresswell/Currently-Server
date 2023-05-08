@@ -160,17 +160,27 @@ export abstract class Plugin<T> extends EventEmitter {
 
         try {
             if (Plugin.validateValue(metadata, value)) {
-                (this.configuration as ConfigArray)[key].value = value;
+                const existingValue = (this.configuration as ConfigArray)[key].value;
 
-                console.log(`${this.name} - Updated ${key} as ${value}`)
+                // Check if the value is an array. If it is, compare stringified versions of the arrays.
+                // Otherwise, compare the values directly.
+                const valuesAreDifferent = Array.isArray(value) && Array.isArray(existingValue)
+                    ? JSON.stringify(existingValue) !== JSON.stringify(value)
+                    : existingValue !== value;
 
-                if (save) this.emit('configUpdated', key, value);
+                if (valuesAreDifferent) {
+                    (this.configuration as ConfigArray)[key].value = value;
 
-                if ((this.configuration as ConfigArray)[key].restart === 'plugin') {
-                    this.reload();
+                    console.log(`${this.name} - Updated ${key} as ${value}`)
+
+                    if (save) this.emit('configUpdated', key, value);
+
+                    if ((this.configuration as ConfigArray)[key].restart === 'plugin') {
+                        this.reload();
+                    }
+
+                    return true;
                 }
-
-                return true;
             }
         } catch (e) {
             throw (e)
