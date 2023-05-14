@@ -2,6 +2,19 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { DistroData, Neighbour } from './../../Types';
 import { ClientOptions, InfluxDB, QueryApi } from '@influxdata/influxdb-client-browser'
 
+interface FluxQuery {
+    result: string;
+    _start: string;
+    _stop: string,
+    _time: string,
+    _field: string,
+    _measurement: string,
+    _value: string | number,
+    host: string,
+    name: string,
+    table: number,
+    type: string,
+}
 
 export interface Phase {
     voltage: { y: number | string | null, x: Date }[]
@@ -27,8 +40,8 @@ interface props {
     children: React.ReactNode;
 }
 
-const token = `EoENRkYCQuPJaPKtwM2D9sqle14ocDcPufGuncmfhEa4uK8PogPuC87dk8zJ9sPm6yzncZj2xToYxZ2dj37yAg==`
-const org = `onestage`;
+export const token = `EoENRkYCQuPJaPKtwM2D9sqle14ocDcPufGuncmfhEa4uK8PogPuC87dk8zJ9sPm6yzncZj2xToYxZ2dj37yAg==`
+export const org = `onestage`;
 
 /**
  * React component that provides the neighbour data context object.
@@ -85,7 +98,7 @@ export interface influxRtn {
     type: string,
 }
 
-const pollInflux = async (db: QueryApi, bucket: string) => {
+export const pollInflux = async (db: QueryApi, bucket: string) => {
 
     const query = `from(bucket: "modbus")
     |> range(start: -10s)
@@ -128,3 +141,113 @@ const pollInflux = async (db: QueryApi, bucket: string) => {
     return undefined;
 
 };
+
+export const pollRange = async (db: QueryApi, start: string, end: string = 'now()', avg = '30s') => {
+    const query = `from(bucket: "modbus")
+    |> range(start: -10s)
+    |> filter(fn: (r) => r["_measurement"] == "cpu")
+    |> filter(fn: (r) => r["_field"] == "usage_idle" or r["_field"] == "usage_nice" or r["_field"] == "usage_system" or r["_field"] == "usage_user")
+  |> filter(fn: (r) => r["cpu"] == "cpu0" or r["cpu"] == "cpu1" or r["cpu"] == "cpu2" or r["cpu"] == "cpu-total" or r["cpu"] == "cpu3")
+    |> yield(name: "mean")`;
+
+    let data: FluxQuery[];
+    try {
+        data = await db.collectRows(query);
+
+    } catch (e) {
+        debugger
+    }
+
+    const annotationQuery = `
+    from(bucket: "mybucket")
+    |> range(start: ${start}, stop: ${end})
+    |> filter(fn: (r) => r["_measurement"] == "annotation-orange" or r["_measurement"] == "annotation-yellow" or r["_measurement"] == "annotation-purple" or r["_measurement"] == "annotation-green")`;
+
+
+    let phases: Phase[] = [{
+        voltage: [],
+        amperage: [],
+    }, {
+        voltage: [],
+        amperage: [],
+    }, {
+        voltage: [],
+        amperage: [],
+    }];
+
+    data!.forEach((row) => {
+        switch (row._field) {
+            case 'usage_user':
+                phases[0].amperage.push({ y: row._value, x: new Date(row._time) })
+                phases[1].amperage.push({ y: row._value, x: new Date(row._time) })
+                phases[2].amperage.push({ y: row._value, x: new Date(row._time) })
+                break;
+            case 'usage_system':
+                phases[0].voltage.push({ y: row._value, x: new Date(row._time) })
+                phases[1].voltage.push({ y: row._value, x: new Date(row._time) })
+                phases[2].voltage.push({ y: row._value, x: new Date(row._time) })
+                break;
+        }
+    });
+
+    let indexes: number[] = [];
+
+    phases[0].amperage.forEach((item, i, arr) => {
+        if (i) {
+            const lastItem = arr[i - 1];
+            const lel = item.x.getTime() / 1000
+            const lol = lastItem.x.getTime() / 1000
+            if (lel - lol > 120) {
+                indexes.push(i)
+            }
+        }
+    })
+
+    phases.forEach((phase) => nullPadding(phase, new Date(start), new Date(end)))
+
+    return { phases };
+}
+
+
+/**
+ * Create null entries in array between measurements with more than 120seconds between them. Also creates null entries at the start and end dates to
+ * ensure plot is not cropped to entered data
+ * @param phase phase object
+ * @param start start date of range
+ * @param end end date of range
+ */
+export const nullPadding = (phase: Phase, start: Date, end: Date) => {
+
+    let i = phase.amperage.length - 1;
+
+    for (; i > 0; i -= 1) {
+        const dateLate = phase.amperage[i].x.getTime() / 1000
+        const dateEarly = phase.amperage[i - 1].x.getTime() / 1000
+        const delta = dateLate - dateEarly;
+
+
+        if (delta > 120) {
+            const item = {
+                x: new Date((dateEarly + 60) * 1000),
+                y: null,
+            }
+
+            phase.amperage.splice(i, 0, item);
+            phase.voltage.splice(i, 0, item);
+        }
+    }
+
+    const startItem = {
+        x: new Date((start.getTime() - 1000)),
+        y: null,
+    }
+
+    const endItem = {
+        x: new Date((end.getTime() + 1000)),
+        y: null,
+    }
+    phase.amperage.splice(0, 0, startItem);
+    phase.amperage.splice(phase.amperage.length - 1, 0, endItem);
+    phase.voltage.splice(0, 0, startItem);
+    phase.voltage.splice(phase.voltage.length - 1, 0, endItem);
+}
