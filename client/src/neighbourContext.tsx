@@ -34,16 +34,20 @@ export const NeighbourProvider: React.FC<props> = ({ children }) => {
     const interval = setInterval(async () => {
       try {
         const response = await fetch(`/neighbours`)
-        const neighbours = await response.json();
-        if (!selectedNeighbour) setSelectedNeighbour(neighbours[0]);
-        setNeighbours(neighbours)
+        const newNeighbours = await response.json();
+        if (!neighbours.length) {
+          setNeighbours(newNeighbours)
+          if (!selectedNeighbour) {
+            setSelectedNeighbour(newNeighbours[0]);
+          }
+        }
       } catch (error) {
         console.error(error);
       }
     }, 1000); // fetch every 5 seconds
 
     return () => clearInterval(interval);
-  }, []);
+  }, [neighbours]);
 
   const value = {
     neighbours,
