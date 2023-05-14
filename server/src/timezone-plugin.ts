@@ -115,7 +115,6 @@ class TimeZonePlugin extends Plugin<TZOptions> {
             const fallbackServers = execSync('timedatectl show-timesync --property=FallbackNTPServers').toString();
 
             const servers = [currentServer.trim().split('=')[1], ...fallbackServers.trim().split('=')[1].split(' ')]
-            console.log('NTP servers retrieved successfully!');
             return servers;
         } catch (error) {
             console.error(`Error retrieving NTP servers: ${error} `);
