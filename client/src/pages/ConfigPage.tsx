@@ -44,7 +44,7 @@ const ConfigPage: React.FC = () => {
             </div>
             <div className='pageCol'>
                 <div className={`pageRow}`}>
-                    <Link style={{ color: 'white' }} to={`/options/time`}>
+                    <Link style={{ color: 'white' }} to={`/options/TimeZonePlugin`}>
                         <AccessTimeIcon />
                     </Link>
                 </div>
