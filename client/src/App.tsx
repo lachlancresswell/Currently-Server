@@ -23,6 +23,7 @@ import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import HomeIcon from '@mui/icons-material/Home';
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
+import LightModeIcon from '@mui/icons-material/LightMode';
 import PageChart from './PageChart';
 
 
@@ -58,6 +59,9 @@ const router = createBrowserRouter([{
       <NavLink to={"/"}>
         <HomeIcon />
       </NavLink>
+      <Link to={"/display"}>
+        <LightModeIcon />
+      </Link>
       <Link to={"/channel/basic"}>
         <FormatListNumberedIcon />
       </Link>
