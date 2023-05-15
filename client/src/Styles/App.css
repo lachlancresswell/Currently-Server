@@ -1,10 +1,10 @@
 :root {
-  --l1-color: red;
+  --l1-color: rgba(238, 29, 37, 255);
   --l2-color: white;
-  --l3-color: blue;
-  --pf-color: grey;
-  --kva-color: yellow;
-  --hz-color: orange;
+  --l3-color: rgba(5, 82, 164, 255);
+  --pf-color: rgba(126, 63, 152, 255);
+  --kva-color: rgba(255, 221, 24, 255);
+  --hz-color: rgba(241, 101, 35, 255);
 
   /* --app-bg-color: black; */
 
@@ -31,8 +31,8 @@
 }
 
 [data-theme='dark'] {
-  --app-bg-color: black;
-  --text-colour: grey;
+  --app-bg-color: rgba(36, 32, 33, 255);
+  --text-colour: rgba(89, 89, 89, 255);
   --text-colour-selected: white;
 
   --accent-color: rgb(20, 20, 20);
@@ -155,8 +155,9 @@ body {
   }
 }
 
+/* Icons */
 a>svg,
-div>svg {
+.pageRow>svg {
   height: 1em !important;
   width: 1em !important;
   font-size: 1em !important;
@@ -201,4 +202,13 @@ div>svg {
 
 .roundedBox.active {
   opacity: 100%;
+}
+
+.statusIcon {
+  font-weight: bold;
+  font-size: 0.8em;
+}
+
+.homeValue {
+  font-size: 0.7em;
 }

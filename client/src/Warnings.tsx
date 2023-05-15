@@ -5,7 +5,7 @@ export interface Config {
     warnings: ConfigArray
 }
 
-export function Warning({ data, type, phaseIndex }: { data: DistroData, type: 'va' | 'hz' | 'voltage' | 'amperage', phaseIndex?: 0 | 1 | 2 }) {
+export function Warning({ data, type, phaseIndex }: { data: DistroData, type: 'va' | 'hz' | 'voltage' | 'amperage' | 'pf' | 'kva', phaseIndex?: 0 | 1 | 2 }) {
 
     const { configData } = useConfigDataContext();
 
@@ -27,6 +27,12 @@ export function Warning({ data, type, phaseIndex }: { data: DistroData, type: 'v
                 break;
             case 'amperage':
                 if (phaseIndex !== undefined && phaseIndex > -1) colour = toleranceToColour(configData!.warnings.config!, data, 'amperage', phaseIndex)
+                break;
+            case 'kva':
+                if (phaseIndex !== undefined && phaseIndex > -1) colour = toleranceToColour(configData!.warnings.config!, data, 'kva', phaseIndex)
+                break;
+            case 'pf':
+                if (phaseIndex !== undefined && phaseIndex > -1) colour = toleranceToColour(configData!.warnings.config!, data, 'pf', phaseIndex)
                 break;
         }
 
@@ -58,7 +64,7 @@ const checkToleranceMax = (max: number, val: number) => {
     return rtn
 }
 
-export const toleranceToColour = (warnings: ConfigArray, data: DistroData, type: 'amperage' | 'voltage' | 'hz', phaseIndex: 0 | 1 | 2 = 0) => {
+export const toleranceToColour = (warnings: ConfigArray, data: DistroData, type: 'amperage' | 'voltage' | 'hz' | 'kva' | 'pf', phaseIndex: 0 | 1 | 2 = 0) => {
     let rtn = undefined;
     let colour = undefined;
 
@@ -71,6 +77,12 @@ export const toleranceToColour = (warnings: ConfigArray, data: DistroData, type:
             break;
         case 'hz':
             rtn = checkToleranceMaxMin(warnings.HZset.value as number, warnings.hzmax.value as number, warnings.hzmin.value as number, data.hz!);
+            break;
+        case 'kva':
+            rtn = checkToleranceMaxMin(warnings.kvaSet.value as number, warnings.kvamax.value as number, warnings.kvamin.value as number, data.kva!);
+            break;
+        case 'pf':
+            rtn = checkToleranceMaxMin(warnings.pfSet.value as number, warnings.pfmax.value as number, warnings.pfmin.value as number, data.pf!);
             break;
     }
 

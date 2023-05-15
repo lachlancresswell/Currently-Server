@@ -1,8 +1,9 @@
 import { useNeighbourContext } from './neighbourContext';
 import { useNeighbourDataContext } from './neighbourDataContext';
 import { useEffect, useState } from 'react';
-import { PhaseData, Phase } from '../../Types';
+import { PhaseData, DistroData } from '../../Types';
 import { Warning } from './Warnings';
+import './Styles/PageBasic.css'
 
 interface PageBasicProps {
 }
@@ -28,86 +29,41 @@ export const PageBasic = ({ }: PageBasicProps) => {
     }
 
     return (
-        <div className='pageParent pageBasic'>
-            <div className='pageCol val-voltage'>
-                <div className='pageRow l1'>
-                    <span className='value'>
-                        {neighbourData?.phases[0].voltage}
-                    </span>
-                </div>
-                <div className='pageRow l2'>
-                    <span className='value'>
-                        {neighbourData?.phases[1].voltage}
-                    </span>
-                </div>
-                <div className='pageRow l3'>
-                    <span className='value'>
-                        {neighbourData?.phases[2].voltage}
-                    </span>
-                </div>
-            </div>
-            <div className='pageCol denomin'>
-                <div className='pageRow l1'>
-                    <span>
-                        V
-                    </span>
-                </div>
-                <div className='pageRow l2'>
-                    <span>
-                        V
-                    </span>
-                </div>
-                <div className='pageRow l3'>
-                    <span>
-                        V
-                    </span>
-                </div>
-            </div>
-            <div className='pageCol val-amperage'>
-                <div className='pageRow l1'>
-                    <span className='value'>
-                        {neighbourData?.phases[0].amperage}
-                    </span>
-                </div>
-                <div className='pageRow l2'>
-                    <span className='value'>
-                        {neighbourData?.phases[1].amperage}
-                    </span>
-                </div>
-                <div className='pageRow l3'>
-                    <span className='value'>
-                        {neighbourData?.phases[2].amperage}
-                    </span>
-                </div>
-            </div>
-            <div className='pageCol denomin'>
-                <div className='pageRow l1'>
-                    <span>
-                        A
-                    </span>
-                </div>
-                <div className='pageRow l2'>
-                    <span>
-                        A
-                    </span>
-                </div>
-                <div className='pageRow l3'>
-                    <span>
-                        A
-                    </span>
-                </div>
-            </div>
-            <div className='pageCol'>
-                <div className='pageRow'>
-                    {neighbourData && <Warning data={neighbourData} type={'va'} phaseIndex={0} />}
-                </div>
-                <div className='pageRow'>
-                    {neighbourData && <Warning data={neighbourData} type={'va'} phaseIndex={1} />}
-                </div>
-                <div className='pageRow'>
-                    {neighbourData && <Warning data={neighbourData} type={'va'} phaseIndex={2} />}
-                </div>
-            </div>
+        <div className="gridBasic">
+            <PhaseRow phaseIndex={0} neighbourData={neighbourData} />
+            <PhaseRow phaseIndex={1} neighbourData={neighbourData} />
+            <PhaseRow phaseIndex={2} neighbourData={neighbourData} />
         </div>
     );
 };
+
+
+const PhaseRow = ({ phaseIndex, neighbourData }: { phaseIndex: 0 | 1 | 2, neighbourData: DistroData | null }) => {
+    return (
+        <>
+            <div className={`span-five-basic ${'l' + (phaseIndex + 1)}`}>
+                <span className="valueBasic">
+                    {/* {neighbourData?.phases[phaseIndex].voltage} */}
+                    240
+                </span>
+                <span className="unitBasic">
+                    v
+                </span>
+            </div>
+            <div className={`span-three-basic ${'l' + (phaseIndex + 1)}`}>
+                <div className='basicAmperage'>
+                    <span className="valueBasicAmperage">
+                        {/* {neighbourData?.phases[phaseIndex].amperage} */}
+                        10
+                    </span>
+                    <span className="unitBasic">
+                        a
+                    </span>
+                </div>
+            </div>
+            <div className='span-two-basic'>
+                {neighbourData && <Warning data={neighbourData} type={'kva'} phaseIndex={phaseIndex} />}
+            </div>
+        </>
+    )
+}

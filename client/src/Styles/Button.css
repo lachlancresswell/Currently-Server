@@ -1,6 +1,17 @@
 .footer {
     position: sticky;
     top: 100vh;
+
+    font-size: 9vh !important;
+    font-style: italic;
+    font-weight: 600;
+}
+
+.gridBasic .circle {
+    height: 0.48em;
+    width: 0.48em;
+    border-radius: 50%;
+    display: inline-block;
 }
 
 .menu {
