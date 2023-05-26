@@ -26,6 +26,7 @@ import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import PageChart from './PageChart';
 import { PageDisplay } from './PageDisplay';
+import useLocalStorage from 'use-local-storage';
 
 
 const NeighbourSelector = () => {
@@ -154,8 +155,9 @@ const AppWrapper = () => {
 
 const App = () => {
 
-  document.body.dataset.theme = 'dark';
-
+  const defaultDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const [theme, setTheme] = useLocalStorage('theme', defaultDark ? 'dark' : 'light');
+  document.body.dataset.theme = theme;
 
   return (
     <NeighbourProvider>
