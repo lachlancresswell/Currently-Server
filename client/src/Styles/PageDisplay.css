@@ -24,6 +24,7 @@
 
 .span-four-display {
     grid-column: span 4;
+    width: 90%;
 }
 
 .span-three-display {
@@ -39,14 +40,14 @@
     grid-column: span 4;
 }
 
-.displaySlider {
+.gridDisplay .displaySlider {
     width: 100%;
     display: flex;
     align-items: center;
     padding-left: 1em;
 }
 
-.displaySwitch {
+.gridDisplay .displaySwitch {
     width: 100%;
     display: flex;
     align-items: center;
@@ -111,7 +112,7 @@
 
 /* SLIDER */
 /* The switch - the box around the slider */
-.switch {
+.gridDisplay .switch {
     position: relative;
     display: inline-block;
     width: 1.73em;
@@ -119,14 +120,14 @@
 }
 
 /* Hide default HTML checkbox */
-.switch input {
+.gridDisplay .switch input {
     opacity: 0;
     width: 0;
     height: 0;
 }
 
 /* The slider */
-.slider {
+.gridDisplay .slider {
     position: absolute;
     cursor: pointer;
     top: 0;
@@ -141,7 +142,7 @@
     color: var(--text-colour);
 }
 
-.slider:before {
+.gridDisplay .slider:before {
     position: absolute;
     content: "";
     height: 0.5em;
@@ -153,17 +154,17 @@
     transition: .4s;
 }
 
-input:checked+.slider {
+.gridDisplay input:checked+.slider {
     background-color: rgba(0, 0, 0, 0);
     border: 0.06em var(--text-colour) solid;
     color: var(--text-colour);
 }
 
-input:focus+.slider {
+.gridDisplay input:focus+.slider {
     box-shadow: 0 0 1px #2196F3;
 }
 
-input:checked+.slider:before {
+.gridDisplay input:checked+.slider:before {
     -webkit-transform: translateX(1em);
     -ms-transform: translateX(1em);
     transform: translateX(1em);
@@ -171,19 +172,19 @@ input:checked+.slider:before {
 }
 
 /* Rounded sliders */
-.slider.round {
+.gridDisplay .slider.round {
     border-radius: 0.5em;
 }
 
-.slider.round:before {
+.gridDisplay .slider.round:before {
     border-radius: 50%;
 }
 
-.switch-on {
+.gridDisplay .switch-on {
     display: none;
 }
 
-.switch-on {
+.gridDisplay .switch-on {
     color: white;
     position: absolute;
     transform: translate(-110%, -50%);
@@ -194,7 +195,7 @@ input:checked+.slider:before {
     font-style: italic;
 }
 
-.switch-off {
+.gridDisplay .switch-off {
     color: white;
     position: absolute;
     transform: translate(0%, -50%);
@@ -205,10 +206,40 @@ input:checked+.slider:before {
     font-style: italic;
 }
 
-input:checked+.slider .switch-on {
+.gridDisplay input:checked+.slider .switch-on {
     display: block;
 }
 
-input:checked+.slider .switch-off {
+.gridDisplay input:checked+.slider .switch-off {
     display: none;
+}
+
+/* RANGE SLIDER */
+.gridDisplay input[type="range"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    height: 3vh;
+    background-color: var(--text-colour);
+    border-radius: 3vh;
+    border: none;
+    outline: none;
+}
+
+.gridDisplay input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 6vh;
+    height: 6vh;
+    background-color: black;
+    border: var(--text-colour) 1vh solid;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.gridDisplay .range-slider {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
