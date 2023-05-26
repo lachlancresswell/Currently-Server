@@ -9,8 +9,8 @@ import {
   createBrowserRouter,
   RouterProvider,
   Outlet,
-  Link,
-  NavLink
+  NavLink,
+  useLocation
 } from "react-router-dom";
 import { NeighbourProvider, useNeighbourContext } from './neighbourContext';
 import { NeighbourDataProvider } from './neighbourDataContext';
@@ -25,6 +25,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import PageChart from './PageChart';
+import { PageDisplay } from './PageDisplay';
 
 
 const NeighbourSelector = () => {
@@ -51,40 +52,56 @@ const NeighbourSelector = () => {
   );
 };
 
-const router = createBrowserRouter([{
-  path: '/',
-  element: <>
+const MainMenu = () => {
+  const urlPath = useLocation().pathname;
+  const isSelected = (path: string) => urlPath.includes(path) ? ' selected' : '';
+
+  return (<>
     <Status />
     <div className={"menu "}>
-      <NavLink to={"/"}>
+      <NavLink to={"/"} className={`${isSelected('/home')}`}>
         <HomeIcon />
       </NavLink>
-      <Link to={"/display"}>
+      <NavLink to={"/display"} className={`${isSelected('/display')}`}>
         <LightModeIcon />
-      </Link>
-      <Link to={"/channel/basic"}>
+      </NavLink>
+      <NavLink to={"/channel/basic"} className={`${isSelected('/channel')}`}>
         <FormatListNumberedIcon />
-      </Link>
-      <Link to={"/chart"}>
+      </NavLink>
+      <NavLink to={"/chart"} className={`${isSelected('/chart')}`}>
         <ShowChartIcon />
-      </Link>
-      <Link to={"/options"}>
+      </NavLink>
+      <NavLink to={"/options"} className={`${isSelected('/options')}`}>
         <SettingsOutlinedIcon />
-      </Link>
+      </NavLink>
     </div>
-    <Outlet /></>,
-  children: [{
-    path: "/channel",
-    element: <>
+    <Outlet />
+  </>);
+}
+
+const ChannelMenu = () => {
+  const urlPath = useLocation().pathname;
+  const isSelected = (path: string) => urlPath.includes(path) ? ' selected' : '';
+
+  return (
+    <>
       <Outlet />
       <div className={'menu footer'}>
-        <Link to={"/channel/basic"}>Basic</Link>
-        <Link to={"/channel/phase/1"}>L1</Link>
-        <Link to={"/channel/phase/2"}>L2</Link>
-        <Link to={"/channel/phase/3"}>L3</Link>
-        <Link to={"/channel/adv"}>Adv</Link>
+        <NavLink to={"/channel/basic"} className={`${isSelected('/channel/basic')}`}>Basic</NavLink>
+        <NavLink to={"/channel/phase/1"} className={`${isSelected('/channel/phase/1')}`}>L1</NavLink>
+        <NavLink to={"/channel/phase/2"} className={`${isSelected('/channel/phase/2')}`}>L2</NavLink>
+        <NavLink to={"/channel/phase/3"} className={`${isSelected('/channel/phase/3')}`}>L3</NavLink>
+        <NavLink to={"/channel/adv"} className={`${isSelected('/channel/adv')}`}>Adv</NavLink>
       </div>
-    </>,
+    </>);
+}
+
+const router = createBrowserRouter([{
+  path: '/',
+  element: <MainMenu />,
+  children: [{
+    path: "/channel",
+    element: <ChannelMenu />,
     children: [{
       path: "/channel/basic",
       element: <PageBasic />
@@ -98,6 +115,12 @@ const router = createBrowserRouter([{
   }, {
     path: "/",
     element: <PageHome />
+  }, {
+    path: "/home",
+    element: <PageHome />
+  }, {
+    path: "/display",
+    element: <PageDisplay />
   }, {
     path: "/chart",
     element: <PageChart />
