@@ -291,7 +291,7 @@ input:checked+.slider:before {
     grid-template-columns: 1.1fr 0.9fr 1fr 1fr 1fr;
     justify-items: center;
     font-size: 10vh;
-    height: 85%;
+    height: 82%;
     align-items: center;
 }
 
