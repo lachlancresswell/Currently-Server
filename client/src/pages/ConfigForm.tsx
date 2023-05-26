@@ -133,6 +133,19 @@ const ConfigForm: React.FC = () => {
                         onChange={(e) => handleInputChange(key, e.target.checked)} />
                     </div>
                 );
+            case 'string-options':
+                return (
+                    <select
+                        value={variableMetadata.value}
+                        onChange={(e) => handleInputChange(key, e.target.value)}
+                    >
+                        {variableMetadata.options?.map((value: string, index: number) => (
+                            <option key={index} value={value}>
+                                {value}
+                            </option>
+                        ))}
+                    </select>
+                );
             default:
                 return (
                     <input
