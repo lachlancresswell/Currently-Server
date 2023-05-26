@@ -1,0 +1,16 @@
+.chart-buttons {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 0.3em;
+    font-size: 1.6em;
+    color: black;
+    font-weight: bold;
+}
+
+.chart-button {
+    border: 0.1em var(--text-colour) solid;
+    border-radius: 0.3em;
+    background-color: var(--text-colour);
+    width: 1.5em;
+    text-align: center;
+}

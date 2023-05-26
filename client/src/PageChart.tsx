@@ -3,7 +3,8 @@ import { InfluxDB, FluxTableMetaData } from '@influxdata/influxdb-client-browser
 import ReactApexChart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
 import { org, token } from './neighbourDataContext';
-import { config } from 'process';
+import TuneIcon from '@mui/icons-material/Tune';
+import './Styles/PageChart.css'
 
 export interface RowRtn {
     _field: string,
@@ -164,12 +165,70 @@ const MyComponent: React.FC<Props> = () => {
         }
     }, [isLoading, data]);
 
+    let [legendView, setLegendView] = useState<{ [index: string]: boolean }[]>([
+        { voltage: true, current: true },
+        { voltage: true, current: true },
+        { voltage: true, current: true }
+    ]);
+    const handleHideClick = (phaseIndex: 1 | 2 | 3, category: "Voltage" | "Current") => {
+        ApexCharts.exec("mychart", "hideSeries", [`L${phaseIndex} ${category}`]);
+        legendView[phaseIndex - 1][category.toLowerCase()] = false;
+        legendView = [...legendView];
+        setLegendView(legendView);
+    };
+    const handleShowClick = (phaseIndex: 1 | 2 | 3, category: "Voltage" | "Current") => {
+        ApexCharts.exec("mychart", "showSeries", [`L${phaseIndex} ${category}`]);
+        legendView[phaseIndex - 1][category.toLowerCase()] = true;
+        legendView = [...legendView];
+        setLegendView(legendView);
+    };
+    const toggleLegendElement = (phaseIndex: 1 | 2 | 3, category: "Voltage" | "Current") => {
+        if (legendView[phaseIndex - 1][category.toLowerCase()]) {
+            handleHideClick(phaseIndex, category);
+        } else {
+            handleShowClick(phaseIndex, category);
+        }
+    }
+
     return (
         <>
             {isLoading ? <div>Loading...</div>
-                : <div style={{ height: "100%", width: "100%" }}>
-                    <ReactApexChart type="line" options={options} series={configData(data)} height={"90%"} />
-                </div>}
+                :
+                <>
+                    <div style={{ height: "80%", width: "100%" }}>
+                        <ReactApexChart type="line" options={options} series={configData(data)} height={"100%"} />
+                    </div>
+                    <div className={`chart-buttons`}>
+                        <div className='chart-button'>
+                            +
+                        </div>
+                        <div className={`chart-button l1 ${legendView[1 - 1].voltage ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(1, "Voltage")}>
+                            V
+                        </div >
+                        <div className={`chart-button l1 ${legendView[1 - 1].current ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(1, "Current")}>
+                            A
+                        </div>
+                        <div className={`chart-button l2 ${legendView[2 - 1].voltage ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(2, "Voltage")}>
+                            V
+                        </div>
+                        <div className={`chart-button l2 ${legendView[2 - 1].current ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(2, "Current")}>
+                            A
+                        </div>
+                        <div className={`chart-button l3 ${legendView[3 - 1].voltage ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(3, "Voltage")}>
+                            V
+                        </div>
+                        <div className={`chart-button l3 ${legendView[3 - 1].current ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(3, "Current")}>
+                            A
+                        </div>
+                        <div className='chart-button'>
+                            -
+                        </div>
+                        <div className='chart-button'>
+                            <TuneIcon />
+                        </div>
+                    </div>
+                </>
+            }
         </>
     );
 };
