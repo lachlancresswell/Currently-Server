@@ -4,7 +4,7 @@
     grid-template-rows: repeat(3, 1fr);
     justify-items: center;
     align-items: center;
-    height: 70%;
+    height: 68%;
     /* gap: 10px; */
     font-size: 20vh;
 }
