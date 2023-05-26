@@ -5,6 +5,7 @@ import { PageBasic } from './PageBasic';
 import { PageAdv } from './PageAdv';
 import { Status } from './Status';
 import { PageHome } from './PageHome';
+import { NetworkSettings } from './pages/PageConfigNetwork';
 import {
   createBrowserRouter,
   RouterProvider,
@@ -128,6 +129,9 @@ const router = createBrowserRouter([{
   }, {
     path: "/options",
     element: <ConfigPage />
+  }, {
+    path: "/options/ipplugin",
+    element: <ConfigForm ConfigElement={NetworkSettings} />
   }, {
     path: "/options/:pluginName",
     element: <ConfigForm />

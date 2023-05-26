@@ -1,61 +1,26 @@
 // src/components/ConfigForm.tsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { ConfigVariableMetadata, ConfigArray } from '../../../Types';
-import { useParams } from 'react-router-dom';
+import { ConfigVariableMetadata, ConfigArray, Neighbour } from '../../../Types';
 import '../Styles/Config.css';
-import Switch from '@mui/material/Switch';
-import { styled } from '@mui/material/styles';
+import { useNeighbourContext } from '../neighbourContext';
 
-const MaterialUISwitch = styled(Switch)(({ theme }) => ({
-    width: 124,
-    height: 68,
-    padding: 14,
-    '& .MuiSwitch-switchBase': {
-        margin: 2,
-        padding: 0,
-        transform: 'translateX(6px)',
-        '&.Mui-checked': {
-            color: '#fff',
-            transform: 'translateX(44px)',
-            '& + .MuiSwitch-track': {
-                opacity: 1,
-                backgroundColor: theme.palette.mode === 'dark' ? '#8796A5' : '#aab4be',
-            },
-        },
-    },
-    '& .MuiSwitch-thumb': {
-        backgroundColor: theme.palette.mode === 'dark' ? '#003892' : '#001e3c',
-        width: 64,
-        height: 64,
-        '&:before': {
-            content: "''",
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-            left: 0,
-            top: 0,
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'center',
-        },
-    },
-    '& .MuiSwitch-track': {
-        opacity: 1,
-        backgroundColor: theme.palette.mode === 'dark' ? '#8796A5' : '#aab4be',
-        borderRadius: 40 / 2,
-    },
-}));
 
+interface props {
+    ConfigElement: React.FC<{ pluginConfig: ConfigArray, handleInputChange: (key: string, value: any) => void, selectedNeighbour: Neighbour }>
+}
 
 /**
  * ConfigForm component fetches the configuration for a specific plugin and lists all variables with `display` set to `true`.
  * Allows the user to edit the values and send the updated configuration back to the server.
  */
-const ConfigForm: React.FC = () => {
-    const { pluginName } = useParams<{ pluginName: string }>();
+
+const ConfigForm: React.FC<props> = ({ ConfigElement }) => {
+    const { selectedNeighbour } = useNeighbourContext();
+    const pluginName = 'IPPlugin';
     const [startPluginConfig, setStartPluginConfig] = useState<ConfigArray | null>(null);
     const [pluginConfig, setPluginConfig] = useState<ConfigArray | null>(null);
-    const [refresh, setRefresh] = useState<boolean>(true);;
+    const [refresh, setRefresh] = useState<boolean>(true);
 
     useEffect(() => {
         async function fetchPluginConfig() {
@@ -109,7 +74,7 @@ const ConfigForm: React.FC = () => {
         setPluginConfig(startPluginConfig);
     }
 
-    if (!pluginConfig) {
+    if (!pluginConfig || !selectedNeighbour) {
         return <div>Loading...</div>;
     }
 
@@ -123,73 +88,7 @@ const ConfigForm: React.FC = () => {
 
     const modified = JSON.stringify(startPluginConfig) !== JSON.stringify(pluginConfig);
 
-    const renderInputField = (key: string, variableMetadata: ConfigVariableMetadata<any>) => {
-        switch (variableMetadata.type) {
-            case 'boolean':
-                return (
-                    <div><MaterialUISwitch
-                        size="medium"
-                        checked={variableMetadata.value}
-                        onChange={(e) => handleInputChange(key, e.target.checked)} />
-                    </div>
-                );
-            case 'string-options':
-                return (
-                    <select
-                        value={variableMetadata.value}
-                        onChange={(e) => handleInputChange(key, e.target.value)}
-                    >
-                        {variableMetadata.options?.map((value: string, index: number) => (
-                            <option key={index} value={value}>
-                                {value}
-                            </option>
-                        ))}
-                    </select>
-                );
-            default:
-                return (
-                    <input
-                        type={variableMetadata.type === 'number' ? 'number' : 'text'}
-                        value={variableMetadata.value}
-                        onChange={(e) => handleInputChange(key, e.target.value)}
-                    />
-                );
-        }
-    };
-
-    return (
-        <div className='pageParent pageCfgForm'>
-            <div className='cfgFormCol cfgFormRowRight'>
-                {displayedConfigKeys.map((key) => {
-                    const variableMetadata = pluginConfig![key];
-                    return (
-                        <div className='configTitle'>
-                            {variableMetadata.readableName}
-                        </div>
-                    );
-                })}
-                <button style={{
-                    color: modified ? 'red' : 'grey'
-                }}
-                    disabled={!modified}
-                    onClick={handleCancel}>X</button>
-            </div>
-            <div className='cfgFormCol cfgFormRowLeft'>
-                {displayedConfigKeys.map((key) => {
-                    const variableMetadata = pluginConfig![key];
-                    return (<div>
-                        {renderInputField(key, variableMetadata)}
-                    </div>
-                    );
-                })}
-                <button style={{
-                    color: modified ? 'green' : 'grey'
-                }}
-                    disabled={!modified}
-                    onClick={handleConfirm}>✔</button>
-            </div>
-        </div>
-    );
+    return <ConfigElement pluginConfig={pluginConfig} handleInputChange={handleInputChange} selectedNeighbour={selectedNeighbour} />
 
 };
 
