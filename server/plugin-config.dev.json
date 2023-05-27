@@ -870,19 +870,19 @@
       }
     }
   },
-  "localt": {
+  "locale": {
     "enabled": true,
     "path": "../locale-plugin",
     "config": {
-      "local": {
+      "locale": {
         "readableName": "Locale",
         "display": true,
-        "value": "AU",
+        "value": "ca",
         "options": [
-          "AU/NZ",
-          "EU/UK",
-          "US",
-          "CA"
+          "au",
+          "eu",
+          "us",
+          "ca"
         ]
       }
     }

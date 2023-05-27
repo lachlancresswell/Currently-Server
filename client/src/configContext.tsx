@@ -21,7 +21,11 @@ export const ConfigDataProvider: React.FC<props> = ({ children }) => {
     const pollServer = async () => {
         const response = await fetch(`/config`)
 
-        const data = await response.json();
+        const data = await response.json() as PluginJSON;
+
+        if (data.locale?.config?.locale.value) {
+            document.body.dataset.locale = data.locale.config.locale.value as string;
+        }
 
         setConfigData(data)
     }

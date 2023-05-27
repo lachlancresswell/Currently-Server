@@ -38,6 +38,30 @@
   --accent-color: rgb(20, 20, 20);
 }
 
+[data-locale='au'] {
+  --l1-color: rgba(238, 29, 37, 255);
+  --l2-color: white;
+  --l3-color: rgba(5, 82, 164, 255);
+}
+
+[data-locale='eu'] {
+  --l1-color: brown;
+  --l2-color: black;
+  --l3-color: grey;
+}
+
+[data-locale='us'] {
+  --l1-color: black;
+  --l2-color: rgba(238, 29, 37, 255);
+  --l3-color: rgba(5, 82, 164, 255);
+}
+
+[data-locale='ca'] {
+  --l1-color: rgba(238, 29, 37, 255);
+  --l2-color: black;
+  --l3-color: rgba(5, 82, 164, 255);
+}
+
 @font-face {
   font-family: "MontserratRegular";
   src: local("MontserratRegular"),
