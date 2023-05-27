@@ -52,11 +52,11 @@ const PhaseTrafficLights = ({
     description?: 'AU/NZ' | 'EU/UK' | 'USA' | 'CAN',
     handleInputChange?: MouseEventHandler<HTMLDivElement>
 }) => {
-    return (<div className={`span-five-locale locale-width-100`}>
+    return (<div className={`span-five-locale locale-width-100`} onClick={handleInputChange}>
         <div className='locale-traffic-lights locale-width-100'>
-            <div className={`locale-traffic-lights-l1-${locale}`} onClick={handleInputChange} />
-            <div className={`locale-traffic-lights-l2-${locale}`} onClick={handleInputChange} />
-            <div className={`locale-traffic-lights-l3-${locale}`} onClick={handleInputChange} />
+            <div className={`locale-traffic-lights-l1-${locale}`} />
+            <div className={`locale-traffic-lights-l2-${locale}`} />
+            <div className={`locale-traffic-lights-l3-${locale}`} />
             {description && <div className='locale-country-id'>{description}</div>}
         </div>
     </div>)
