@@ -57,7 +57,7 @@ class IPPlugin extends Plugin<IPOptions> {
         );
 
         // Gateway
-        this.setEphemeralVariable(this.configuration.gateway, IPPlugin.getGatewayIP,
+        this.setEphemeralVariable(this.configuration.gateway, () => IPPlugin.getGatewayIP(this.configuration.iface.value),
             (gateway: ipaddress) => this.netSetter(gateway, 'gateway', 'Gateway')
         );
 
@@ -109,6 +109,9 @@ class IPPlugin extends Plugin<IPOptions> {
 
         this.restartNetworkD()
     }
+
+    // Ensure DHCP is configured first
+    sort = (keys: string[]) => keys.sort();
 
     /**
      * Creates a systemd network file with the provided IP address settings. Deletes any existing network file at the same file path.
@@ -267,7 +270,7 @@ DNS=${ipSettings.dns?.join(' ')}`
     static hasDynamicIpAddress = (interfaceName: string): boolean => {
         try {
             // Execute the command to get the IP addresses for the specified network interface
-            const commandOutput = execSync(`ip a show ${interfaceName} `).toString()
+            const commandOutput = execSync(`ip a show ${interfaceName} | grep 'inet ' || true`).toString()
 
             // Check if the output contains the string "dynamic"
             return commandOutput.includes("dynamic");
@@ -282,8 +285,12 @@ DNS=${ipSettings.dns?.join(' ')}`
      * Retrieves the default gateway IP address.
      * @returns {string | undefined} The default gateway IP address.
     */
-    static getGatewayIP = (): string | undefined => {
-        const stdout = execSync('ip route').toString()
+    static getGatewayIP = (nic?: string): string | undefined => {
+        let cmd = 'ip route';
+        if (nic) {
+            cmd += ' show dev ' + nic;
+        }
+        const stdout = execSync(cmd).toString()
         const defaultRouteMatch = stdout.match(/^default\s+via\s+(\S+)\s+/m);
 
         if (defaultRouteMatch && defaultRouteMatch.length > 1) {
