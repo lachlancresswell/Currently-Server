@@ -1,0 +1,311 @@
+.gridWarnings {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    justify-items: center;
+    align-items: center;
+    height: 80%;
+    /* gap: 10px; */
+    font-size: 10vh;
+
+    color: white;
+    font-style: italic;
+}
+
+.span-ten-warnings {
+    grid-column: span 10;
+}
+
+.span-eight-warnings {
+    grid-column: span 8;
+}
+
+.span-seven-warnings {
+    grid-column: span 7;
+}
+
+.span-six-warnings {
+    grid-column: span 6;
+}
+
+.span-six-warnings {
+    grid-column: span 5;
+}
+
+.span-four-warnings {
+    grid-column: span 4;
+}
+
+.span-three-warnings {
+    grid-column: span 3;
+}
+
+.span-two-warnings {
+    grid-column: span 2;
+}
+
+.span-one-warnings {
+    grid-column: span 1;
+}
+
+.displaySlider {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding-left: 1em;
+}
+
+.displaySwitch {
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+
+.valueWarnings {
+    display: inline-block;
+    /* width: 2.6em; */
+    text-align: right;
+    font-weight: bold;
+}
+
+.valueWarningsAmperage {
+    display: inline-block;
+    /* width: 1.3em; */
+    text-align: right;
+    font-weight: bold;
+}
+
+.unitWarnings {
+    display: inline-block;
+    text-transform: uppercase;
+    font-size: 0.5em;
+    font-weight: bold;
+}
+
+.gridWarnings svg {
+    padding-top: 0.1em;
+    font-size: 1.3em;
+}
+
+/* SLIDER */
+/* The switch - the box around the slider */
+.gridWarnings .switch {
+    position: relative;
+    display: inline-block;
+    width: 3em;
+    height: 1.5em;
+}
+
+/* Hide default HTML checkbox */
+.gridWarnings .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* The slider */
+.gridWarnings .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    -webkit-transition: .4s;
+    transition: .4s;
+
+    background-color: rgba(0, 0, 0, 0);
+    border: 0.2em var(--text-colour) solid;
+    color: var(--text-colour);
+}
+
+.gridWarnings .slider:before {
+    position: absolute;
+    content: "";
+    height: 1em;
+    width: 1em;
+    left: 0.07em;
+    bottom: 0.07em;
+    background-color: var(--text-colour);
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+.gridWarnings input:checked+.slider {
+    background-color: rgba(0, 0, 0, 0);
+    border: 0.2em var(--text-colour) solid;
+    color: var(--text-colour);
+}
+
+input:focus+.slider {
+    box-shadow: 0 0 1px #2196F3;
+}
+
+.gridWarnings input:checked+.slider:before {
+    -webkit-transform: translateX(1.5em);
+    -ms-transform: translateX(1.5em);
+    transform: translateX(1.5em);
+    background-color: white;
+}
+
+/* Rounded sliders */
+.gridWarnings .slider.round {
+    border-radius: 1em;
+}
+
+.gridWarnings .slider.round:before {
+    border-radius: 50%;
+}
+
+.gridWarnings .switch-on {
+    display: none;
+}
+
+.gridWarnings .switch-on,
+.switch-off {
+    position: absolute;
+    top: 50%;
+
+    font-size: 0.7em;
+    color: var(--text-colour);
+    font-style: italic;
+}
+
+.gridWarnings .switch-on {
+    left: 50%;
+    transform: translate(-110%, -50%);
+}
+
+.gridWarnings .switch-off {
+    left: 45%;
+    transform: translate(0%, -50%);
+}
+
+.gridWarnings input:checked+.slider .switch-on {
+    display: block;
+}
+
+.gridWarnings input:checked+.slider .switch-off {
+    display: none;
+}
+
+/* RANGE SLIDER */
+.gridWarnings input[type="range"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    height: 3vh;
+    background-color: var(--text-colour);
+    border-radius: 3vh;
+    border: none;
+    outline: none;
+}
+
+.gridWarnings input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 6vh;
+    height: 6vh;
+    background-color: black;
+    border: var(--text-colour) 1vh solid;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.gridWarnings .range-slider {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* TEXT INPUT */
+.gridWarnings input {
+    background-color: #00000000;
+    text-decoration: none;
+    width: 100%;
+    color: white;
+    border: none;
+    font-size: 1em;
+    border-bottom: 2px grey solid
+}
+
+.Warnings-status {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 65%;
+    font-size: 1.5em;
+}
+
+.warnings-traffic-lights {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+
+    border: 0.1em var(--text-colour) solid;
+    border-radius: 0.5em;
+    width: 1em;
+    height: 2em;
+}
+
+.warnings-traffic-lights-red,
+.warnings-traffic-lights-orange,
+.warnings-traffic-lights-green {
+    border-radius: 1em;
+    border: 0.3em grey solid;
+    width: 0.01em;
+}
+
+.warnings-traffic-lights-red {
+    border-color: red;
+}
+
+.warnings-traffic-lights-orange {
+    border-color: orange;
+}
+
+.warnings-traffic-lights-green {
+    border-color: green;
+}
+
+.warnings-reset-button {
+    border-radius: 1em;
+    background-color: var(--text-colour);
+    color: black;
+    width: 4em;
+    text-align: center;
+}
+
+.warnings-v-a-hz {
+    font-size: 1.7em;
+    padding-left: 0.2em
+}
+
+.warnings-set-max {
+    font-size: 0.9em;
+}
+
+.warnings-settings-name {
+    text-align: left;
+    width: 100%;
+    padding-left: 0.4em;
+}
+
+.warnings-width-100 {
+    width: 100%
+}
+
+.warnings-value {
+    display: inline-block;
+    font-size: 1.3em;
+    width: 2em;
+}
+
+.warnings-modifier {
+    display: inline-block;
+    font-size: 0.8em;
+    width: 1.5em;
+}
