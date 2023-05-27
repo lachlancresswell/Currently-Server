@@ -1,13 +1,16 @@
 // src/components/ConfigForm.tsx
-import { ConfigArray, Neighbour } from '../../../Types';
+import { IPOptions } from '../../../Types';
 import '../Styles/PageConfigNetwork.css';
 import LanguageIcon from '@mui/icons-material/Language';
 import SpokeIcon from '@mui/icons-material/Spoke';
 import RouterIcon from '@mui/icons-material/Router';
 import SettingsEthernetIcon from '@mui/icons-material/SettingsEthernet';
+import { useConfig } from './ConfigForm';
 
-export const NetworkSettings = ({ pluginConfig, handleInputChange, selectedNeighbour }: { pluginConfig: ConfigArray, handleInputChange: (key: string, value: any) => void, selectedNeighbour: Neighbour }) => {
-    const isChecked = pluginConfig.dhcp.value as boolean;
+export const NetworkSettings = () => {
+    const { pluginConfig, selectedNeighbour, handleInputChange } = useConfig<IPOptions>('IPPlugin');
+
+    const isChecked = pluginConfig?.dhcp.value;
 
     return (
         <div className="gridNetwork">
@@ -17,7 +20,7 @@ export const NetworkSettings = ({ pluginConfig, handleInputChange, selectedNeigh
             <div className={`span-four-network`}>
                 <input
                     type='text'
-                    value={selectedNeighbour.name}
+                    value={selectedNeighbour?.name}
                     onChange={(e) => handleInputChange('name', e.target.value)}
                 />
             </div>
@@ -27,7 +30,7 @@ export const NetworkSettings = ({ pluginConfig, handleInputChange, selectedNeigh
             <div className={`span-four-network`}>
                 <input
                     type='text'
-                    value={pluginConfig.ipaddress.value as string}
+                    value={pluginConfig?.ipaddress.value}
                     onChange={(e) => handleInputChange('ipaddress', e.target.value)}
                 />
             </div>
@@ -37,7 +40,7 @@ export const NetworkSettings = ({ pluginConfig, handleInputChange, selectedNeigh
             <div className={`span-four-network`}>
                 <input
                     type='text'
-                    value={pluginConfig.prefix.value as number}
+                    value={pluginConfig?.prefix.value}
                     onChange={(e) => handleInputChange('prefix', e.target.value)}
                 />
             </div>
@@ -47,7 +50,7 @@ export const NetworkSettings = ({ pluginConfig, handleInputChange, selectedNeigh
             <div className={`span-four-network`}>
                 <input
                     type='text'
-                    value={pluginConfig.gateway.value as string}
+                    value={pluginConfig?.gateway.value}
                     onChange={(e) => handleInputChange('gateway', e.target.value)}
                 />
             </div>

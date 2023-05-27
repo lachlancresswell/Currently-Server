@@ -16,7 +16,6 @@ import {
 import { NeighbourProvider, useNeighbourContext } from './neighbourContext';
 import { NeighbourDataProvider } from './neighbourDataContext';
 import { ConfigDataProvider } from './configContext';
-import ConfigForm from './pages/ConfigForm';
 import './Styles/App.css';
 import './Styles/Page.css';
 import './Styles/Button.css';
@@ -28,6 +27,8 @@ import LightModeIcon from '@mui/icons-material/LightMode';
 import PageChart from './PageChart';
 import { PageDisplay } from './PageDisplay';
 import useLocalStorage from 'use-local-storage';
+import { WarningSettings } from './pages/PageConfigWarnings';
+import { LocaleSettings } from './pages/PageConfigLocale';
 
 
 const NeighbourSelector = () => {
@@ -130,11 +131,17 @@ const router = createBrowserRouter([{
     path: "/options",
     element: <ConfigPage />
   }, {
-    path: "/options/ipplugin",
-    element: <ConfigForm ConfigElement={NetworkSettings} />
+    path: "/options/network",
+    element: <NetworkSettings />
+  }, {
+    path: "/options/warnings",
+    element: <WarningSettings />
+  }, {
+    path: "/options/locale",
+    element: <LocaleSettings />
   }, {
     path: "/options/:pluginName",
-    element: <ConfigForm />
+    element: <></>
   }]
 }]);
 

@@ -37,7 +37,7 @@ const ConfigPage: React.FC = () => {
                     </Link>
                 </div>
                 <div className={`pageRow}`}>
-                    <Link style={{ color: 'white' }} to={`/options/IPPlugin`}>
+                    <Link style={{ color: 'white' }} to={`/options/network`}>
                         <SettingsEthernetIcon />
                     </Link>
                 </div>

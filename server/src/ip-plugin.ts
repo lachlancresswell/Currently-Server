@@ -1,23 +1,11 @@
 // Influx-plugin.ts
 import { Plugin } from './plugin';
-import { ConfigArray, ConfigValue, ConfigVariableMetadata, EphemeralVariableMetaData, ipaddress, prefix } from '../../Types';
+import { ConfigArray, ConfigValue, ConfigVariableMetadata, EphemeralVariableMetaData, IPOptions, ipaddress, prefix } from '../../Types';
 import { execSync } from 'child_process';
 import dns from 'dns';
 import { networkInterfaces } from 'os';
 import fs from 'fs';
 import axios from 'axios'
-
-export interface IPOptions extends ConfigArray {
-    filePath: ConfigVariableMetadata<string>;
-    iface: ConfigVariableMetadata<string>;
-    ipaddress: EphemeralVariableMetaData<ipaddress>;
-    prefix: EphemeralVariableMetaData<prefix>;
-    gateway: EphemeralVariableMetaData<ipaddress>;
-    dns: EphemeralVariableMetaData<ipaddress[]>;
-    dhcp: EphemeralVariableMetaData<boolean>;
-    internetStatus: EphemeralVariableMetaData<boolean>;
-    internetPollMs: ConfigVariableMetadata<number>;
-}
 
 export interface Address {
     [key: number | string]: boolean | string | number | string[] | undefined;

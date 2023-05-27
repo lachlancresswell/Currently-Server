@@ -1,95 +1,112 @@
 // src/components/ConfigForm.tsx
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { ConfigVariableMetadata, ConfigArray, Neighbour } from '../../../Types';
+import { useState, useEffect } from 'react';
+import { ConfigArray } from '../../../Types';
 import '../Styles/Config.css';
 import { useNeighbourContext } from '../neighbourContext';
+import axios from 'axios';
 
 
-interface props {
-    ConfigElement: React.FC<{ pluginConfig: ConfigArray, handleInputChange: (key: string, value: any) => void, selectedNeighbour: Neighbour }>
+/**
+ * Loads the configuration of the requested plugin.
+ * @param pluginName Name of the plugin to load the config from.
+ * @returns Object containing the plugin configuration
+ */
+export const loadConfig = async <T extends ConfigArray>(pluginName: string) => {
+    try {
+        const response = await axios.get<ConfigArray>(`/config/${pluginName}`);
+        return response.data as T;
+    } catch (error) {
+        console.error(`Error fetching config for plugin ${pluginName}:`, error);
+    }
 }
 
 /**
- * ConfigForm component fetches the configuration for a specific plugin and lists all variables with `display` set to `true`.
- * Allows the user to edit the values and send the updated configuration back to the server.
+ * Saves the provided plugin config to the database.
+ * @param pluginName Name of the plugin to save the config for.
+ * @param pluginConfig Config to save.
+ * @returns void
  */
+export const saveConfig = async (pluginName: string, pluginConfig: ConfigArray) => {
+    try {
+        await axios.put(`/config/${pluginName}`, pluginConfig);
+    } catch (error) {
+        console.error(`Error updating config for plugin ${pluginName}:`, error);
+    }
+}
 
-const ConfigForm: React.FC<props> = ({ ConfigElement }) => {
+export function useConfig<T extends ConfigArray>(pluginName: string) {
     const { selectedNeighbour } = useNeighbourContext();
-    const pluginName = 'IPPlugin';
-    const [startPluginConfig, setStartPluginConfig] = useState<ConfigArray | null>(null);
-    const [pluginConfig, setPluginConfig] = useState<ConfigArray | null>(null);
+    const [startPluginConfig, setStartPluginConfig] = useState<T>();
+    const [pluginConfig, setPluginConfig] = useState<T>();
     const [refresh, setRefresh] = useState<boolean>(true);
 
+    /**
+     * Fetches the plugin config from the database on mount.
+     * @returns void
+     * @throws Error if pluginConfig is null.
+     */
     useEffect(() => {
         async function fetchPluginConfig() {
-            try {
-                const response = await axios.get<ConfigArray>(`/config/${pluginName}`);
-                setStartPluginConfig(response.data);
-                setPluginConfig(response.data);
-            } catch (error) {
-                console.error(`Error fetching config for plugin ${pluginName}:`, error);
-            }
+            const serverConfig = await loadConfig<T>(pluginName)
+            setPluginConfig(serverConfig);
+            setStartPluginConfig(serverConfig);
         }
         fetchPluginConfig();
     }, [refresh]);
 
-    const handleInputChange = (
-        key: string,
-        value: ConfigVariableMetadata<string | number | boolean | 'ipaddress' | 'timezone'>['value']
-    ) => {
-        if (pluginConfig) {
-            if (pluginConfig[key].type === 'number' && typeof (value) !== 'number') {
-                value = parseInt(value as any);
-            }
-
-
-            const obj = {
-                [key]: {
-                    ...pluginConfig[key],
-                    value,
-                }
-            }
-            setPluginConfig({
-                ...pluginConfig,
-                ...obj
-            });
-        }
-    };
-
+    /**
+     * Saves the plugin config to the database.
+     * @returns void
+     */
     const handleConfirm = async () => {
         if (pluginConfig) {
-            try {
-                await axios.put(`/config/${pluginName}`, pluginConfig);
-            } catch (error) {
-                console.error(`Error updating config for plugin ${pluginName}:`, error);
-            }
-
+            saveConfig(pluginName, pluginConfig)
             setRefresh(!refresh);
         }
     };
 
+    /**
+     * Resets the plugin config to the initial state.
+     * @returns void
+     */
     const handleCancel = async () => {
         setPluginConfig(startPluginConfig);
     }
 
-    if (!pluginConfig || !selectedNeighbour) {
-        return <div>Loading...</div>;
-    }
+    function handleInputChange<T extends ConfigArray>(
+        key: keyof T,
+        value: T[keyof T]['value'],
+        save?: boolean
+    ) {
+        if (pluginConfig) {
+            // Convert the value to the correct type if necessary.
+            if (pluginConfig[key as string].type === 'number' && typeof (value) !== 'number') {
+                value = parseInt(value as any);
+            }
 
-    const displayedConfigKeys = pluginConfig ? Object.keys(pluginConfig).filter(
-        (key) => pluginConfig ? pluginConfig[key].display : false
-    ) : [''];
+            // Update the config state with the new value.
+            const newConfig = {
+                [key]: {
+                    ...pluginConfig[key as string],
+                    value,
+                }
+            }
 
-    displayedConfigKeys.sort(
-        (a, b) => pluginConfig![b].priority! - pluginConfig![a].priority!
-    );
+            setPluginConfig({
+                ...pluginConfig,
+                ...newConfig
+            });
+
+            // Save the config to the database immediately if save is true.
+            if (save) {
+                saveConfig(pluginName, { ...newConfig } as ConfigArray)
+            }
+        }
+    };
 
     const modified = JSON.stringify(startPluginConfig) !== JSON.stringify(pluginConfig);
 
-    return <ConfigElement pluginConfig={pluginConfig} handleInputChange={handleInputChange} selectedNeighbour={selectedNeighbour} />
-
-};
-
-export default ConfigForm;
+    return {
+        pluginConfig, selectedNeighbour, handleInputChange, handleConfirm, handleCancel
+    }
+}

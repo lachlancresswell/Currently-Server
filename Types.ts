@@ -73,3 +73,64 @@ export interface DistroData {
     hz?: number,
     phases: PhaseData[]
 }
+
+/**
+ * Options interface for the Warnings plugin.
+ */
+export interface WarningsOptions extends ConfigArray {
+    enable: ConfigVariableMetadata<boolean>;
+    vSet: ConfigVariableMetadata<number>;
+    vmax: ConfigVariableMetadata<number>;
+    vmin: ConfigVariableMetadata<number>;
+    amax: ConfigVariableMetadata<number>;
+    HZset: ConfigVariableMetadata<number>;
+    hzmax: ConfigVariableMetadata<number>;
+    hzmin: ConfigVariableMetadata<number>;
+}
+
+/**
+ * Options interface for the IP plugin.
+ */
+export interface IPOptions extends ConfigArray {
+    filePath: ConfigVariableMetadata<string>;
+    iface: ConfigVariableMetadata<string>;
+    ipaddress: EphemeralVariableMetaData<ipaddress>;
+    prefix: EphemeralVariableMetaData<prefix>;
+    gateway: EphemeralVariableMetaData<ipaddress>;
+    dns: EphemeralVariableMetaData<ipaddress[]>;
+    dhcp: EphemeralVariableMetaData<boolean>;
+    internetStatus: EphemeralVariableMetaData<boolean>;
+    internetPollMs: ConfigVariableMetadata<number>;
+}
+
+/**
+ * Options interface for the Locale plugin
+ */
+export interface LocaleOptions extends ConfigArray {
+    locale: ConfigVariableMetadata<'au' | 'eu' | 'us' | 'ca'>;
+}
+
+
+export const LOCALE_AU = {
+    l1: 'red',
+    l2: 'white',
+    l3: 'blue'
+}
+
+export const LOCALE_EU = {
+    l1: 'brown',
+    l2: 'black',
+    l3: 'grey'
+}
+
+export const LOCALE_US = {
+    l1: 'black',
+    l2: 'red',
+    l3: 'blue'
+}
+
+export const LOCALE_CA = {
+    l1: 'red',
+    l2: 'black',
+    l3: 'blue'
+}
