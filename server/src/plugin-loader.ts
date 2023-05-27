@@ -43,9 +43,13 @@ export class PluginLoader {
             const plugin = _this.plugins.find((plug) => plug.name === pluginName);
 
             if (plugin) {
-                plugin.updateEntireConfig(newConfig);
-
+                const restart = plugin.updateEntireConfig(newConfig);
                 res.status(200).json({ message: 'Plugin configuration updated successfully' });
+                if (restart === 'plugin') {
+                    plugin.restart();
+                } else if (restart === 'server') {
+                    // TODO
+                }
             } else {
                 res.status(404).json({ error: `Plugin ${pluginName} not found` });
             }
@@ -64,6 +68,23 @@ export class PluginLoader {
             this.pluginConfigs = JSON.parse(configFileContent) as PluginJSON;
         } else {
             console.log(`Config does not exist: ${p}`)
+        }
+    }
+
+    /**
+     * Loads a specific plugin configurations from a JSON file.
+     */
+    private loadConfig(pluginName: string) {
+        const p = path.join(__dirname, this.configFilePath)
+        console.log(`Loading config from ${p}`)
+        try {
+            const configFileContent = fs.readFileSync(p).toString();
+
+            const pluginConfigs = JSON.parse(configFileContent) as PluginJSON;
+
+            return pluginConfigs[pluginName]
+        } catch (e) {
+            throw (e)
         }
     }
 
@@ -136,10 +157,12 @@ export class PluginLoader {
     public reloadPlugin(pluginName: string): boolean {
         const pluginIndex = this.plugins.findIndex((plug) => plug.name === pluginName);
         if (pluginIndex !== -1) {
-            const pluginConfig = this.pluginConfigs[pluginName];
             const plugin = this.plugins[pluginIndex];
 
             plugin.unload();
+            this.pluginConfigs[pluginName] = this.loadConfig(pluginName);
+            const pluginConfig = this.pluginConfigs[pluginName];
+
             const result = this.loadPlugin(pluginName, pluginConfig);
             if (result) {
                 this.plugins.splice(pluginIndex, 1, plugin);

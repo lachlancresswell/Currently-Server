@@ -22,7 +22,7 @@
         "display": true,
         "readableName": "Device Name",
         "type": "string",
-        "value": "Lachlan's Devicesdf"
+        "restart": "plugin"
       },
       "txDelay": {
         "priority": 1,
@@ -75,13 +75,15 @@
         "priority": 1,
         "display": true,
         "readableName": "Gateway",
-        "type": "ipaddress"
+        "type": "ipaddress",
+        "restart": "plugin"
       },
       "prefix": {
         "priority": 1,
         "display": true,
         "readableName": "Prefix",
         "type": "number",
+        "restart": "plugin",
         "max": 32,
         "min": 1
       },
@@ -89,13 +91,15 @@
         "priority": 1,
         "display": false,
         "readableName": "DHCP",
-        "type": "boolean"
+        "type": "boolean",
+        "restart": "plugin"
       },
       "dns": {
         "priority": 1,
         "display": false,
         "readableName": "DNS Servers",
-        "type": "strings"
+        "type": "strings",
+        "restart": "plugin"
       },
       "iface": {
         "priority": 1,

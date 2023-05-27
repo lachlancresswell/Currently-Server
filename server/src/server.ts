@@ -6,6 +6,7 @@ import * as http from 'http';
 import * as fs from 'fs';
 import * as path from 'path';
 import httpProxy from 'http-proxy';
+import { Plugin } from './plugin';
 
 export interface Routing {
     registerGetRoute: (path: string, handler: (req: Request, res: Response) => void) => void;
@@ -14,6 +15,7 @@ export interface Routing {
     registerPutRoute: (path: string, handler: (req: Request, res: Response) => void) => void;
     removeRoute: (path: string) => void;
     registerProxy: (sourcePath: string, targetDomain: string, targetPort: string | number) => void;
+    reloadPlugin: (pluginName: string) => boolean;
 }
 
 const HTTP_PORT = process.env.NODE_ENV === 'test' ? 0
@@ -49,6 +51,7 @@ export class Server {
             registerPutRoute: this.registerPutRoute.bind(this),
             removeRoute: this.removeRoute.bind(this),
             registerProxy: this.registerProxy.bind(this),
+            reloadPlugin: this.reloadPlugin.bind(this),
         };
 
         this.httpServer = http.createServer(this.app);
@@ -134,6 +137,8 @@ export class Server {
     public registerPutRoute = (path: string, handler: (req: Request, res: Response) => void): void => {
         this.app.put(path, handler);
     };
+
+    public reloadPlugin = (pluginName: string) => this.pluginLoader.reloadPlugin(pluginName);
 
     /**
      * Removes a route from the server.

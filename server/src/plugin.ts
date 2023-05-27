@@ -26,6 +26,8 @@ export abstract class Plugin<T> extends EventEmitter {
     protected serverRouter: Routing;
     public name = 'plugin';
 
+    protected sort?: (keys: string[]) => string[];
+
     /**
      * Constructor for the Plugin class. Do not register routes here.
      * @param {Router} serverRouter - The express Router object passed from the server.
@@ -129,6 +131,7 @@ export abstract class Plugin<T> extends EventEmitter {
         }
     }
 
+    public restart = () => this.serverRouter.reloadPlugin(this.name);
 
     /**
      * Adds a configuration variable with its metadata.
@@ -153,10 +156,12 @@ export abstract class Plugin<T> extends EventEmitter {
      * Updates the value of a configuration variable after validating the new value.
      * @param {string} key - The key of the configuration variable.
      * @param {any} value - The new value of the configuration variable.
-     * @returns {boolean} True if the new value is valid, otherwise false.
+     * @returns {'plugin' | 'server' | undefined} True if the new value is valid, otherwise false.
      */
-    updateConfigVariable(key: string, value: any, save = true): true | void {
+    updateConfigVariable(key: string, value: any, save = true): 'plugin' | 'server' | undefined {
         const metadata = (this.configuration as ConfigArray)[key];
+
+        let rtn: 'plugin' | 'server' | undefined;
 
         try {
             if (Plugin.validateValue(metadata, value)) {
@@ -175,27 +180,48 @@ export abstract class Plugin<T> extends EventEmitter {
 
                     if (save) this.emit('configUpdated', key, value);
 
-                    if ((this.configuration as ConfigArray)[key].restart === 'plugin') {
-                        this.reload();
-                    }
-
-                    return true;
+                    rtn = (this.configuration as ConfigArray)[key].restart as 'plugin' | 'server';
                 }
             }
+
         } catch (e) {
             throw (e)
         }
+        return rtn;
     }
 
-    updateEntireConfig(newConfig: ConfigArray, save = true): void {
-        for (const key in (this.configuration as ConfigArray)) {
+    updateEntireConfig(newConfig: ConfigArray, save = true) {
+        let restart: 'plugin' | 'server' | undefined;
+        let pluginsToRestart: string[] = []
+
+        let keys = Object.keys(this.configuration as ConfigArray);
+
+        if (this.sort) {
+            keys = this.sort(keys)
+        }
+
+        keys.forEach((key) => {
             const curVariable = (this.configuration as ConfigArray)[key];
             const newVariable = newConfig[key];
 
             if (curVariable && newVariable && curVariable.value !== newVariable.value) {
-                this.updateConfigVariable(key, newVariable.value, save);
+                const rtn = this.updateConfigVariable(key, newVariable.value, save);
+
+                switch (rtn) {
+                    case 'plugin':
+                        pluginsToRestart.push(key)
+                        if (restart !== 'server') {
+                            restart = 'plugin'
+                        }
+                        break;
+                    case 'server':
+                        restart = 'server';
+                        break
+                }
             }
-        }
+        });
+
+        return restart;
     }
 
     /**
