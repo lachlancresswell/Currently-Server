@@ -224,10 +224,21 @@ input:focus+.slider {
     border-bottom: 2px grey solid
 }
 
+.gridNetwork input:disabled {
+    color: var(--text-colour)
+}
+
 .network-status {
     display: flex;
     justify-content: space-around;
     align-items: center;
     width: 65%;
     font-size: 1.5em;
+}
+
+.network-accept {
+    font-size: 0.65em;
+    background: grey;
+    border-radius: 0.5em;
+    width: 100%;
 }

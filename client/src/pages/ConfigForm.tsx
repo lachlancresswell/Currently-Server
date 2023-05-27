@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { ConfigArray } from '../../../Types';
 import '../Styles/Config.css';
 import { useNeighbourContext } from '../neighbourContext';
+import { useConfigDataContext } from '../configContext';
 import axios from 'axios';
 
 
@@ -36,9 +37,11 @@ export const saveConfig = async (pluginName: string, pluginConfig: ConfigArray) 
 
 export function useConfig<T extends ConfigArray>(pluginName: string) {
     const { selectedNeighbour } = useNeighbourContext();
+    const { configData } = useConfigDataContext();
     const [startPluginConfig, setStartPluginConfig] = useState<T>();
     const [pluginConfig, setPluginConfig] = useState<T>();
     const [refresh, setRefresh] = useState<boolean>(true);
+    const [name, setName] = useState<string | undefined>(selectedNeighbour?.name);
 
     /**
      * Fetches the plugin config from the database on mount.
@@ -59,6 +62,23 @@ export function useConfig<T extends ConfigArray>(pluginName: string) {
      * @returns void
      */
     const handleConfirm = async () => {
+
+        // TODO: Fix this
+        if ((JSON.stringify(newNeighbour) !== JSON.stringify(selectedNeighbour))) {
+            if (configData && configData.MDNSPlugin && configData.MDNSPlugin.config && name) {
+                const deviceName = {
+                    ...configData.MDNSPlugin.config.deviceName,
+                    ...{ value: name }
+                }
+                const config = {
+                    ...configData.MDNSPlugin.config,
+                    ...{ deviceName }
+                }
+                saveConfig('MDNSPlugin', config)
+                setRefresh(!refresh);
+            }
+        }
+
         if (pluginConfig) {
             saveConfig(pluginName, pluginConfig)
             setRefresh(!refresh);
@@ -76,9 +96,12 @@ export function useConfig<T extends ConfigArray>(pluginName: string) {
     function handleInputChange<T extends ConfigArray>(
         key: keyof T,
         value: T[keyof T]['value'],
-        save?: boolean
+        save?: boolean,
+        selectedNeighbour?: boolean
     ) {
-        if (pluginConfig) {
+        if (selectedNeighbour) {
+            setName(value as string);
+        } else if (pluginConfig) {
             // Convert the value to the correct type if necessary.
             if (pluginConfig[key as string].type === 'number' && typeof (value) !== 'number') {
                 value = parseInt(value as any);
@@ -104,9 +127,21 @@ export function useConfig<T extends ConfigArray>(pluginName: string) {
         }
     };
 
-    const modified = JSON.stringify(startPluginConfig) !== JSON.stringify(pluginConfig);
+    // TODO Fix this
+    if (name === undefined && selectedNeighbour?.name) {
+        setName(selectedNeighbour.name)
+    }
+
+    const newNeighbour = {
+        ...selectedNeighbour,
+        ...{ name }
+    };
+
+
+    const isModified = (JSON.stringify(startPluginConfig) !== JSON.stringify(pluginConfig))
+        || (JSON.stringify(newNeighbour) !== JSON.stringify(selectedNeighbour));
 
     return {
-        pluginConfig, selectedNeighbour, handleInputChange, handleConfirm, handleCancel
+        pluginConfig, selectedNeighbour: newNeighbour, handleInputChange, handleConfirm, handleCancel, isModified
     }
 }

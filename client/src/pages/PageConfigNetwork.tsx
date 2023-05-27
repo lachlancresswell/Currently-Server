@@ -8,7 +8,7 @@ import SettingsEthernetIcon from '@mui/icons-material/SettingsEthernet';
 import { useConfig } from './ConfigForm';
 
 export const NetworkSettings = () => {
-    const { pluginConfig, selectedNeighbour, handleInputChange } = useConfig<IPOptions>('IPPlugin');
+    const { pluginConfig, selectedNeighbour, handleInputChange, handleConfirm, isModified } = useConfig<IPOptions>('IPPlugin');
 
     const isChecked = pluginConfig?.dhcp.value;
 
@@ -21,7 +21,7 @@ export const NetworkSettings = () => {
                 <input
                     type='text'
                     value={selectedNeighbour?.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    onChange={(e) => handleInputChange('name', e.target.value, false, true)}
                 />
             </div>
             <div className={`span-one-network`}>
@@ -31,6 +31,7 @@ export const NetworkSettings = () => {
                 <input
                     type='text'
                     value={pluginConfig?.ipaddress.value}
+                    disabled={isChecked}
                     onChange={(e) => handleInputChange('ipaddress', e.target.value)}
                 />
             </div>
@@ -41,6 +42,7 @@ export const NetworkSettings = () => {
                 <input
                     type='text'
                     value={pluginConfig?.prefix.value}
+                    disabled={isChecked}
                     onChange={(e) => handleInputChange('prefix', e.target.value)}
                 />
             </div>
@@ -51,14 +53,15 @@ export const NetworkSettings = () => {
                 <input
                     type='text'
                     value={pluginConfig?.gateway.value}
+                    disabled={isChecked}
                     onChange={(e) => handleInputChange('gateway', e.target.value)}
                 />
             </div>
             <div className={`span-one-network`}>
                 DHCP
             </div>
-            <div className={`span-two-network`}>
-                <div className={`span-four-display displaySwitch`}>
+            <div className={`span-one-network`}>
+                <div className={`displaySwitch`}>
                     <label className="switch">
                         <input type="checkbox" checked={isChecked} onChange={(e) => handleInputChange('dhcp', e.target.checked)} />
                         <span className="slider round">
@@ -71,6 +74,11 @@ export const NetworkSettings = () => {
             <div className={`span-two-network network-status`}>
                 <SettingsEthernetIcon />
                 <ValueStatusSymbol status={pluginConfig?.ipaddress.value} />
+            </div>
+            <div className={`span-one-network`}>
+                <div className='network-accept' onClick={handleConfirm}>
+                    {isModified ? 'ACCEPT' : ''}
+                </div>
             </div>
         </div>
     )
