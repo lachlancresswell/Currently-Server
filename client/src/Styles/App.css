@@ -1,7 +1,7 @@
 :root {
-  --l1-color: rgba(238, 29, 37, 255);
-  --l2-color: white;
-  --l3-color: rgba(5, 82, 164, 255);
+  --l1-color: #ee1d25;
+  --l2-color: #ffffff;
+  --l3-color: #0552a4;
   --pf-color: rgba(126, 63, 152, 255);
   --kva-color: rgba(255, 221, 24, 255);
   --hz-color: rgba(241, 101, 35, 255);
@@ -39,27 +39,27 @@
 }
 
 [data-locale='au'] {
-  --l1-color: rgba(238, 29, 37, 255);
-  --l2-color: white;
-  --l3-color: rgba(5, 82, 164, 255);
+  --l1-color: #ee1d25;
+  --l2-color: #ffffff;
+  --l3-color: #0552a4;
 }
 
 [data-locale='eu'] {
-  --l1-color: brown;
-  --l2-color: black;
-  --l3-color: grey;
+  --l1-color: #a52a2a;
+  --l2-color: #000000;
+  --l3-color: #808080;
 }
 
 [data-locale='us'] {
-  --l1-color: black;
-  --l2-color: rgba(238, 29, 37, 255);
-  --l3-color: rgba(5, 82, 164, 255);
+  --l1-color: #000000;
+  --l2-color: #ee1d25;
+  --l3-color: #0552a4;
 }
 
 [data-locale='ca'] {
-  --l1-color: rgba(238, 29, 37, 255);
-  --l2-color: black;
-  --l3-color: rgba(5, 82, 164, 255);
+  --l1-color: #ee1d25;
+  --l2-color: #000000;
+  --l3-color: #0552a4;
 }
 
 @font-face {

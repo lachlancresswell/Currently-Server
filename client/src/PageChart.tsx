@@ -5,6 +5,8 @@ import { ApexOptions } from "apexcharts";
 import { org, token } from './neighbourDataContext';
 import TuneIcon from '@mui/icons-material/Tune';
 import './Styles/PageChart.css'
+import { useConfigDataContext } from './configContext';
+import { usePhaseColors } from './Locale';
 
 export interface RowRtn {
     _field: string,
@@ -32,6 +34,9 @@ const MyComponent: React.FC<Props> = () => {
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [data, setData] = useState<Phase[]>([]);
     const [options, setOptions] = useState<ApexOptions>({})
+    const { configData } = useConfigDataContext();
+
+    const { l1Color, l2Color, l3Color } = usePhaseColors(); //{ l1Color: '#ff0000', l2Color: '#00ff00', l3Color: '#00f0ff' }
 
     const url = window.location.protocol + '//' + window.location.host + '/influx'
     useEffect(() => {
@@ -97,7 +102,7 @@ const MyComponent: React.FC<Props> = () => {
                 }, noData: {
                     text: 'Loading...'
                 },
-                colors: ['#FF0000', '#FFFFFF', '#0000FF'],
+                colors: [l1Color, l1Color, l2Color, l2Color, l3Color, l3Color],
                 fill: {
                 },
                 legend: {
@@ -192,43 +197,41 @@ const MyComponent: React.FC<Props> = () => {
 
     return (
         <>
-            {isLoading ? <div>Loading...</div>
-                :
-                <>
-                    <div style={{ height: "80%", width: "100%" }}>
-                        <ReactApexChart type="line" options={options} series={configData(data)} height={"100%"} />
+            :
+            <>
+                <div style={{ height: "80%", width: "100%" }}>
+                    <ReactApexChart type="line" options={options} series={configureData(data)} height={"100%"} />
+                </div>
+                <div className={`chart-buttons`}>
+                    <div className='chart-button'>
+                        +
                     </div>
-                    <div className={`chart-buttons`}>
-                        <div className='chart-button'>
-                            +
-                        </div>
-                        <div className={`chart-button l1 ${legendView[1 - 1].voltage ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(1, "Voltage")}>
-                            V
-                        </div >
-                        <div className={`chart-button l1 ${legendView[1 - 1].current ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(1, "Current")}>
-                            A
-                        </div>
-                        <div className={`chart-button l2 ${legendView[2 - 1].voltage ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(2, "Voltage")}>
-                            V
-                        </div>
-                        <div className={`chart-button l2 ${legendView[2 - 1].current ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(2, "Current")}>
-                            A
-                        </div>
-                        <div className={`chart-button l3 ${legendView[3 - 1].voltage ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(3, "Voltage")}>
-                            V
-                        </div>
-                        <div className={`chart-button l3 ${legendView[3 - 1].current ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(3, "Current")}>
-                            A
-                        </div>
-                        <div className='chart-button'>
-                            -
-                        </div>
-                        <div className='chart-button'>
-                            <TuneIcon />
-                        </div>
+                    <div className={`chart-button l1 ${legendView[1 - 1].voltage ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(1, "Voltage")}>
+                        V
+                    </div >
+                    <div className={`chart-button l1 ${legendView[1 - 1].current ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(1, "Current")}>
+                        A
                     </div>
-                </>
-            }
+                    <div className={`chart-button l2 ${legendView[2 - 1].voltage ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(2, "Voltage")}>
+                        V
+                    </div>
+                    <div className={`chart-button l2 ${legendView[2 - 1].current ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(2, "Current")}>
+                        A
+                    </div>
+                    <div className={`chart-button l3 ${legendView[3 - 1].voltage ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(3, "Voltage")}>
+                        V
+                    </div>
+                    <div className={`chart-button l3 ${legendView[3 - 1].current ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(3, "Current")}>
+                        A
+                    </div>
+                    <div className='chart-button'>
+                        -
+                    </div>
+                    <div className='chart-button'>
+                        <TuneIcon />
+                    </div>
+                </div>
+            </>
         </>
     );
 };
@@ -236,36 +239,48 @@ const MyComponent: React.FC<Props> = () => {
 export default MyComponent;
 
 
-const configData = (data: Phase[] | undefined | null) => {
+const configureData = (data: Phase[] | undefined | null) => {
+    if (!data || !data.length) {
+        data = [{
+            voltage: [{}],
+            amperage: [{}]
+        }, {
+            voltage: [{}],
+            amperage: [{}]
+        }, {
+            voltage: [{}],
+            amperage: [{}]
+        }] as any
+    }
     return [
         {
             name: "L1 Voltage",
-            data: data ? data[0].voltage : [],
+            data: data![0].voltage,
             type: 'line',
         },
         {
             name: "L1 Current",
-            data: data ? data[0].amperage : [],
+            data: data![0].amperage,
             type: 'line',
         },
         {
             name: "L2 Voltage",
-            data: data ? data[1].voltage : [],
+            data: data![1].voltage,
             type: 'line',
         },
         {
             name: "L2 Current",
-            data: data ? data[1].amperage : [],
+            data: data![1].amperage,
             type: 'line',
         },
         {
             name: "L3 Voltage",
-            data: data ? data[2].voltage : [],
+            data: data![2].voltage,
             type: 'line',
         },
         {
             name: "L3 Current",
-            data: data ? data[2].amperage : [],
+            data: data![2].amperage,
             type: 'line',
         },
     ]
