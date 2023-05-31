@@ -1,0 +1,218 @@
+.gridTimezone {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: repeat(6, 1fr);
+    justify-items: center;
+    align-items: center;
+    height: 80%;
+    /* gap: 10px; */
+    font-size: 8vh;
+
+    color: white;
+    font-style: italic;
+}
+
+.span-ten-timezone {
+    grid-column: span 10;
+}
+
+.span-nine-timezone {
+    grid-column: span 9;
+}
+
+.span-eight-timezone {
+    grid-column: span 8;
+}
+
+.span-seven-timezone {
+    grid-column: span 7;
+}
+
+.span-six-timezone {
+    grid-column: span 6;
+}
+
+.span-six-timezone {
+    grid-column: span 6;
+}
+
+.span-five-timezone {
+    grid-column: span 5;
+}
+
+.span-four-timezone {
+    grid-column: span 4;
+}
+
+.span-three-timezone {
+    grid-column: span 3;
+}
+
+.span-two-timezone {
+    grid-column: span 2;
+}
+
+.span-one-timezone {
+    grid-column: span 1;
+}
+
+.displaySlider {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding-left: 1em;
+}
+
+.displaySwitch {
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+
+.valueTimezone {
+    display: inline-block;
+    /* width: 2.6em; */
+    text-align: right;
+    font-weight: bold;
+}
+
+.valueTimezoneAmperage {
+    display: inline-block;
+    /* width: 1.3em; */
+    text-align: right;
+    font-weight: bold;
+}
+
+.unitTimezone {
+    display: inline-block;
+    text-transform: uppercase;
+    font-size: 0.5em;
+    font-weight: bold;
+}
+
+.gridTimezone svg {
+    padding-top: 0.1em;
+    font-size: 1.3em;
+}
+
+/* TEXT INPUT */
+.gridTimezone select {
+    background-color: #00000000;
+    text-decoration: none;
+    width: 90%;
+    color: white;
+    border: none;
+    font-size: 1em;
+    border-bottom: 2px grey solid
+}
+
+.Timezone-status {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 65%;
+    font-size: 1.5em;
+}
+
+.timezone-traffic-lights {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+
+    width: 100%;
+}
+
+.timezone-traffic-lights-l1-au,
+.timezone-traffic-lights-l2-au,
+.timezone-traffic-lights-l3-au,
+.timezone-traffic-lights-l1-eu,
+.timezone-traffic-lights-l2-eu,
+.timezone-traffic-lights-l3-eu,
+.timezone-traffic-lights-l1-us,
+.timezone-traffic-lights-l2-us,
+.timezone-traffic-lights-l3-us,
+.timezone-traffic-lights-l1-ca,
+.timezone-traffic-lights-l2-ca,
+.timezone-traffic-lights-l3-ca {
+    background-color: grey;
+    width: 1em;
+    height: 1em;
+    margin: 0.1em
+}
+
+.timezone-traffic-lights-l1-au,
+.timezone-traffic-lights-l2-us,
+.timezone-traffic-lights-l1-ca {
+    background-color: red;
+}
+
+.timezone-traffic-lights-l2-au {
+    background-color: white;
+}
+
+.timezone-traffic-lights-l3-au,
+.timezone-traffic-lights-l3-us,
+.timezone-traffic-lights-l3-ca {
+    background-color: blue;
+}
+
+.timezone-traffic-lights-l1-eu {
+    background-color: brown;
+}
+
+.timezone-traffic-lights-l2-eu,
+.timezone-traffic-lights-l1-us,
+.timezone-traffic-lights-l2-ca {
+    background-color: black;
+    border: 0.05em white solid;
+    width: 0.9em;
+    height: 0.9em;
+}
+
+.timezone-reset-button {
+    border-radius: 1em;
+    background-color: var(--text-colour);
+    color: black;
+    width: 4em;
+    text-align: center;
+}
+
+.timezone-settings-name {
+    text-align: left;
+    width: 100%;
+    padding-left: 0.4em;
+}
+
+.timezone-width-100 {
+    width: 100%
+}
+
+.timezone-height-100 {
+    height: 100%
+}
+
+.timezone-title {
+    text-align: left;
+    width: 80%;
+}
+
+.timezone-value {
+    text-align: left;
+    width: 100%;
+}
+
+.timezone-selected {
+    color: white;
+}
+
+.timezone-not-selected {
+    color: var(--text-colour);
+}
+
+.timezone-accept {
+    font-size: 0.65em;
+    background: grey;
+    border-radius: 0.5em;
+    width: 100%;
+}

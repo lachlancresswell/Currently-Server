@@ -1,0 +1,331 @@
+.gridVersions {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    justify-items: center;
+    align-items: center;
+    height: 80%;
+    /* gap: 10px; */
+    font-size: 10vh;
+
+    color: white;
+    font-style: italic;
+}
+
+.span-ten-versions {
+    grid-column: span 10;
+}
+
+.span-eight-versions {
+    grid-column: span 8;
+}
+
+.span-seven-versions {
+    grid-column: span 7;
+}
+
+.span-six-versions {
+    grid-column: span 6;
+}
+
+.span-six-versions {
+    grid-column: span 5;
+}
+
+.span-five-versions {
+    grid-column: span 5;
+}
+
+.span-four-versions {
+    grid-column: span 4;
+}
+
+.span-three-versions {
+    grid-column: span 3;
+}
+
+.span-two-versions {
+    grid-column: span 2;
+}
+
+.span-one-versions {
+    grid-column: span 1;
+}
+
+.displaySlider {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding-left: 1em;
+}
+
+.displaySwitch {
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+
+.valueVersions {
+    display: inline-block;
+    /* width: 2.6em; */
+    text-align: right;
+    font-weight: bold;
+}
+
+.valueVersionsAmperage {
+    display: inline-block;
+    /* width: 1.3em; */
+    text-align: right;
+    font-weight: bold;
+}
+
+.unitVersions {
+    display: inline-block;
+    text-transform: uppercase;
+    font-size: 0.5em;
+    font-weight: bold;
+}
+
+.gridVersions svg {
+    padding-top: 0.1em;
+    font-size: 1.3em;
+}
+
+/* SLIDER */
+/* The switch - the box around the slider */
+.gridVersions .switch {
+    position: relative;
+    display: inline-block;
+    width: 3em;
+    height: 1.5em;
+}
+
+/* Hide default HTML checkbox */
+.gridVersions .switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* The slider */
+.gridVersions .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    -webkit-transition: .4s;
+    transition: .4s;
+
+    background-color: rgba(0, 0, 0, 0);
+    border: 0.2em var(--text-colour) solid;
+    color: var(--text-colour);
+}
+
+.gridVersions .slider:before {
+    position: absolute;
+    content: "";
+    height: 1em;
+    width: 1em;
+    left: 0.07em;
+    bottom: 0.07em;
+    background-color: var(--text-colour);
+    -webkit-transition: .4s;
+    transition: .4s;
+}
+
+.gridVersions input:checked+.slider {
+    background-color: rgba(0, 0, 0, 0);
+    border: 0.2em var(--text-colour) solid;
+    color: var(--text-colour);
+}
+
+input:focus+.slider {
+    box-shadow: 0 0 1px #2196F3;
+}
+
+.gridVersions input:checked+.slider:before {
+    -webkit-transform: translateX(1.5em);
+    -ms-transform: translateX(1.5em);
+    transform: translateX(1.5em);
+    background-color: white;
+}
+
+/* Rounded sliders */
+.gridVersions .slider.round {
+    border-radius: 1em;
+}
+
+.gridVersions .slider.round:before {
+    border-radius: 50%;
+}
+
+.gridVersions .switch-on {
+    display: none;
+}
+
+.gridVersions .switch-on,
+.switch-off {
+    position: absolute;
+    top: 50%;
+
+    font-size: 0.7em;
+    color: var(--text-colour);
+    font-style: italic;
+}
+
+.gridVersions .switch-on {
+    left: 50%;
+    transform: translate(-110%, -50%);
+}
+
+.gridVersions .switch-off {
+    left: 45%;
+    transform: translate(0%, -50%);
+}
+
+.gridVersions input:checked+.slider .switch-on {
+    display: block;
+}
+
+.gridVersions input:checked+.slider .switch-off {
+    display: none;
+}
+
+/* RANGE SLIDER */
+.gridVersions input[type="range"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    height: 3vh;
+    background-color: var(--text-colour);
+    border-radius: 3vh;
+    border: none;
+    outline: none;
+}
+
+.gridVersions input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 6vh;
+    height: 6vh;
+    background-color: black;
+    border: var(--text-colour) 1vh solid;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.gridVersions .range-slider {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* TEXT INPUT */
+.gridVersions input {
+    background-color: #00000000;
+    text-decoration: none;
+    width: 100%;
+    color: white;
+    border: none;
+    font-size: 1em;
+    border-bottom: 2px grey solid
+}
+
+.Versions-status {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 65%;
+    font-size: 1.5em;
+}
+
+.versions-traffic-lights {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+
+    width: 100%;
+}
+
+.versions-traffic-lights-l1-au,
+.versions-traffic-lights-l2-au,
+.versions-traffic-lights-l3-au,
+.versions-traffic-lights-l1-eu,
+.versions-traffic-lights-l2-eu,
+.versions-traffic-lights-l3-eu,
+.versions-traffic-lights-l1-us,
+.versions-traffic-lights-l2-us,
+.versions-traffic-lights-l3-us,
+.versions-traffic-lights-l1-ca,
+.versions-traffic-lights-l2-ca,
+.versions-traffic-lights-l3-ca {
+    background-color: grey;
+    width: 1em;
+    height: 1em;
+    margin: 0.1em
+}
+
+.versions-traffic-lights-l1-au,
+.versions-traffic-lights-l2-us,
+.versions-traffic-lights-l1-ca {
+    background-color: red;
+}
+
+.versions-traffic-lights-l2-au {
+    background-color: white;
+}
+
+.versions-traffic-lights-l3-au,
+.versions-traffic-lights-l3-us,
+.versions-traffic-lights-l3-ca {
+    background-color: blue;
+}
+
+.versions-traffic-lights-l1-eu {
+    background-color: brown;
+}
+
+.versions-traffic-lights-l2-eu,
+.versions-traffic-lights-l1-us,
+.versions-traffic-lights-l2-ca {
+    background-color: black;
+    border: 0.05em white solid;
+    width: 0.9em;
+    height: 0.9em;
+}
+
+.versions-reset-button {
+    border-radius: 1em;
+    background-color: var(--text-colour);
+    color: black;
+    width: 4em;
+    text-align: center;
+}
+
+.versions-settings-name {
+    text-align: left;
+    width: 100%;
+    padding-left: 0.4em;
+}
+
+.versions-width-100 {
+    width: 100%
+}
+
+.versions-height-100 {
+    height: 100%
+}
+
+.versions-title {
+    text-align: right;
+    width: 80%;
+}
+
+.versions-value {
+    text-align: left;
+    width: 100%;
+}

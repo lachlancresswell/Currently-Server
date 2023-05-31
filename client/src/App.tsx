@@ -26,9 +26,10 @@ import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import PageChart from './PageChart';
 import { PageDisplay } from './PageDisplay';
-import useLocalStorage from 'use-local-storage';
 import { WarningSettings } from './pages/PageConfigWarnings';
 import { LocaleSettings } from './pages/PageConfigLocale';
+import { VersionSettings } from './pages/PageConfigVersions';
+import { TimezoneSettings } from './pages/PageConfigTimezone';
 import { useTheme } from './hooks';
 
 
@@ -140,6 +141,12 @@ const router = createBrowserRouter([{
   }, {
     path: "/options/locale",
     element: <LocaleSettings />
+  }, {
+    path: "/options/versions",
+    element: <VersionSettings />
+  }, {
+    path: "/options/timezone",
+    element: <TimezoneSettings />
   }, {
     path: "/options/:pluginName",
     element: <></>
