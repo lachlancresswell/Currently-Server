@@ -69,7 +69,8 @@
         "priority": 1,
         "display": true,
         "readableName": "IP Address",
-        "type": "ipaddress"
+        "type": "ipaddress",
+        "restart": "plugin"
       },
       "gateway": {
         "priority": 1,
