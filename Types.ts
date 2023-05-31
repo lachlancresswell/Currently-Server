@@ -110,6 +110,22 @@ export interface LocaleOptions extends ConfigArray {
     locale: ConfigVariableMetadata<'au' | 'eu' | 'us' | 'ca'>;
 }
 
+export type DateType = 'dmy' | 'mdy'
+export type TimeType = '24h' | '12h'
+
+/**
+ * Options interface for the Timezone plugin.
+ */
+export interface TZOptions extends ConfigArray {
+    date: EphemeralVariableMetaData<string>;
+    time: EphemeralVariableMetaData<string>;
+    timezoneCountry: EphemeralVariableMetaData<timezone>;
+    timezone: EphemeralVariableMetaData<timezone>;
+    ntpServers: EphemeralVariableMetaData<string[]>;
+    dateFormat: ConfigVariableMetadata<DateType>;
+    timeFormat: ConfigVariableMetadata<TimeType>;
+}
+
 
 export const LOCALE_AU = {
     l1: 'red',
