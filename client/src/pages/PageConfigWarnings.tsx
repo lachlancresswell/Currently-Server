@@ -31,49 +31,29 @@ export const WarningSettings = () => {
                     RESET
                 </div>
             </div>
-            <div className={`span-four-warnings warnings-width-100`}>
-                <SetMax str1='V' str2='SET' />
-            </div>
-            <div className={`span-four-warnings warnings-width-100`}>
-                <Value value={pluginConfig?.vSet.value} modifierValues={[5, -10]} />
-            </div>
-            <div className={`span-four-warnings warnings-width-100`}>
-                <SetMax str1='A' str2='MAX' />
-            </div>
-            <div className={`span-four-warnings warnings-width-100`}>
-                <Value value={pluginConfig?.amax.value} />
-            </div>
-            <div className={`span-four-warnings warnings-width-100`}>
-                <SetMax str1='HZ' str2='SET' />
-            </div>
-            <div className={`span-four-warnings warnings-width-100`}>
-                <Value value={pluginConfig?.HZset.value} modifierValues={[1, -1]} />
-            </div>
+            <SetMax str1='V' str2='SET' />
+            <Value value={pluginConfig?.vSet.value} modifierValues={[5, -10]} />
+            <SetMax str1='A' str2='MAX' />
+            <Value value={pluginConfig?.amax.value} />
+            <SetMax str1='HZ' str2='SET' />
+            <Value value={pluginConfig?.HZset.value} modifierValues={[1, -1]} />
         </div>
     )
 }
 
-const ValueStatusSymbol = ({ status }: { status: any }) => {
-    return <>{
-        status ? (
-            <span className='statusIcon' style={{ color: 'green' }}>✓</span>
-        ) : (
-            <span className='statusIcon' style={{ color: 'red' }}>X</span>
-        )
-    }</>
-}
-
 const SetMax = ({ str1, str2 }: { str1: string, str2: string }) => {
     return (
-        <div className={`warnings-settings-name`}>
-            <span className='warnings-v-a-hz'>{str1}</span>
-            <span className='warnings-set-max'>{str2}</span>
+        <div className={`span-four-warnings warnings-width-100`}>
+            <div className={`warnings-settings-name`}>
+                <span className='warnings-v-a-hz'>{str1}</span>
+                <span className='warnings-set-max'>{str2}</span>
+            </div>
         </div>);
 }
 
 const Value = ({ value, modifierValues }: { value?: number | string, modifierValues?: number[] }) => {
     return (
-        <>
+        <div className={`span-four-warnings warnings-width-100`}>
             <div className='warnings-value'>
                 {value}
             </div>
@@ -82,6 +62,6 @@ const Value = ({ value, modifierValues }: { value?: number | string, modifierVal
                     {mod >= 0 ? '+' + mod : mod}
                 </div>)
             })}
-        </>
+        </div>
     )
 }
