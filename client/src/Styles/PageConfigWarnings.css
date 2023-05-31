@@ -112,8 +112,8 @@
     left: 0;
     right: 0;
     bottom: 0;
-    -webkit-transition: .4s;
-    transition: .4s;
+    -webkit-transition: 0.1s;
+    transition: 0.1s;
 
     background-color: rgba(0, 0, 0, 0);
     border: 0.2em var(--text-colour) solid;
@@ -128,8 +128,8 @@
     left: 0.07em;
     bottom: 0.07em;
     background-color: var(--text-colour);
-    -webkit-transition: .4s;
-    transition: .4s;
+    -webkit-transition: 0.1s;
+    transition: 0.1s;
 }
 
 .gridWarnings input:checked+.slider {
