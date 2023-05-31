@@ -141,6 +141,35 @@
         "type": "string",
         "display": true
       },
+      "time": {
+        "priority": 0,
+        "readableName": "Time",
+        "type": "string",
+        "display": true
+      },
+      "timezoneCountry": {
+        "priority": 0,
+        "readableName": "TimezoneCountry",
+        "type": "string-options",
+        "display": true,
+        "options": [
+          "Africa",
+          "America",
+          "Antarctica",
+          "Arctic",
+          "Asia",
+          "Atlantic",
+          "Australia",
+          "Brazil",
+          "Canada",
+          "Chile",
+          "Europe",
+          "Indian",
+          "Mexico",
+          "Pacific",
+          "US"
+        ]
+      },
       "timezone": {
         "priority": 0,
         "readableName": "Timezone",
@@ -232,12 +261,10 @@
           "America/Boa_Vista",
           "America/Bogota",
           "America/Boise",
-          "America/Buenos_Aires",
           "America/Cambridge_Bay",
           "America/Campo_Grande",
           "America/Cancun",
           "America/Caracas",
-          "America/Catamarca",
           "America/Cayenne",
           "America/Cayman",
           "America/Chicago",
@@ -303,7 +330,6 @@
           "America/Martinique",
           "America/Matamoros",
           "America/Mazatlan",
-          "America/Mendoza",
           "America/Menominee",
           "America/Merida",
           "America/Metlakatla",
@@ -752,10 +778,10 @@
         "readableName": "Date Format",
         "type": "string-options",
         "display": true,
-        "value": "d/m/y",
+        "value": "mdy",
         "options": [
-          "d/m/y",
-          "m/d/y"
+          "dmy",
+          "mdy"
         ]
       },
       "timeFormat": {
