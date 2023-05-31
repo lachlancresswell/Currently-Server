@@ -1,34 +1,19 @@
 import { useNeighbourContext } from './neighbourContext';
-import { useNeighbourDataContext } from './neighbourDataContext';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import './Styles/PageDisplay.css'
 import { ChangeEvent, useState } from 'react';
-import useLocalStorage from 'use-local-storage';
+import { useTheme } from './hooks';
 
-interface PageDisplayProps {
-}
-
-export const PageDisplay = ({ }: PageDisplayProps) => {
-    const { selectedNeighbour } = useNeighbourContext();
-    const { neighbourData } = useNeighbourDataContext();
+export const PageDisplay = ({ }: {}) => {
     const [sliderValue, setSliderValue] = useState(50);
-    const defaultDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const [theme, setTheme] = useLocalStorage('theme', defaultDark ? 'dark' : 'light');
+    const { theme, switchTheme } = useTheme();
     const isChecked = theme === 'light';
 
-    if (!selectedNeighbour) {
-        return null;
-    }
+    const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => switchTheme()
 
-    const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>) => {
-        setTheme(theme === 'light' ? 'dark' : 'light')
-    };
-
-    const handleSliderChange = (event: ChangeEvent<HTMLInputElement>) => {
-        setSliderValue(parseInt(event.target.value));
-    };
+    const handleSliderChange = (event: ChangeEvent<HTMLInputElement>) => setSliderValue(parseInt(event.target.value));
 
     return (
         <div className="gridDisplay">
@@ -54,25 +39,24 @@ export const PageDisplay = ({ }: PageDisplayProps) => {
                 <AccessTimeIcon />
             </div>
             <div className={`span-four-display period-buttons`}>
-                <div className='period-button'>
-                    5s
-                </div>
-                <div className='period-button'>
-                    15s
-                </div >
-                <div className='period-button'>
-                    30s
-                </div>
-                <div className='period-button'>
-                    1m
-                </div>
-                <div className='period-button'>
-                    5m
-                </div>
-                <div className='period-button'>
-                    X
-                </div>
+                <PeriodButton text={'5s'} />
+                <PeriodButton text={'15s'} />
+                <PeriodButton text={'30s'} />
+                <PeriodButton text={'1m'} />
+                <PeriodButton text={'5m'} />
+                <PeriodButton text={'X'} />
             </div>
         </div>
     );
 };
+
+/**
+ * Buttons to control the screen-on period
+ */
+const PeriodButton = ({ text }: { text: string }) => {
+    return (
+        <div className='period-button'>
+            {text}
+        </div>
+    )
+}

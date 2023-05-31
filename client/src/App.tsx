@@ -29,6 +29,7 @@ import { PageDisplay } from './PageDisplay';
 import useLocalStorage from 'use-local-storage';
 import { WarningSettings } from './pages/PageConfigWarnings';
 import { LocaleSettings } from './pages/PageConfigLocale';
+import { useTheme } from './hooks';
 
 
 const NeighbourSelector = () => {
@@ -165,10 +166,7 @@ const AppWrapper = () => {
 };
 
 const App = () => {
-
-  const defaultDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const [theme, setTheme] = useLocalStorage('theme', defaultDark ? 'dark' : 'light');
-  document.body.dataset.theme = theme;
+  useTheme()
 
   return (
     <NeighbourProvider>
