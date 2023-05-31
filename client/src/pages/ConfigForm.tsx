@@ -89,9 +89,7 @@ export function useConfig<T extends ConfigArray>(pluginName: string) {
      * Resets the plugin config to the initial state.
      * @returns void
      */
-    const handleCancel = async () => {
-        setPluginConfig(startPluginConfig);
-    }
+    const handleCancel = async () => setPluginConfig(startPluginConfig);
 
     function handleInputChange<T extends ConfigArray>(
         key: keyof T,
@@ -123,6 +121,7 @@ export function useConfig<T extends ConfigArray>(pluginName: string) {
             // Save the config to the database immediately if save is true.
             if (save) {
                 saveConfig(pluginName, { ...newConfig } as ConfigArray)
+                setRefresh(!refresh);
             }
         }
     };
@@ -138,8 +137,37 @@ export function useConfig<T extends ConfigArray>(pluginName: string) {
     };
 
 
-    const isModified = (JSON.stringify(startPluginConfig) !== JSON.stringify(pluginConfig))
-        || (JSON.stringify(newNeighbour) !== JSON.stringify(selectedNeighbour));
+    /**
+     * Checks if the plugin config has been modified.
+     * @param keys Optional array of keys to watch.
+     * @returns boolean
+     */
+    const isModified = (keys?: string[]) => {
+        let filteredStartPluginConfig = startPluginConfig;
+        let filteredPluginConfig = pluginConfig;
+
+        if (keys && startPluginConfig && pluginConfig) {
+            filteredStartPluginConfig = Object.keys(startPluginConfig)
+                .filter((key) => keys.includes(key))
+                .reduce((obj: any, key) => {
+                    obj[key] = startPluginConfig[key];
+                    return obj;
+                }, {});
+
+            filteredPluginConfig = Object.keys(pluginConfig)
+                .filter((key) => keys.includes(key))
+                .reduce((obj: any, key) => {
+                    obj[key] = pluginConfig[key];
+                    return obj;
+                }, {});
+        }
+
+        return (
+            JSON.stringify(filteredStartPluginConfig) !== JSON.stringify(filteredPluginConfig) ||
+            JSON.stringify(newNeighbour) !== JSON.stringify(selectedNeighbour)
+        );
+    };
+
 
     return {
         pluginConfig, selectedNeighbour: newNeighbour, handleInputChange, handleConfirm, handleCancel, isModified
