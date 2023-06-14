@@ -1,0 +1,334 @@
+.gridModal {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    justify-items: center;
+    align-items: center;
+    height: 85%;
+    /* gap: 10px; */
+    font-size: 8vh;
+
+    color: white;
+    font-style: italic;
+}
+
+.gridModal-flex {
+    display: flex;
+    flex-direction: column;
+    height: 85%;
+    justify-content: space-evenly;
+    font-size: 8vh;
+
+    color: white;
+    font-style: italic;
+}
+
+.span-ten-modal {
+    grid-column: span 10;
+}
+
+.span-nine-modal {
+    grid-column: span 9;
+}
+
+.span-eight-modal {
+    grid-column: span 8;
+}
+
+.span-seven-modal {
+    grid-column: span 7;
+}
+
+.span-six-modal {
+    grid-column: span 6;
+}
+
+.span-six-modal {
+    grid-column: span 6;
+}
+
+.span-five-modal {
+    grid-column: span 5;
+}
+
+.span-four-modal {
+    grid-column: span 4;
+}
+
+.span-three-modal {
+    grid-column: span 3;
+}
+
+.span-two-modal {
+    grid-column: span 2;
+}
+
+.span-one-modal {
+    grid-column: span 1;
+}
+
+.displaySlider {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding-left: 1em;
+}
+
+.displaySwitch {
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+
+.valueModal {
+    display: inline-block;
+    /* width: 2.6em; */
+    text-align: right;
+    font-weight: bold;
+}
+
+.valueModalAmperage {
+    display: inline-block;
+    /* width: 1.3em; */
+    text-align: right;
+    font-weight: bold;
+}
+
+.unitModal {
+    display: inline-block;
+    text-transform: uppercase;
+    font-size: 0.5em;
+    font-weight: bold;
+}
+
+.gridModal svg {
+    padding-top: 0.1em;
+    font-size: 1.3em;
+}
+
+/* TEXT INPUT */
+.gridModal select {
+    background-color: #00000000;
+    text-decoration: none;
+    width: 90%;
+    color: white;
+    border: none;
+    font-size: 1em;
+    border-bottom: 2px grey solid
+}
+
+.Modal-status {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 65%;
+    font-size: 1.5em;
+}
+
+.modal-traffic-lights {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+
+    width: 100%;
+}
+
+.modal-traffic-lights-l1-au,
+.modal-traffic-lights-l2-au,
+.modal-traffic-lights-l3-au,
+.modal-traffic-lights-l1-eu,
+.modal-traffic-lights-l2-eu,
+.modal-traffic-lights-l3-eu,
+.modal-traffic-lights-l1-us,
+.modal-traffic-lights-l2-us,
+.modal-traffic-lights-l3-us,
+.modal-traffic-lights-l1-ca,
+.modal-traffic-lights-l2-ca,
+.modal-traffic-lights-l3-ca {
+    background-color: grey;
+    width: 1em;
+    height: 1em;
+    margin: 0.1em
+}
+
+.modal-traffic-lights-l1-au,
+.modal-traffic-lights-l2-us,
+.modal-traffic-lights-l1-ca {
+    background-color: red;
+}
+
+.modal-traffic-lights-l2-au {
+    background-color: white;
+}
+
+.modal-traffic-lights-l3-au,
+.modal-traffic-lights-l3-us,
+.modal-traffic-lights-l3-ca {
+    background-color: blue;
+}
+
+.modal-traffic-lights-l1-eu {
+    background-color: brown;
+}
+
+.modal-traffic-lights-l2-eu,
+.modal-traffic-lights-l1-us,
+.modal-traffic-lights-l2-ca {
+    background-color: black;
+    border: 0.05em white solid;
+    width: 0.9em;
+    height: 0.9em;
+}
+
+.modal-reset-button {
+    border-radius: 1em;
+    background-color: var(--text-colour);
+    color: black;
+    width: 4em;
+    text-align: center;
+}
+
+.modal-settings-name {
+    text-align: left;
+    width: 100%;
+    padding-left: 0.4em;
+}
+
+.modal-width-100 {
+    width: 100%
+}
+
+.modal-height-100 {
+    height: 100%
+}
+
+.modal-title {
+    text-align: left;
+    width: 80%;
+}
+
+.modal-value {
+    text-align: left;
+    width: 100%;
+}
+
+.modal-selected {
+    color: white;
+}
+
+.modal-not-selected {
+    color: var(--text-colour);
+}
+
+.modal-accept {
+    font-size: 0.65em;
+    background: grey;
+    border-radius: 0.5em;
+    width: 100%;
+}
+
+.modal-input {
+    width: 100%;
+
+    background-color: rgba(0, 0, 0, 0);
+    font-size: 1em;
+    border: none;
+    text-align: center;
+    text-decoration: none;
+
+    color: inherit
+}
+
+.modal-button-arrow {
+    width: 100%;
+    height: 100%;
+
+    background-color: rgba(0, 0, 0, 0);
+    font-size: 1.5em;
+
+    color: inherit;
+    border: none;
+}
+
+.modal-button-method {
+    width: 100%;
+    height: 100%;
+
+    background-color: rgba(0, 0, 0, 0);
+    font-size: 1.5em;
+    border: none;
+
+    color: inherit;
+}
+
+.modal-flex-1 {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+
+    flex-grow: 1;
+    flex-basis: 0;
+}
+
+.modal-button-arrow-flex {
+    width: 50%;
+    height: 2em;
+
+    background-color: rgba(0, 0, 0, 0);
+    font-size: 1.5em;
+
+    border: none;
+
+    color: inherit;
+}
+
+/* Who knows why? */
+.modal-button-method-flex svg {
+    font-size: 1.2em;
+    margin-top: 0.2em;
+}
+
+.modal-button-method-flex {
+    width: 3em;
+    height: 2em;
+
+    background-color: rgba(0, 0, 0, 0);
+    font-size: 1.5em !important;
+    border: none;
+
+    color: inherit;
+}
+
+.modal-input-flex {
+    width: 100%;
+    height: 100%;
+
+    background-color: rgba(0, 0, 0, 0);
+    font-size: 3em;
+    border: none;
+    text-align: center;
+    text-decoration: none;
+}
+
+.input-modified {
+    color: green;
+    font-weight: bold;
+}
+
+.input-modified-reset {
+    color: orange;
+    font-weight: bold;
+}
+
+.input-modified:disabled {
+    color: grey
+}
+
+.input-modified-reset:disabled {
+    color: grey
+}
+
+.modal-button-x {
+    color: red;
+}

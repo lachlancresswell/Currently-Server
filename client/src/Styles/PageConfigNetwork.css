@@ -4,7 +4,7 @@
     grid-template-rows: repeat(5, 1fr);
     justify-items: center;
     align-items: center;
-    height: 80%;
+    height: 85%;
     /* gap: 10px; */
     font-size: 8vh;
 
@@ -28,8 +28,15 @@
     width: 90%;
 }
 
+.network-center {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+}
+
 .span-three-network {
-    grid-column: span 6;
+    grid-column: span 3;
     padding-right: 0.3em;
 }
 
@@ -226,6 +233,10 @@ input:focus+.slider {
 
 .gridNetwork input:disabled {
     color: var(--text-colour)
+}
+
+.network-disabled {
+    color: grey;
 }
 
 .network-status {

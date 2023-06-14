@@ -14,6 +14,7 @@ export type ConfigValue = string | number | boolean | ipaddress | ipaddress[] | 
 export interface VariableMetadata<T> {
     priority?: number; // How high to display the variable in the user-facing UI.
     readableName?: string; // String representation used in the user-facing UI.
+    key: string; // The key used to store the value in the config file.
     type: string; // The type of value in string format.
     display?: boolean; // Whether or not the variable should be configurable from the frontend UI.
     restart?: false | 'plugin' | 'server' | 'device'; // Whether or not the plugin, server or device should be restarted when the value is changed.
@@ -31,6 +32,8 @@ export interface EphemeralVariableMetaData<T> extends ConfigVariableMetadata<T> 
     setter?: () => void;
     toJSON?: () => EphemeralVariableMetaData<T>;
 }
+
+export type ConfigVariable<T = any> = EphemeralVariableMetaData<T> | ConfigVariableMetadata<T>
 
 export interface ConfigArray {
     [key: string | number]: ConfigVariableMetadata<ConfigValue>

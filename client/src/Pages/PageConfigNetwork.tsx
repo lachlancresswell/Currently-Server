@@ -5,13 +5,9 @@ import SpokeIcon from '@mui/icons-material/Spoke';
 import RouterIcon from '@mui/icons-material/Router';
 import SettingsEthernetIcon from '@mui/icons-material/SettingsEthernet';
 import React from 'react';
+import { ConfigVariableMetadata, EphemeralVariableMetaData, IPOptions, ipaddress, prefix } from '../../../Types';
 
-export interface Setting {
-    key: string, type: string, value?: string, max?: number, min?: number
-}
-
-export const NetworkSettings = ({ onSettingClick, configObj }: { onSettingClick?: (setting: Setting) => void, configObj: { pluginConfig: any, selectedNeighbour: any, handleInputChange: any, handleConfirm: any, isModified: any } }) => {
-    const handleSettingClick = onSettingClick;
+export const PageConfigNetwork = ({ onSettingClick, configObj }: { onSettingClick: <T>(setting: ConfigVariableMetadata<T> | EphemeralVariableMetaData<T>, updated?: boolean) => void, configObj: { pluginConfig?: IPOptions, selectedNeighbour: any, handleInputChange: any, handleConfirm: any, isModified: any } }) => {
 
     const { pluginConfig, selectedNeighbour, handleInputChange, handleConfirm, isModified } = configObj;
 
@@ -21,13 +17,19 @@ export const NetworkSettings = ({ onSettingClick, configObj }: { onSettingClick?
         <div className="gridNetwork">
             <NetworkInput type={'text'} title={'ID'} value={selectedNeighbour?.name} onChange={(e: { target: { value: string | number | boolean | string[] | Date | undefined; }; }) => handleInputChange('name', e.target.value, false, true)} />
             <NetworkInput type={'text'} title={<LanguageIcon />} disabled={isChecked} value={pluginConfig?.ipaddress.value} onChange={() => {
-                handleSettingClick!({ key: 'ipaddress', type: 'ipaddress', value: pluginConfig?.ipaddress.value })
+                onSettingClick<ipaddress>(pluginConfig?.ipaddress!)
             }} />
             <NetworkInput type={'text'} title={<SpokeIcon />} disabled={isChecked} value={pluginConfig?.prefix.value?.toString()} onChange={() => {
-                handleSettingClick!({ key: 'prefix', type: 'number', value: pluginConfig?.prefix.value, max: 32, min: 0 })
+                onSettingClick<prefix>(pluginConfig?.prefix!)
             }} />
             <NetworkInput type={'text'} title={<RouterIcon />} disabled={isChecked} value={pluginConfig?.gateway.value} onChange={() => {
-                handleSettingClick!({ key: 'gateway', type: 'ipaddress', value: pluginConfig?.gateway.value })
+                let gatewayValue = pluginConfig?.gateway.value;
+                let hasBeenUpdated = false;
+                if (!gatewayValue) {
+                    gatewayValue = guessGatewayFromIpAndPrefix(pluginConfig?.ipaddress.value, pluginConfig?.prefix.value);
+                    hasBeenUpdated = true;
+                }
+                onSettingClick<ipaddress>({ ...pluginConfig!.gateway, ...{ value: gatewayValue } }, hasBeenUpdated)
             }} />
             <CheckBoxInput title={'DHCP'} checked={isChecked} onChange={(e) => handleInputChange('dhcp', e.target.checked)} />
             <div className={`span-two-network network-status`}>
@@ -80,10 +82,12 @@ const NetworkInput = ({ title, type, disabled, value, onChange }: {
             <div className={`span-one-network`}>
                 {title}
             </div>
-            <div className={`span-four-network`}>
+            <div className={`span-four-network network-center`}>
                 <div
-                    className={disabled ? 'disabled' : ''}
-                    onClick={onChange}
+                    className={`network-center ${disabled ? 'network-disabled' : ''}`}
+                    onClick={(e) => {
+                        if (!disabled) onChange(e)
+                    }}
                 >{value}</div>
             </div >
         </>
@@ -100,12 +104,22 @@ const ConfirmButton = ({ isModified, onClick }: { isModified?: boolean, onClick?
     )
 }
 
-const Arrows = ({ onClickIncrease, onClickDecrease }: { onClickIncrease?: React.MouseEventHandler<Element>, onClickDecrease?: React.MouseEventHandler<Element> }) => {
+const guessGatewayFromIpAndPrefix = (ip: string | undefined, prefix: prefix | undefined) => {
+    if (!ip) return '0.0.0.0';
+    // Convert IP address to binary format
+    const ipBinary = ip.split('.').map((octet) => parseInt(octet).toString(2).padStart(8, '0')).join('');
 
-    return (
-        <div className={`span-one-network`}>
-            <button onClick={onClickIncrease}>{'<'}</button>
-            <button onClick={onClickDecrease}>{'>'}</button>
-        </div>
-    )
+    // Calculate network address by setting all host bits to 0
+    const networkBinary = ipBinary.substr(0, prefix).padEnd(32, '0');
+
+    // Calculate broadcast address by setting all host bits to 1
+    const _broadcastBinary = ipBinary.substr(0, prefix).padEnd(32, '1');
+
+    // Calculate default gateway address by incrementing network address by 1
+    const gatewayBinary = networkBinary.substr(0, networkBinary.length - 1) + '1';
+
+    // Convert binary format back to IP address
+    const gateway = gatewayBinary.match(/.{8}/g)?.map((byte) => parseInt(byte, 2)).join('.');
+
+    return gateway;
 }

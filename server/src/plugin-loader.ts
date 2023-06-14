@@ -66,6 +66,19 @@ export class PluginLoader {
             const configFileContent = fs.readFileSync(p).toString();
 
             this.pluginConfigs = JSON.parse(configFileContent) as PluginJSON;
+
+            // Create 'key' item for each plugin config variable
+            const pluginNames = Object.keys(this.pluginConfigs);
+            for (const pluginName of pluginNames) {
+                const pluginConfig = this.pluginConfigs[pluginName];
+                if (pluginConfig.config) {
+                    const keys = Object.keys(pluginConfig.config);
+                    for (const key of keys) {
+                        const variable = pluginConfig.config[key];
+                        variable.key = key;
+                    }
+                }
+            }
         } else {
             console.log(`Config does not exist: ${p}`)
         }
@@ -96,6 +109,11 @@ export class PluginLoader {
         // Ephermeral values have a toJSON method, so we can skip them
         function replacer(this: any, key: string, value: any) {
             if (key === 'value' && !!(this as unknown as EphemeralVariableMetaData<ConfigValue>).toJSON) {
+                return undefined;
+            }
+
+            // Don't save generated 'key' item to disk
+            if (key === 'key') {
                 return undefined;
             }
             return value;
