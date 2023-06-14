@@ -1,8 +1,8 @@
-import { useNeighbourContext } from './neighbourContext';
-import { useNeighbourDataContext } from './neighbourDataContext';
+import { useNeighbourContext } from '../Hooks/neighbourContext';
+import { useNeighbourDataContext } from '../Hooks/neighbourDataContext';
 import { useEffect, useState } from 'react';
-import { PhaseData, DistroData } from '../../Types';
-import './Styles/PageAdv.css'
+import { PhaseData, DistroData } from '../../../Types';
+import '../Styles/PageAdv.css'
 
 interface PageAdvProps {
 }

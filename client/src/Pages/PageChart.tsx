@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { InfluxDB, FluxTableMetaData } from '@influxdata/influxdb-client-browser';
 import ReactApexChart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
-import { org, token } from './neighbourDataContext';
+import { mockPollRange, org, token } from '../Hooks/neighbourDataContext';
 import TuneIcon from '@mui/icons-material/Tune';
-import './Styles/PageChart.css'
-import { useConfigDataContext } from './configContext';
-import { usePhaseColors } from './Locale';
+import '../Styles/PageChart.css'
+import { useConfigDataContext } from '../Hooks/configContext';
+import { usePhaseColors } from '../Hooks/usePhaseColors';
 
 export interface RowRtn {
     _field: string,
@@ -41,6 +41,11 @@ const MyComponent: React.FC<Props> = () => {
     const url = window.location.protocol + '//' + window.location.host + '/influx'
     useEffect(() => {
         const queryApi = new InfluxDB({ url, token }).getQueryApi(org);
+
+        setData(mockPollRange());
+        setIsLoading(false);
+
+        return;
 
         const query = `
         from(bucket: "modbus")

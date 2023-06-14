@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Neighbour } from './../../Types';
+import { Neighbour } from '../../../Types';
 
 /**
  * Interface for the neighbour context object.

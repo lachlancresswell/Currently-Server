@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
-import { PageChannel } from './PageChannel'
-import ConfigPage from './pages/ConfigPage';
-import { PageBasic } from './PageBasic';
-import { PageAdv } from './PageAdv';
-import { Status } from './Status';
-import { PageHome } from './PageHome';
-import { NetworkSettings } from './pages/PageConfigNetwork';
+import { PageChannel } from './Pages/PageChannel'
+import ConfigPage from './Pages/ConfigPage';
+import { PageBasic } from './Pages/PageBasic';
+import { PageAdv } from './Pages/PageAdv';
+import { Status } from './Components/Status';
+import { PageHome } from './Pages/PageHome';
 import {
   createBrowserRouter,
   RouterProvider,
@@ -13,9 +12,9 @@ import {
   NavLink,
   useLocation
 } from "react-router-dom";
-import { NeighbourProvider, useNeighbourContext } from './neighbourContext';
-import { NeighbourDataProvider } from './neighbourDataContext';
-import { ConfigDataProvider } from './configContext';
+import { NeighbourProvider, useNeighbourContext } from './Hooks/neighbourContext';
+import { NeighbourDataProvider } from './Hooks/neighbourDataContext';
+import { ConfigDataProvider } from './Hooks/configContext';
 import './Styles/App.css';
 import './Styles/Page.css';
 import './Styles/Button.css';
@@ -24,14 +23,15 @@ import ShowChartIcon from '@mui/icons-material/ShowChart';
 import HomeIcon from '@mui/icons-material/Home';
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
 import LightModeIcon from '@mui/icons-material/LightMode';
-import PageChart from './PageChart';
-import { PageDisplay } from './PageDisplay';
-import { WarningSettings } from './pages/PageConfigWarnings';
-import { LocaleSettings } from './pages/PageConfigLocale';
-import { VersionSettings } from './pages/PageConfigVersions';
-import { TimezoneSettings } from './pages/PageConfigTimezone';
-import { useTheme } from './hooks';
-
+import PageChart from './Pages/PageChart';
+import { PageDisplay } from './Pages/PageDisplay';
+import { WarningSettings } from './Pages/PageConfigWarnings';
+import { LocaleSettings } from './Pages/PageConfigLocale';
+import { VersionSettings } from './Pages/PageConfigVersions';
+import { TimezoneSettings } from './Pages/PageConfigTimezone';
+import { useTheme } from './Hooks/useTheme';
+import { Modal } from './Components/ConfigModal'
+import NetworkSettingsWrapper from './Pages/NetworkSettingsWrapper';
 
 const NeighbourSelector = () => {
   const { neighbours, selectedNeighbour, setSelectedNeighbour } = useNeighbourContext();
@@ -134,7 +134,7 @@ const router = createBrowserRouter([{
     element: <ConfigPage />
   }, {
     path: "/options/network",
-    element: <NetworkSettings />
+    element: <NetworkSettingsWrapper />
   }, {
     path: "/options/warnings",
     element: <WarningSettings />

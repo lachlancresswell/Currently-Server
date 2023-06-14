@@ -1,10 +1,9 @@
-import { useNeighbourContext } from './neighbourContext';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import './Styles/PageDisplay.css'
+import '../Styles/PageDisplay.css'
 import { ChangeEvent, useState } from 'react';
-import { useTheme } from './hooks';
+import { useTheme } from '../Hooks/useTheme';
 
 export const PageDisplay = ({ }: {}) => {
     const [sliderValue, setSliderValue] = useState(50);

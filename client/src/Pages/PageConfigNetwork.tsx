@@ -1,24 +1,34 @@
 // src/components/ConfigForm.tsx
-import { IPOptions } from '../../../Types';
 import '../Styles/PageConfigNetwork.css';
 import LanguageIcon from '@mui/icons-material/Language';
 import SpokeIcon from '@mui/icons-material/Spoke';
 import RouterIcon from '@mui/icons-material/Router';
 import SettingsEthernetIcon from '@mui/icons-material/SettingsEthernet';
-import { useConfig } from './ConfigForm';
 import React from 'react';
 
-export const NetworkSettings = () => {
-    const { pluginConfig, selectedNeighbour, handleInputChange, handleConfirm, isModified } = useConfig<IPOptions>('IPPlugin');
+export interface Setting {
+    key: string, type: string, value?: string, max?: number, min?: number
+}
+
+export const NetworkSettings = ({ onSettingClick, configObj }: { onSettingClick?: (setting: Setting) => void, configObj: { pluginConfig: any, selectedNeighbour: any, handleInputChange: any, handleConfirm: any, isModified: any } }) => {
+    const handleSettingClick = onSettingClick;
+
+    const { pluginConfig, selectedNeighbour, handleInputChange, handleConfirm, isModified } = configObj;
 
     const isChecked = pluginConfig?.dhcp.value;
 
     return (
         <div className="gridNetwork">
-            <NetworkInput type={'text'} title={'ID'} value={selectedNeighbour?.name} onChange={(e) => handleInputChange('name', e.target.value, false, true)} />
-            <NetworkInput type={'text'} title={<LanguageIcon />} disabled={isChecked} value={pluginConfig?.ipaddress.value} onChange={(e) => handleInputChange('ipaddress', e.target.value)} />
-            <NetworkInput type={'text'} title={<SpokeIcon />} disabled={isChecked} value={pluginConfig?.prefix.value?.toString()} onChange={(e) => handleInputChange('prefix', e.target.value)} />
-            <NetworkInput type={'text'} title={<RouterIcon />} disabled={isChecked} value={pluginConfig?.gateway.value} onChange={(e) => handleInputChange('gateway', e.target.value)} />
+            <NetworkInput type={'text'} title={'ID'} value={selectedNeighbour?.name} onChange={(e: { target: { value: string | number | boolean | string[] | Date | undefined; }; }) => handleInputChange('name', e.target.value, false, true)} />
+            <NetworkInput type={'text'} title={<LanguageIcon />} disabled={isChecked} value={pluginConfig?.ipaddress.value} onChange={() => {
+                handleSettingClick!({ key: 'ipaddress', type: 'ipaddress', value: pluginConfig?.ipaddress.value })
+            }} />
+            <NetworkInput type={'text'} title={<SpokeIcon />} disabled={isChecked} value={pluginConfig?.prefix.value?.toString()} onChange={() => {
+                handleSettingClick!({ key: 'prefix', type: 'number', value: pluginConfig?.prefix.value, max: 32, min: 0 })
+            }} />
+            <NetworkInput type={'text'} title={<RouterIcon />} disabled={isChecked} value={pluginConfig?.gateway.value} onChange={() => {
+                handleSettingClick!({ key: 'gateway', type: 'ipaddress', value: pluginConfig?.gateway.value })
+            }} />
             <CheckBoxInput title={'DHCP'} checked={isChecked} onChange={(e) => handleInputChange('dhcp', e.target.checked)} />
             <div className={`span-two-network network-status`}>
                 <SettingsEthernetIcon />
@@ -63,7 +73,7 @@ const CheckBoxInput = ({ title, disabled, checked, onChange }: {
 }
 
 const NetworkInput = ({ title, type, disabled, value, onChange }: {
-    title?: string | JSX.Element, type?: string, disabled?: boolean, value?: string, onChange?: React.ChangeEventHandler<HTMLInputElement>
+    title?: string | JSX.Element, type?: string, disabled?: boolean, value?: string, onChange?: any
 }) => {
     return (
         <>
@@ -71,13 +81,11 @@ const NetworkInput = ({ title, type, disabled, value, onChange }: {
                 {title}
             </div>
             <div className={`span-four-network`}>
-                <input
-                    type={type}
-                    value={value}
-                    disabled={disabled}
-                    onChange={onChange}
-                />
-            </div>
+                <div
+                    className={disabled ? 'disabled' : ''}
+                    onClick={onChange}
+                >{value}</div>
+            </div >
         </>
     )
 }
@@ -88,6 +96,16 @@ const ConfirmButton = ({ isModified, onClick }: { isModified?: boolean, onClick?
             <div className='network-accept' onClick={onClick}>
                 {isModified ? 'ACCEPT' : ''}
             </div>
+        </div>
+    )
+}
+
+const Arrows = ({ onClickIncrease, onClickDecrease }: { onClickIncrease?: React.MouseEventHandler<Element>, onClickDecrease?: React.MouseEventHandler<Element> }) => {
+
+    return (
+        <div className={`span-one-network`}>
+            <button onClick={onClickIncrease}>{'<'}</button>
+            <button onClick={onClickDecrease}>{'>'}</button>
         </div>
     )
 }

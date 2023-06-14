@@ -1,7 +1,7 @@
 // src/components/ConfigForm.tsx
 import { Neighbour, WarningsOptions } from '../../../Types';
 import '../Styles/PageConfigWarnings.css';
-import { useConfig } from './ConfigForm';
+import { useConfig } from '../Hooks/useConfig';
 
 export const WarningSettings = () => {
     const { pluginConfig, selectedNeighbour, handleInputChange } = useConfig<WarningsOptions>('warnings');

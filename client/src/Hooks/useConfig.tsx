@@ -2,8 +2,8 @@
 import { useState, useEffect } from 'react';
 import { ConfigArray } from '../../../Types';
 import '../Styles/Config.css';
-import { useNeighbourContext } from '../neighbourContext';
-import { useConfigDataContext } from '../configContext';
+import { useNeighbourContext } from './neighbourContext';
+import { useConfigDataContext } from './configContext';
 import axios from 'axios';
 
 

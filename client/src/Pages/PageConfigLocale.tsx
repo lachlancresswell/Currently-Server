@@ -1,5 +1,5 @@
 import { LocaleOptions } from "../../../Types";
-import { useConfig } from "./ConfigForm";
+import { useConfig } from "../Hooks/useConfig";
 import '../Styles/PageConfigLocale.css';
 import { MouseEventHandler } from "react";
 

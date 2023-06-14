@@ -1,5 +1,5 @@
-import { DistroData, ConfigArray, VariableMetadata, ConfigVariableMetadata } from '../../Types'
-import { useConfigDataContext } from './configContext';
+import { DistroData, ConfigArray, VariableMetadata, ConfigVariableMetadata } from '../../../Types'
+import { useConfigDataContext } from '../Hooks/configContext';
 
 export interface Config {
     warnings: ConfigArray

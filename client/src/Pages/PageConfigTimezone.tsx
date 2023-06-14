@@ -1,7 +1,7 @@
 // src/components/ConfigForm.tsx
 import { TZOptions } from '../../../Types';
 import '../Styles/PageConfigTimezone.css';
-import { useConfig } from './ConfigForm';
+import { useConfig } from '../Hooks/useConfig';
 
 export const TimezoneSettings = () => {
     const { pluginConfig, handleInputChange, handleConfirm, isModified } = useConfig<TZOptions>('TimeZonePlugin');

@@ -1,12 +1,12 @@
-import { useNeighbourContext } from './neighbourContext';
-import { useNeighbourDataContext } from './neighbourDataContext';
-import { DistroData } from '../../Types';
+import { useNeighbourContext } from '../Hooks/neighbourContext';
+import { useNeighbourDataContext } from '../Hooks/neighbourDataContext';
+import { DistroData } from '../../../Types';
 import SettingsEthernetIcon from '@mui/icons-material/SettingsEthernet';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import PublicIcon from '@mui/icons-material/Public';
-import { Warning } from './Warnings';
-import { useConfigDataContext } from './configContext';
+import { Warning } from '../Components/Warnings';
+import { useConfigDataContext } from '../Hooks/configContext';
 
 interface PageAdvProps {
 }

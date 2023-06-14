@@ -1,9 +1,9 @@
-import { useNeighbourContext } from './neighbourContext';
-import { useNeighbourDataContext } from './neighbourDataContext';
-import { Phase, DistroData } from '../../Types';
+import { useNeighbourContext } from '../Hooks/neighbourContext';
+import { useNeighbourDataContext } from '../Hooks/neighbourDataContext';
+import { Phase, DistroData } from '../../../Types';
 import { useParams } from 'react-router-dom';
-import { Warning } from './Warnings';
-import './Styles/PageChannel.css'
+import { Warning } from '../Components/Warnings';
+import '../Styles/PageChannel.css'
 
 interface PageChannelProps {
 }

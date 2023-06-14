@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { DistroData, Neighbour, PluginJSON } from './../../Types';
+import { DistroData, Neighbour, PluginJSON } from '../../../Types';
 
 
 export interface ConfigContextType {

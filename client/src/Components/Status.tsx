@@ -1,6 +1,6 @@
-import { useNeighbourContext } from './neighbourContext';
-import { useNeighbourDataContext } from './neighbourDataContext';
-import { useConfigDataContext } from './configContext';
+import { useNeighbourContext } from '../Hooks/neighbourContext';
+import { useNeighbourDataContext } from '../Hooks/neighbourDataContext';
+import { useConfigDataContext } from '../Hooks/configContext';
 
 
 export const Status: React.FC = () => {

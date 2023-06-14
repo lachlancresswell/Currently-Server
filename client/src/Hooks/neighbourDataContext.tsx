@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { DistroData, Neighbour } from './../../Types';
+import { DistroData, Neighbour, PhaseData } from '../../../Types';
 import { ClientOptions, InfluxDB, QueryApi } from '@influxdata/influxdb-client-browser'
 
 interface FluxQuery {
@@ -64,11 +64,18 @@ export const NeighbourDataProvider: React.FC<props> = ({ neighbour, children }) 
     };
 
     useEffect(() => {
-        pollServer();
+        let func: () => void;
+        if (false) {
+            func = pollServer;
+        } else {
+            func = () => {
+                const data = mockPollServer
+                setNeighbourData(data);
+            }
+        }
         const interval = setInterval(() => {
-            pollServer();
+            func();
         }, 1000); // poll every 5 seconds
-
         return () => clearInterval(interval);
     }, [neighbour]);
 
@@ -250,4 +257,51 @@ export const nullPadding = (phase: Phase, start: Date, end: Date) => {
     phase.amperage.splice(phase.amperage.length - 1, 0, endItem);
     phase.voltage.splice(0, 0, startItem);
     phase.voltage.splice(phase.voltage.length - 1, 0, endItem);
+}
+
+const mockPollServer = (): DistroData => {
+    const time = new Date()
+    const pf = parseInt((Math.random() * (0.99 - 0.9) + 0.9).toFixed(0));
+    const kva = parseInt((Math.random() * (100 - 50) + 50).toFixed(0));
+    const hz = parseInt((Math.random() * (50.1 - 49.9) + 49.9).toFixed(0));
+    const phases: PhaseData[] = [{
+        voltage: parseInt((Math.random() * (230 - 220) + 220).toFixed(0)),
+        amperage: parseInt((Math.random() * (100 - 50) + 50).toFixed(0)),
+        phase: 1
+    }, {
+        voltage: parseInt((Math.random() * (230 - 220) + 220).toFixed(0)),
+        amperage: parseInt((Math.random() * (100 - 50) + 50).toFixed(0)),
+        phase: 2
+    }, {
+        voltage: parseInt((Math.random() * (230 - 220) + 220).toFixed(0)),
+        amperage: parseInt((Math.random() * (100 - 50) + 50).toFixed(0)),
+        phase: 3
+    }]
+
+    return {
+        time,
+        pf,
+        kva,
+        hz,
+        phases
+    };
+}
+
+export const mockPollRange = (): Phase[] => {
+    let phases: Phase[] = [{ voltage: [], amperage: [] }, { voltage: [], amperage: [] }, { voltage: [], amperage: [] }];
+    for (let i = 0; i < 1000; i++) {
+        const timeSecondsAgo = new Date(Date.now() - i * 1000);
+        phases.push({
+            voltage: [{
+                y: 250 + i,
+                x: timeSecondsAgo
+            }],
+            amperage: [{
+                y: 240 + i,
+                x: timeSecondsAgo
+            }],
+        })
+    }
+
+    return phases;
 }
