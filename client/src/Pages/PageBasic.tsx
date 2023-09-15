@@ -43,8 +43,7 @@ const PhaseRow = ({ phaseIndex, neighbourData }: { phaseIndex: 0 | 1 | 2, neighb
         <>
             <div className={`span-five-basic ${'l' + (phaseIndex + 1)}`}>
                 <span className="valueBasic">
-                    {/* {neighbourData?.phases[phaseIndex].voltage} */}
-                    240
+                    {neighbourData?.phases[phaseIndex].voltage}
                 </span>
                 <span className="unitBasic">
                     v
@@ -53,8 +52,7 @@ const PhaseRow = ({ phaseIndex, neighbourData }: { phaseIndex: 0 | 1 | 2, neighb
             <div className={`span-three-basic ${'l' + (phaseIndex + 1)}`}>
                 <div className='basicAmperage'>
                     <span className="valueBasicAmperage">
-                        {/* {neighbourData?.phases[phaseIndex].amperage} */}
-                        10
+                        {neighbourData?.phases[phaseIndex].amperage}
                     </span>
                     <span className="unitBasic">
                         a
