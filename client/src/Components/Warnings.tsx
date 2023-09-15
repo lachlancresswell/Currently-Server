@@ -43,16 +43,18 @@ export function Warning({ data, type, phaseIndex }: { data: DistroData, type: 'v
 }
 
 const checkToleranceMaxMin = (set: number, max: number, min: number, val: number): -1 | -0.5 | 0 | 0.5 | 1 => {
-    let rtn: -1 | -0.5 | 0 | 0.5 | 1 = -1;
     const setMax = set + max
     const setMin = set - min;
 
-    if (val < setMax && val > set + ((max / 10))) rtn = 0.5;
-    else if (val > setMin && val < set + ((min / 10))) rtn = -0.5;
-    else if (val >= setMax) rtn = 1;
-    else if (val <= setMin) rtn = -1;
+    const orangeZoneMax = setMax - (max / 5);
+    const orangeZoneMin = setMin + (max / 5);
 
-    return rtn
+    if (val < setMax && val > orangeZoneMax) return 0.5;
+    if (val > setMin && val < orangeZoneMin) return -0.5;
+    if (val >= setMax) return 1;
+    if (val <= setMin) return -1;
+
+    return 0;
 }
 
 const checkToleranceMax = (max: number, val: number) => {
