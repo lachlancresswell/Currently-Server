@@ -14,19 +14,6 @@ import HelpIcon from '@mui/icons-material/Help';
  * ConfigPage component fetches the master configuration from the server and displays an icon for each plugin discovered.
  */
 const ConfigPage: React.FC = () => {
-    const [_plugins, setPlugins] = useState<PluginJSON>({});
-
-    useEffect(() => {
-        async function fetchPlugins() {
-            try {
-                const response = await axios.get<PluginJSON>('/config');
-                setPlugins(response.data);
-            } catch (error) {
-                console.error('Error fetching plugins:', error);
-            }
-        }
-        fetchPlugins();
-    }, []);
 
     return (
         <div className='pageParent pageConfig'>
