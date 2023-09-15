@@ -289,17 +289,19 @@ const mockPollServer = (): DistroData => {
 
 export const mockPollRange = (): Phase[] => {
     let phases: Phase[] = [{ voltage: [], amperage: [] }, { voltage: [], amperage: [] }, { voltage: [], amperage: [] }];
-    for (let i = 0; i < 1000; i++) {
+
+    for (let i = 0; i < 50; i++) {
         const timeSecondsAgo = new Date(Date.now() - i * 1000);
-        phases.push({
-            voltage: [{
-                y: 250 + i,
+
+        phases.forEach(phase => {
+            phase.voltage.push({
+                y: 220 + (Math.random() * 30),
                 x: timeSecondsAgo
-            }],
-            amperage: [{
-                y: 240 + i,
+            })
+            phase.amperage.push({
+                y: 0 + (Math.random() * 5),
                 x: timeSecondsAgo
-            }],
+            })
         })
     }
 
