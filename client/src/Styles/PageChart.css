@@ -5,13 +5,20 @@
     font-size: 1.6em;
     color: black;
     font-weight: bold;
+    height: 12%;
 }
 
 .chart-button {
     border: 0.1em var(--text-colour) solid;
     border-radius: 0.3em;
     background-color: var(--text-colour);
-    width: 1.5em;
+    width: 12vh;
     height: 100%;
     text-align: center;
+
+    font-size: 100%;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
