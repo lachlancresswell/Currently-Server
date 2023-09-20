@@ -22,6 +22,7 @@
         "display": true,
         "readableName": "Device Name",
         "type": "string",
+        "value": "MyDistro",
         "restart": "plugin"
       },
       "txDelay": {

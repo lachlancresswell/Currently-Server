@@ -50,8 +50,8 @@ const testUrl = (host: string) => new Promise((res, rej) => {
 
 
 export interface Phase {
-    voltage: { y: number | string | null, x: any }[]
-    amperage: { y: number | string | null, x: any }[]
+    voltage: { y: number | string | null, x: Date }[]
+    amperage: { y: number | string | null, x: Date }[]
 }
 
 interface Props { }
@@ -140,16 +140,18 @@ const initialOptions = (l1Color: string, l2Color: string, l3Color: string, endDa
     const datetimeFormatter = (value: any, timestamp: any) => {
         const startDate = new Date(value as any).getTime();
         const seconds = ((endDate - startDate) / 1000)
-        let denominator = 's';
         let diff = ((endDate - startDate) / 1000);
-        let str = `-${diff.toFixed(0)}${denominator}`;
+        let str = `0:${diff < 10 ? '0' + diff.toFixed(0) : diff.toFixed(0)}`;
 
         if (diff > 59) {
             const minutes = Math.floor(Math.round(seconds) / 60)
-            str = `-${minutes}m`
+            str = `${minutes}`
+            str += ':'
             const secondsRemaining = seconds - minutes * 60;
             if (secondsRemaining >= 1) {
-                str += `${secondsRemaining.toFixed(0)}s`
+                str += `${Math.round(secondsRemaining) < 10 ? '0' + secondsRemaining.toFixed(0) : secondsRemaining.toFixed(0)}`
+            } else {
+                str += '00'
             }
         }
 
