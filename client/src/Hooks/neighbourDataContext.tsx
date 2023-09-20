@@ -259,22 +259,27 @@ export const nullPadding = (phase: Phase, start: Date, end: Date) => {
     phase.voltage.splice(phase.voltage.length - 1, 0, endItem);
 }
 
+const mockVoltage = () => 231 + (Math.random() * 5);
+const mockL1Current = () => 3 + (Math.random() / 4);
+const mockL2Current = () => 0 + (Math.random() / 3);
+const mockL3Current = () => 4 + (Math.random() * 2);
+
 const mockPollServer = (): DistroData => {
     const time = new Date()
     const pf = parseInt((Math.random() * (0.99 - 0.9) + 0.9).toFixed(0));
     const kva = parseInt((Math.random() * (100 - 50) + 50).toFixed(0));
     const hz = parseInt((Math.random() * (50.1 - 49.9) + 49.9).toFixed(0));
     const phases: PhaseData[] = [{
-        voltage: parseInt((Math.random() * (230 - 220) + 220).toFixed(0)),
-        amperage: parseInt((Math.random() * (100 - 50) + 50).toFixed(0)),
+        voltage: parseInt(mockVoltage().toFixed(0)),
+        amperage: parseInt(mockL1Current().toFixed(0)),
         phase: 1
     }, {
-        voltage: parseInt((Math.random() * (230 - 220) + 220).toFixed(0)),
-        amperage: parseInt((Math.random() * (100 - 50) + 50).toFixed(0)),
+        voltage: parseInt(mockVoltage().toFixed(0)),
+        amperage: parseInt(mockL2Current().toFixed(0)),
         phase: 2
     }, {
-        voltage: parseInt((Math.random() * (230 - 220) + 220).toFixed(0)),
-        amperage: parseInt((Math.random() * (100 - 50) + 50).toFixed(0)),
+        voltage: parseInt(mockVoltage().toFixed(0)),
+        amperage: parseInt(mockL3Current().toFixed(0)),
         phase: 3
     }]
 
@@ -290,16 +295,16 @@ const mockPollServer = (): DistroData => {
 export const mockPollRange = (): Phase[] => {
     let phases: Phase[] = [{ voltage: [], amperage: [] }, { voltage: [], amperage: [] }, { voltage: [], amperage: [] }];
 
-    for (let i = 0; i < 50; i++) {
+    for (let i = 300; i > 0; i--) {
         const timeSecondsAgo = new Date(Date.now() - i * 1000);
 
-        phases.forEach(phase => {
+        phases.forEach((phase, i) => {
             phase.voltage.push({
-                y: 220 + (Math.random() * 30),
+                y: mockVoltage(),
                 x: timeSecondsAgo
             })
             phase.amperage.push({
-                y: 0 + (Math.random() * 5),
+                y: i === 0 ? mockL1Current() : i === 1 ? mockL2Current() : mockL3Current(),
                 x: timeSecondsAgo
             })
         })
