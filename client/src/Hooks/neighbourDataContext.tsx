@@ -266,9 +266,9 @@ const mockL3Current = () => 4 + (Math.random() * 2);
 
 const mockPollServer = (): DistroData => {
     const time = new Date()
-    const pf = parseInt((Math.random() * (0.99 - 0.9) + 0.9).toFixed(0));
-    const kva = parseInt((Math.random() * (100 - 50) + 50).toFixed(0));
-    const hz = parseInt((Math.random() * (50.1 - 49.9) + 49.9).toFixed(0));
+    const pf = 0;
+    const kva = 0;
+    const hz = 50;
     const phases: PhaseData[] = [{
         voltage: parseInt(mockVoltage().toFixed(0)),
         amperage: parseInt(mockL1Current().toFixed(0)),
