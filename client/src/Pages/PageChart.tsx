@@ -240,7 +240,7 @@ const MyComponent: React.FC<Props> = () => {
 
         ApexCharts.exec("mychart", cmd, series);
         setLegendViewStatus((prevLegendView) => {
-            prevLegendView[phaseIndex - 1][category.toLowerCase()] = false;
+            prevLegendView[phaseIndex - 1][category.toLowerCase()] = !prevLegendView[phaseIndex - 1][category.toLowerCase()];
             return prevLegendView;
         });
     }
