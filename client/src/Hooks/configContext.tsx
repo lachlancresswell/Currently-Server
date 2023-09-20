@@ -1,49 +1,32 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { DistroData, Neighbour, PluginJSON } from '../../../Types';
+import { PluginJSON } from '../../../Types';
 
+export const ConfigDataContext = createContext<ConfigContextType>({ refresh: () => false });
 
 export interface ConfigContextType {
-    configData: PluginJSON | null;
+    configData?: PluginJSON;
+    refresh: () => void;
 }
-
-
-export const ConfigDataContext = createContext<ConfigContextType>({
-    configData: null,
-});
 
 interface props {
     children: React.ReactNode;
 }
 
 export const ConfigDataProvider: React.FC<props> = ({ children }) => {
-    const [configData, setConfigData] = useState<PluginJSON | null>(null);
+    const [isRefreshing, setRefresh] = useState<boolean>(true);
+    const [configData, setConfigData] = useState<PluginJSON>();
+    const refresh = () => setRefresh(true);
 
-    const pollServer = async () => {
+    const getConfig = async () => {
         const response = await fetch(`/config`)
-
-        const data = await response.json() as PluginJSON;
-
-        if (data.locale?.config?.locale.value) {
-            document.body.dataset.locale = data.locale.config.locale.value as string;
-        }
-
-        setConfigData(data)
+        const configData = await response.json() as PluginJSON;
+        setConfigData(configData);
+        setRefresh(false);
     }
 
-    useEffect(() => {
-        pollServer();
-        const interval = setInterval(() => {
-            pollServer();
-        }, 3000); // poll every 5 seconds
+    useEffect(() => { getConfig() }, [isRefreshing]);
 
-        return () => clearInterval(interval);
-    }, []);
-
-    const value = {
-        configData,
-    };
-
-    return <ConfigDataContext.Provider value={value}>{children}</ConfigDataContext.Provider>;
+    return <ConfigDataContext.Provider value={{ configData, refresh }}>{children}</ConfigDataContext.Provider>;
 };
 
 export const useConfigDataContext = () => useContext(ConfigDataContext);
