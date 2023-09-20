@@ -94,9 +94,9 @@ const collectData = async (hostUrl: string, databaseUrl: string) => {
                     phases[2].amperage.push({ y: row._value, x: new Date(row._time) })
                     break;
                 case 'usage_system':
-                    phases[0].voltage.push({ y: row._value, x: row._time })
-                    phases[1].voltage.push({ y: row._value, x: row._time })
-                    phases[2].voltage.push({ y: row._value, x: row._time })
+                    phases[0].voltage.push({ y: row._value, x: new Date(row._time) })
+                    phases[1].voltage.push({ y: row._value, x: new Date(row._time) })
+                    phases[2].voltage.push({ y: row._value, x: new Date(row._time) })
                     break;
             }
         });
@@ -106,7 +106,7 @@ const collectData = async (hostUrl: string, databaseUrl: string) => {
     return phases;
 }
 
-const initialOptions = (l1Color: string, l2Color: string, l3Color: string) => {
+const initialOptions = (l1Color: string, l2Color: string, l3Color: string, endDate: number) => {
     const yaxisV = {
         showAlways: true,
         seriesName: 'Voltage',
@@ -137,11 +137,32 @@ const initialOptions = (l1Color: string, l2Color: string, l3Color: string) => {
         forceNiceScale: true
     }
 
+    const datetimeFormatter = (value: any, timestamp: any) => {
+        const startDate = new Date(value as any).getTime();
+        const seconds = ((endDate - startDate) / 1000)
+        let denominator = 's';
+        let diff = ((endDate - startDate) / 1000);
+        let str = `-${diff.toFixed(0)}${denominator}`;
+
+        if (diff > 59) {
+            const minutes = Math.floor(Math.round(seconds) / 60)
+            str = `-${minutes}m`
+            const secondsRemaining = seconds - minutes * 60;
+            if (secondsRemaining >= 1) {
+                str += `${secondsRemaining.toFixed(0)}s`
+            }
+        }
+
+        return str;
+    }
+
+
     return ({
         chart: {
             id: "mychart",
             foreColor: 'white',
             type: "area",
+            height: '10vh',
             animations: {
                 enabled: false
             },
@@ -165,12 +186,11 @@ const initialOptions = (l1Color: string, l2Color: string, l3Color: string) => {
         },
         xaxis: {
             labels: {
-                formatter: function (value: any, timestamp: any) {
-                    const d = new Date(value as any).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                    return d
-                },
+                formatter: datetimeFormatter,
+                rotate: 0,
+                rotateAlways: false,
                 style: {
-                    fontSize: '1em' // specify the font size here
+                    fontSize: '1em', // specify the font size here
                 },
             },
             tickAmount: 4,
@@ -186,14 +206,18 @@ const initialOptions = (l1Color: string, l2Color: string, l3Color: string) => {
     } as ApexOptions)
 }
 
-const MyComponent: React.FC<Props> = () => {
-    const [plotData, setPlotData] = useState<Phase[]>([]);
+const WINDOW_SIZE = 60; // Distance to display in seconds
+const SCROLL_SIZE = 10; // Distance to scroll in seconds
 
-    // Load phase colours
+const MyComponent: React.FC<Props> = () => {
     const { l1Color, l2Color, l3Color } = usePhaseColors();
 
-    // Plot configuration options
-    const [options, setOptions] = useState<ApexOptions>(initialOptions(l1Color, l2Color, l3Color))
+    const [plotData, setPlotData] = useState<Phase[]>([]);
+    const [dataEndDate, _setDataEndDate] = useState<Date>(new Date());
+    const [plotViewStartDate, setPlotViewStartDate] = useState<Date>(new Date(dataEndDate.getTime() - (WINDOW_SIZE * 1000)));
+    const [plotViewEndDate, setPlotViewEndDate] = useState<Date>(new Date(dataEndDate.getTime()));
+    const [legendViewStatus, setLegendViewStatus] = useState<{ [index: string]: boolean }[]>(legendStartState);
+    const [plotOptions, _setPlotOptions] = useState<ApexOptions>(initialOptions(l1Color, l2Color, l3Color, dataEndDate.getTime()))
 
     useEffect(() => {
         const hostUrl = window.location.protocol + '//' + window.location.host;
@@ -206,46 +230,64 @@ const MyComponent: React.FC<Props> = () => {
         })
     }, []);
 
-    let [legendView, setLegendView] = useState<{ [index: string]: boolean }[]>(legendStartState);
 
     const toggleLegendElement = (phaseIndex: 1 | 2 | 3, category: "Voltage" | "Current") => {
-        const hide = !!legendView[phaseIndex - 1][category.toLowerCase()];
+        const hide = !!legendViewStatus[phaseIndex - 1][category.toLowerCase()];
+        const cmd = hide ? "hideSeries" : "showSeries"
+        const series = [`L${phaseIndex} ${category}`];
 
-        ApexCharts.exec("mychart", hide ? "hideSeries" : "showSeries", [`L${phaseIndex} ${category}`]);
-        legendView[phaseIndex - 1][category.toLowerCase()] = false;
-        legendView = [...legendView];
-        setLegendView(legendView);
+        ApexCharts.exec("mychart", cmd, series);
+        setLegendViewStatus((prevLegendView) => {
+            prevLegendView[phaseIndex - 1][category.toLowerCase()] = false;
+            return prevLegendView;
+        });
     }
 
-    const configuredData = configureData(plotData);
+    const handleScrollBack = () => {
+        if (plotViewStartDate.getTime() > plotData[0].voltage[0].x.getTime()) {
+            setPlotViewStartDate(new Date(plotViewStartDate.getTime() - (SCROLL_SIZE * 1000)));
+            setPlotViewEndDate(new Date(plotViewEndDate.getTime() - (SCROLL_SIZE * 1000)));
+        }
+    }
+
     return (
         <>
-            <div style={{ height: "72%", width: "100%" }}>
-                <ReactApexChart type="line" options={options} series={configuredData} height={"100%"} />
+            <div style={{
+                position: 'absolute',
+                top: '11vh',
+                height: '79vh',
+                width: '100%',
+            }}>
+                <ReactApexChart type="line" options={plotOptions} series={configureData(plotData, plotViewStartDate, plotViewEndDate)} height={"100%"} />
             </div>
             <div className={`chart-buttons`}>
-                <div className='chart-button'>
+                <div className='chart-button' onClick={handleScrollBack}>
                     +
                 </div>
-                <div className={`chart-button l1 ${legendView[1 - 1].voltage ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(1, "Voltage")}>
+                <div className={`chart-button l1 ${legendViewStatus[1 - 1].voltage ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(1, "Voltage")}>
                     V
                 </div >
-                <div className={`chart-button l1 ${legendView[1 - 1].current ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(1, "Current")}>
+                <div className={`chart-button l1 ${legendViewStatus[1 - 1].current ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(1, "Current")}>
                     A
                 </div>
-                <div className={`chart-button l2 ${legendView[2 - 1].voltage ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(2, "Voltage")}>
+                <div className={`chart-button l2 ${legendViewStatus[2 - 1].voltage ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(2, "Voltage")}>
                     V
                 </div>
-                <div className={`chart-button l2 ${legendView[2 - 1].current ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(2, "Current")}>
+                <div className={`chart-button l2 ${legendViewStatus[2 - 1].current ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(2, "Current")}>
                     A
                 </div>
-                <div className={`chart-button l3 ${legendView[3 - 1].voltage ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(3, "Voltage")}>
+                <div className={`chart-button l3 ${legendViewStatus[3 - 1].voltage ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(3, "Voltage")}>
                     V
                 </div>
-                <div className={`chart-button l3 ${legendView[3 - 1].current ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(3, "Current")}>
+                <div className={`chart-button l3 ${legendViewStatus[3 - 1].current ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(3, "Current")}>
                     A
                 </div>
-                <div className='chart-button'>
+                <div className='chart-button' onClick={() => {
+                    if (plotViewEndDate.getTime() < dataEndDate.getTime()) {
+                        setPlotViewStartDate(new Date(plotViewStartDate.getTime() + (SCROLL_SIZE * 1000)));
+                        setPlotViewEndDate(new Date(plotViewEndDate.getTime() + (SCROLL_SIZE * 1000)));
+                    }
+                }}>
                     -
                 </div>
                 <div className='chart-button'>
@@ -259,7 +301,7 @@ const MyComponent: React.FC<Props> = () => {
 export default MyComponent;
 
 
-const configureData = (data: Phase[] | undefined | null) => {
+const configureData = (data: Phase[] | undefined | null, startDate: Date, endDate: Date) => {
     if (!data || !data.length) {
         data = [{
             voltage: [{}],
@@ -272,35 +314,61 @@ const configureData = (data: Phase[] | undefined | null) => {
             amperage: [{}]
         }] as any
     }
+
+    const getValuesBetweenDates = (phases: Phase[], startDate: Date, endDate: Date): Phase[] => {
+        const filteredPhases: Phase[] = [];
+
+        phases.forEach((phase) => {
+            const filteredVoltage = phase.voltage.filter((v) => {
+                const date = new Date(v.x);
+                return date >= startDate && date <= endDate;
+            });
+
+            const filteredAmperage = phase.amperage.filter((a) => {
+                const date = new Date(a.x);
+                return date >= startDate && date <= endDate;
+            });
+
+            filteredPhases.push({
+                voltage: filteredVoltage,
+                amperage: filteredAmperage,
+            });
+        });
+
+        return filteredPhases;
+    };
+
+    const trimmedData = getValuesBetweenDates(data!, startDate, endDate);
+
     return [
         {
             name: "L1 Voltage",
-            data: data![0].voltage,
+            data: trimmedData![0].voltage,
             type: 'line',
         },
         {
             name: "L1 Current",
-            data: data![0].amperage,
+            data: trimmedData![0].amperage,
             type: 'line',
         },
         {
             name: "L2 Voltage",
-            data: data![1].voltage,
+            data: trimmedData![1].voltage,
             type: 'line',
         },
         {
             name: "L2 Current",
-            data: data![1].amperage,
+            data: trimmedData![1].amperage,
             type: 'line',
         },
         {
             name: "L3 Voltage",
-            data: data![2].voltage,
+            data: trimmedData![2].voltage,
             type: 'line',
         },
         {
             name: "L3 Current",
-            data: data![2].amperage,
+            data: trimmedData![2].amperage,
             type: 'line',
         },
     ]
