@@ -59,7 +59,8 @@ const AdvRow = ({ className, prefix, neighbourData }: { className: string, prefi
             <div className={`span-ten-adv ${className}`}>
                 <span className="valueBasic">
                     {prefix === 'pf' ? neighbourData?.pf
-                        : neighbourData?.kva}
+                        : prefix === 'kVA' ? neighbourData?.kva
+                            : neighbourData?.hz}
                 </span>
                 <span className="unitBasic">
                     {prefix}
