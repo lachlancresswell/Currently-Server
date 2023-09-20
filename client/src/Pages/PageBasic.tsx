@@ -60,7 +60,7 @@ const PhaseRow = ({ phaseIndex, neighbourData }: { phaseIndex: 0 | 1 | 2, neighb
                 </div>
             </div>
             <div className='span-two-basic'>
-                {neighbourData && <Warning data={neighbourData} type={'kva'} phaseIndex={phaseIndex} />}
+                {neighbourData && <Warning data={neighbourData} type={'va'} phaseIndex={phaseIndex} />}
             </div>
         </>
     )
