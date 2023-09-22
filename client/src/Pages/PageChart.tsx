@@ -260,6 +260,7 @@ const MyComponent: React.FC<Props> = () => {
                 top: '11vh',
                 height: '79vh',
                 width: '100%',
+                zIndex: -1, // This is to prevent the chart from being clickable
             }}>
                 <ReactApexChart type="line" options={plotOptions} series={configureData(plotData, plotViewStartDate, plotViewEndDate)} height={"100%"} />
             </div>
