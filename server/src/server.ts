@@ -19,11 +19,9 @@ export interface Routing {
 }
 
 const HTTP_PORT = process.env.NODE_ENV === 'test' ? 0
-    : process.env.NODE_ENV === 'production' ? 80
-        : 8001;
+    : 8001;
 const HTTPS_PORT = process.env.NODE_ENV === 'test' ? 0
-    : process.env.NODE_ENV === 'production' ? 443
-        : 8002;
+    : 8002;
 
 /**
  * Server class for hosting the application.
