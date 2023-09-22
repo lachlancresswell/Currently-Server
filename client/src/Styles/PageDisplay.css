@@ -87,7 +87,7 @@
 .gridDisplay input {
     background-color: #00000000;
     text-decoration: none;
-    font-size: 3.5em;
+    font-size: 10vh;
     width: 85%;
     color: white;
     border: none;
