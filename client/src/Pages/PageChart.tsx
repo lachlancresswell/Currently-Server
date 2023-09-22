@@ -208,10 +208,11 @@ const initialOptions = (l1Color: string, l2Color: string, l3Color: string, endDa
     } as ApexOptions)
 }
 
-const WINDOW_SIZE = 60; // Distance to display in seconds
-const SCROLL_SIZE = 10; // Distance to scroll in seconds
 
 const MyComponent: React.FC<Props> = () => {
+    const WINDOW_SIZE = parseInt(localStorage.getItem('CHART_WINDOW_PERIOD') || '60'); // Distance to display in seconds
+    const SCROLL_SIZE = WINDOW_SIZE / 2; // Distance to scroll in seconds
+
     const { l1Color, l2Color, l3Color } = usePhaseColors();
 
     const [plotData, setPlotData] = useState<Phase[]>([]);
@@ -222,6 +223,8 @@ const MyComponent: React.FC<Props> = () => {
     const [plotOptions, _setPlotOptions] = useState<ApexOptions>(initialOptions(l1Color, l2Color, l3Color, dataEndDate.getTime()))
 
     useEffect(() => {
+        localStorage.setItem('CHART_WINDOW_PERIOD', WINDOW_SIZE.toString())
+
         const hostUrl = window.location.protocol + '//' + window.location.host;
         const databaseUrl = hostUrl + '/influx'
         collectData(hostUrl, databaseUrl).then((res) => {
@@ -295,7 +298,9 @@ const MyComponent: React.FC<Props> = () => {
                     -
                 </div>
                 <div className='chart-button'>
-                    <TuneIcon />
+                    <NavLink to={"/options/chart"}>
+                        <TuneIcon />
+                    </NavLink>
                 </div>
             </div>
         </>
