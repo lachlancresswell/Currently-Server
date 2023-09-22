@@ -5,6 +5,10 @@
 
     justify-content: space-around;
     flex-grow: 1;
+
+    /* Prevents scrollbars from appearing */
+    margin: 0;
+    overflow: hidden;
 }
 
 .pageCol {

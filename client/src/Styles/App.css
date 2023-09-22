@@ -80,10 +80,17 @@ body {
   color: var(--text-colour);
 
   transition: background .5s;
+
+  /* Prevents scrollbars from appearing */
+  overflow: hidden;
 }
 
 #root {
   border: 1px solid grey;
+
+  /* Prevents scrollbars from appearing */
+  margin: 0;
+  overflow: hidden;
 
   /***** MAINTAIN ASPECT RATIO *******/
   width: 99.5vw;
@@ -111,6 +118,9 @@ body {
   display: flex;
   flex-direction: column;
 
+  /* Prevents scrollbars from appearing */
+  margin: 0;
+  overflow: hidden;
 }
 
 .pf {
