@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "nodemon -e ts  --exec \"tsc & node ./dist/server/src/app.js\"",
-    "start": "nodemon --inspect=0.0.0.0:9229 --ignore '*.json' ./dist/server/src/app.js"
+    "watch": "nodemon --inspect=0.0.0.0:9229 -e ts  --exec \"tsc & node ./dist/server/src/app.js\"",
+    "start": "node ./dist/server/src/app.js"
   },
   "author": "",
   "license": "ISC",
