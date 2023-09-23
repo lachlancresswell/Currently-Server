@@ -32,6 +32,7 @@ import { TimezoneSettings } from './Pages/PageConfigTimezone';
 import { useTheme } from './Hooks/useTheme';
 import { Modal } from './Components/ConfigModal'
 import NetworkSettingsWrapper from './Pages/NetworkSettingsWrapper';
+import { ChartSettings } from './Pages/PageConfigChart';
 
 const NeighbourSelector = () => {
   const { neighbours, selectedNeighbour, setSelectedNeighbour } = useNeighbourContext();
@@ -148,6 +149,9 @@ const router = createBrowserRouter([{
     path: "/options/timezone",
     element: <TimezoneSettings />
   }, {
+    path: "/options/chart",
+    element: <ChartSettings />
+  }, {
     path: "/options/:pluginName",
     element: <></>
   }]
@@ -162,7 +166,7 @@ const AppWrapper = () => {
   }, [selectedNeighbour]);
 
   return (
-    <div id='single-page' className='single-page'>
+    <div id='single-page' className='single-page noselect'>
       <NeighbourDataProvider neighbour={selectedNeighbour!}>
         <ConfigDataProvider>
           <RouterProvider router={router} />
