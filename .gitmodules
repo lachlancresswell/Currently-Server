@@ -1,3 +1,0 @@
-[submodule "tailscale-balena-block"]
-	path = tailscale-balena-block
-	url = https://github.com/hslatman/tailscale-balena-block.git
