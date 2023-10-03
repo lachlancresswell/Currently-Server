@@ -57,7 +57,7 @@ export interface Phase {
 
 interface Props { }
 
-const collectData = async (hostUrl: string, databaseUrl: string) => {
+export const collectData = async (hostUrl: string, databaseUrl: string) => {
     await testUrl(hostUrl);
     await testUrl(databaseUrl)
 
