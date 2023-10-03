@@ -62,8 +62,8 @@ export interface Neighbour {
 }
 
 export interface PhaseData {
-    voltage?: number,
-    amperage?: number,
+    voltage: number,
+    amperage: number,
     phase: Phase,
 }
 
