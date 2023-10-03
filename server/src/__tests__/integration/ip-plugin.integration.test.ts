@@ -52,6 +52,20 @@ jest.mock('os', () => {
 })
 
 /**
+ * Mocks the axios module to return a status of our choosing.
+ */
+let GOOGLE_STATUS = true;
+jest.mock('axios', () => {
+    return {
+        get: jest.fn(() => {
+            return Promise.resolve({ status: GOOGLE_STATUS ? 200 : 404 });
+        })
+    }
+})
+
+
+
+/**
  * Mocks the dns module to return a DNS server configuration of our choosing.
  */
 jest.mock('dns', () => {
@@ -338,5 +352,25 @@ describe('TestPlugin', () => {
 
         expect(plugin.configuration.gateway.value).toBe(undefined);
     });
+
+    test('should return false if internet is unreachable', async () => {
+        GOOGLE_STATUS = false;
+        let response = await request(server['app']).get('/config/IPPlugin');
+        expect(response.body).toHaveProperty('internetPollMs')
+        await new Promise((res) => setTimeout(res, response.body.internetPollMs.value))
+        response = await request(server['app']).get('/config/IPPlugin');
+        expect(response.body).toHaveProperty('internetStatus')
+        expect(response.body.internetStatus.value).toBeFalsy()
+    })
+
+    test('should return true if internet is reachable', async () => {
+        GOOGLE_STATUS = true;
+        let response = await request(server['app']).get('/config/IPPlugin');
+        expect(response.body).toHaveProperty('internetPollMs')
+        await new Promise((res) => setTimeout(res, response.body.internetPollMs.value))
+        response = await request(server['app']).get('/config/IPPlugin');
+        expect(response.body).toHaveProperty('internetStatus')
+        expect(response.body.internetStatus.value).toBeTruthy()
+    })
 
 });
