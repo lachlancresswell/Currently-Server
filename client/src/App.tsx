@@ -33,6 +33,7 @@ import { useTheme } from './Hooks/useTheme';
 import { Modal } from './Components/ConfigModal'
 import NetworkSettingsWrapper from './Pages/NetworkSettingsWrapper';
 import { ChartSettings } from './Pages/PageConfigChart';
+import { SystemSettings } from './Pages/PageConfigSystem';
 
 const NeighbourSelector = () => {
   const { neighbours, selectedNeighbour, setSelectedNeighbour } = useNeighbourContext();
@@ -151,6 +152,9 @@ const router = createBrowserRouter([{
   }, {
     path: "/options/chart",
     element: <ChartSettings />
+  }, {
+    path: "/options/system",
+    element: <SystemSettings />
   }, {
     path: "/options/:pluginName",
     element: <></>

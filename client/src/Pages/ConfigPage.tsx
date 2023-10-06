@@ -43,7 +43,7 @@ const ConfigPage: React.FC = () => {
             </div>
             <div className='pageCol'>
                 <div className={`pageRow}`}>
-                    <Link style={{ color: 'white' }} to={`/options/power`}>
+                    <Link style={{ color: 'white' }} to={`/options/system`}>
                         <PowerSettingsNewIcon />
                     </Link>
                 </div>
