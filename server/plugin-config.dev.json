@@ -35,6 +35,18 @@
       }
     }
   },
+  "SystemPlugin": {
+    "path": "../system-plugin",
+    "enabled": true,
+    "config": {
+      "reboot": {
+        "priority": 1,
+        "display": true,
+        "readableName": "Restart",
+        "type": "boolean"
+      }
+    }
+  },
   "InfluxPlugin": {
     "path": "../influx-plugin",
     "enabled": true,

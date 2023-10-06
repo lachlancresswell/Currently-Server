@@ -129,6 +129,13 @@ export interface TZOptions extends ConfigArray {
     timeFormat: ConfigVariableMetadata<TimeType>;
 }
 
+/**
+ * Options interface for the system plugin.
+ */
+export interface SystemOptions extends ConfigArray {
+    reboot: EphemeralVariableMetaData<boolean>;
+}
+
 
 export const LOCALE_AU = {
     l1: 'red',
