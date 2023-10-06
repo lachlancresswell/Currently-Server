@@ -5,7 +5,7 @@ import { ApexOptions } from "apexcharts";
 import { mockPollRange, org, token } from '../Hooks/neighbourDataContext';
 import TuneIcon from '@mui/icons-material/Tune';
 import '../Styles/PageChart.css'
-import { usePhaseColors } from '../Hooks/usePhaseColors';
+import { KeyboardDoubleArrowLeft, KeyboardDoubleArrowRight } from '@mui/icons-material';
 import { NavLink } from 'react-router-dom';
 
 export interface RowRtn {
@@ -268,7 +268,7 @@ const MyComponent: React.FC<Props> = () => {
             </div>
             <div className={`chart-buttons`}>
                 <div className='chart-button' onClick={handleScrollBack}>
-                    +
+                    <KeyboardDoubleArrowLeft />
                 </div>
                 <div className={`chart-button l1 ${legendViewStatus[1 - 1].voltage ? '' : 'strikethrough'}`} onClick={() => toggleLegendElement(1, "Voltage")}>
                     V
@@ -294,7 +294,7 @@ const MyComponent: React.FC<Props> = () => {
                         setPlotViewEndDate(new Date(plotViewEndDate.getTime() + (SCROLL_SIZE * 1000)));
                     }
                 }}>
-                    -
+                    <KeyboardDoubleArrowRight />
                 </div>
                 <div className='chart-button'>
                     <NavLink to={"/options/chart"}>
