@@ -134,6 +134,11 @@ export interface TZOptions extends ConfigArray {
  */
 export interface SystemOptions extends ConfigArray {
     reboot: EphemeralVariableMetaData<boolean>;
+    memAvailable: EphemeralVariableMetaData<number>;
+    memTotal: EphemeralVariableMetaData<number>;
+    diskAvailable: EphemeralVariableMetaData<number>;
+    diskTotal: EphemeralVariableMetaData<number>;
+    diskPath: ConfigVariableMetadata<string>;
 }
 
 

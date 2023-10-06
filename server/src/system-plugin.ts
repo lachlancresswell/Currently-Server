@@ -1,7 +1,7 @@
 import { Plugin } from './plugin';
 import { Routing } from './server';
 import { SystemOptions } from '../../Types';
-import { exec } from 'child_process';
+import { exec, execSync } from 'child_process';
 
 /**
  * Plugin for interfacing with the underlying linux system.
@@ -21,6 +21,10 @@ class SystemPlugin extends Plugin<SystemOptions> {
         const _this = this;
 
         this.setEphemeralVariable(this.configuration.reboot, () => false, _this.restartSystem);
+        this.setEphemeralVariable(this.configuration.memTotal, () => _this.getMemoryStats().total, () => false);
+        this.setEphemeralVariable(this.configuration.memAvailable, () => _this.getMemoryStats().available, () => false);
+        this.setEphemeralVariable(this.configuration.diskTotal, () => _this.getDiskStats().total, () => false);
+        this.setEphemeralVariable(this.configuration.diskAvailable, () => _this.getDiskStats().available, () => false);
     }
 
     /**
@@ -35,6 +39,28 @@ class SystemPlugin extends Plugin<SystemOptions> {
             console.log(`stdout: ${stdout}`);
             console.error(`stderr: ${stderr}`);
         });
+    }
+
+    /**
+     * Gets the current memory values from the 'free' command
+     * @returns Object containing total memory and available memory
+     */
+    getMemoryStats = () => {
+        const buffer = execSync('free -m | grep Mem | awk \'{print $2, $7}\'');
+        const [total, available] = buffer.toString().split(' ');
+
+        return { total, available };
+    }
+
+    /**
+     * Gets the current disk space values from the 'df' command
+     * @returns Object containing total disk space and available disk space
+     */
+    getDiskStats = () => {
+        const buffer = execSync(`df | grep ${this.configuration.diskPath.value} | awk \'{print $4, $3}\'`);
+        const [total, available] = buffer.toString().split(' ');
+
+        return { total, available };
     }
 }
 

@@ -44,6 +44,37 @@
         "display": true,
         "readableName": "Restart",
         "type": "boolean"
+      },
+      "memTotal": {
+        "priority": 1,
+        "display": true,
+        "readableName": "Memory Total",
+        "type": "number"
+      },
+      "memAvailable": {
+        "priority": 1,
+        "display": true,
+        "readableName": "Memory Available",
+        "type": "number"
+      },
+      "diskTotal": {
+        "priority": 1,
+        "display": true,
+        "readableName": "Disk Total",
+        "type": "number"
+      },
+      "diskAvailable": {
+        "priority": 1,
+        "display": true,
+        "readableName": "Disk Available",
+        "type": "number"
+      },
+      "diskPath": {
+        "priority": 1,
+        "display": false,
+        "readableName": "Path to Disk",
+        "value": "/dev/vda2",
+        "type": "string"
       }
     }
   },
@@ -921,7 +952,7 @@
       "locale": {
         "readableName": "Locale",
         "display": true,
-        "value": "ca",
+        "value": "us",
         "options": [
           "au",
           "eu",
