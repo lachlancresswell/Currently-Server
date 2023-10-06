@@ -5,7 +5,7 @@ import { ConfigVariable } from "../../../Types";
 const MAX_INDEX = 16;
 
 export const KeyboardModal = ({ setting, onClose, onSubmit, updated }: { setting: ConfigVariable<string>, onClose: () => void, onSubmit: (setting: ConfigVariable<string>) => void, updated?: boolean }) => {
-    const deviceNameAsArray = setting.value?.padEnd(16, String.fromCharCode(160)).split('') || [''.padEnd(16, ' ')]
+    const deviceNameAsArray = setting.value?.replaceAll(' ', String.fromCharCode(160)).padEnd(16, String.fromCharCode(160)).split('') || [''.padEnd(16, ' ')]
     const [deviceName, setDeviceName] = useState<string[]>(deviceNameAsArray)
     const [relativeValue, setRelativeValue] = useState<1 | 10 | 50>(1)
     const [index, setIndex] = useState<number>(0);
@@ -97,7 +97,7 @@ const StringInput = ({ str, index }: { str: string[], index: number }) => {
         <div className='span-ten-modal'>
             {str.map((letter, letterIndex) => {
                 if (letterIndex == index) {
-                    return <span style={{ fontSize: '1.4em' }} className={'modal-selected'}>{letter}</span>
+                    return <span className={'modal-selected'}>{letter}</span>
                 } else {
                     return <span>{letter}</span>
                 }
