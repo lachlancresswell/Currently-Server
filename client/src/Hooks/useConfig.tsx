@@ -37,7 +37,7 @@ export const saveConfig = async (pluginName: string, pluginConfig: ConfigArray) 
 
 export function useConfig<T extends ConfigArray>(pluginName: string) {
     const { selectedNeighbour } = useNeighbourContext();
-    const { configData } = useConfigDataContext();
+    const { configData, refresh: refreshConfigData } = useConfigDataContext();
     const [startPluginConfig, setStartPluginConfig] = useState<T>();
     const [pluginConfig, setPluginConfig] = useState<T>();
     const [refresh, setRefresh] = useState<boolean>(true);
@@ -53,6 +53,7 @@ export function useConfig<T extends ConfigArray>(pluginName: string) {
             const serverConfig = await loadConfig<T>(pluginName)
             setPluginConfig(serverConfig);
             setStartPluginConfig(serverConfig);
+            refreshConfigData();
         }
         fetchPluginConfig();
     }, [refresh]);

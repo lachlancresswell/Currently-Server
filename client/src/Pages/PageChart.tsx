@@ -107,7 +107,7 @@ export const collectData = async (hostUrl: string, databaseUrl: string) => {
     return phases;
 }
 
-const initialOptions = (l1Color: string, l2Color: string, l3Color: string, endDate: number) => {
+const initialOptions = (endDate: number) => {
     const yaxisV = {
         showAlways: true,
         seriesName: 'Voltage',
@@ -176,7 +176,7 @@ const initialOptions = (l1Color: string, l2Color: string, l3Color: string, endDa
         }, noData: {
             text: 'Loading...'
         },
-        colors: [l1Color, l1Color, l2Color, l2Color, l3Color, l3Color],
+        colors: ['var(--l1-color)', 'var(--l1-color)', 'var(--l2-color)', 'var(--l2-color)', 'var(--l3-color)', 'var(--l3-color)'],
         fill: {
         },
         legend: {
@@ -214,14 +214,12 @@ const MyComponent: React.FC<Props> = () => {
     const WINDOW_SIZE = parseInt(localStorage.getItem('CHART_WINDOW_PERIOD') || '60'); // Distance to display in seconds
     const SCROLL_SIZE = WINDOW_SIZE / 2; // Distance to scroll in seconds
 
-    const { l1Color, l2Color, l3Color } = usePhaseColors();
-
     const [plotData, setPlotData] = useState<Phase[]>([]);
     const [dataEndDate, _setDataEndDate] = useState<Date>(new Date());
     const [plotViewStartDate, setPlotViewStartDate] = useState<Date>(new Date(dataEndDate.getTime() - (WINDOW_SIZE * 1000)));
     const [plotViewEndDate, setPlotViewEndDate] = useState<Date>(new Date(dataEndDate.getTime()));
     const [legendViewStatus, setLegendViewStatus] = useState<{ [index: string]: boolean }[]>(legendStartState);
-    const [plotOptions, _setPlotOptions] = useState<ApexOptions>(initialOptions(l1Color, l2Color, l3Color, dataEndDate.getTime()))
+    const [plotOptions, _setPlotOptions] = useState<ApexOptions>(initialOptions(dataEndDate.getTime()))
 
     useEffect(() => {
         localStorage.setItem('CHART_WINDOW_PERIOD', WINDOW_SIZE.toString())

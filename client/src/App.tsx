@@ -33,6 +33,7 @@ import { useTheme } from './Hooks/useTheme';
 import { Modal } from './Components/ConfigModal'
 import NetworkSettingsWrapper from './Pages/NetworkSettingsWrapper';
 import { ChartSettings } from './Pages/PageConfigChart';
+import { usePhaseColors } from './Hooks/usePhaseColors';
 
 const NeighbourSelector = () => {
   const { neighbours, selectedNeighbour, setSelectedNeighbour } = useNeighbourContext();
@@ -165,11 +166,16 @@ const AppWrapper = () => {
     setSelectedNeighbourId(selectedNeighbour?.address ?? null);
   }, [selectedNeighbour]);
 
+  const AppRouter = () => {
+    usePhaseColors();
+    return <RouterProvider router={router} />
+  }
+
   return (
     <div id='single-page' className='single-page noselect'>
       <NeighbourDataProvider neighbour={selectedNeighbour!}>
         <ConfigDataProvider>
-          <RouterProvider router={router} />
+          <AppRouter />
         </ConfigDataProvider>
       </NeighbourDataProvider>
     </div>
