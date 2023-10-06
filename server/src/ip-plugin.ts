@@ -104,7 +104,7 @@ class IPPlugin extends Plugin<IPOptions> {
 
             config[key] = value;
 
-            IPPlugin.createNetworkFile(config, this.configuration.filePath.value!)
+            IPPlugin.createNetworkFile(config, this.configuration.filePath.value!, this.configuration.iface.value!)
         }
 
         this.restartNetworkD()
@@ -118,11 +118,11 @@ class IPPlugin extends Plugin<IPOptions> {
      * @param ipSettings Object containing the IP address settings to set in the network file.
      * @param filePath The file path of the network file to create.
      */
-    protected static createNetworkFile = (ipSettings: Address, filePath: string) => {
+    protected static createNetworkFile = (ipSettings: Address, filePath: string, iface: string) => {
         if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
 
         const data = `[Match]
-Name=${'enp0s2'}
+Name=${iface}
 
 [Network]
 DHCP=${ipSettings.dhcp ? 'yes' : 'no'}
