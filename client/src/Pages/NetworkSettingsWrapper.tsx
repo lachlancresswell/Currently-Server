@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { PageConfigNetwork } from './PageConfigNetwork';
 import { Modal } from '../Components/ConfigModal';
 import { useConfig } from '../Hooks/useConfig';
-import { ConfigVariable, IPOptions } from '../../../Types';
+import { ConfigVariable, IPOptions, MDNSConfig } from '../../../Types';
 
 const NetworkSettingsWrapper = () => {
   const [selectedSetting, setSelectedSetting] = useState<ConfigVariable>();
   const [updated, setUpdated] = useState<boolean>(false)
   const { pluginConfig, selectedNeighbour, handleInputChange, handleConfirm, isModified } = useConfig<IPOptions>('IPPlugin');
+  const { pluginConfig: mdnsConfig, handleInputChange: handleInputChangeMDNS, handleConfirm: handleConfirmMDNS, isModified: isModifiedMDNS } = useConfig<MDNSConfig>('MDNSPlugin');
 
   const onSettingClick = (setting: ConfigVariable, updated = false) => {
     setSelectedSetting(setting);
@@ -18,13 +19,17 @@ const NetworkSettingsWrapper = () => {
 
   const handleFullscreenUISubmit = (setting: ConfigVariable) => {
     setSelectedSetting(undefined);
-    handleInputChange(setting.key, setting.value);
+    if (setting.key === 'deviceName') {
+      handleInputChangeMDNS(setting.key, setting.value, true);
+    } else {
+      handleInputChange(setting.key, setting.value);
+    }
   };
 
   return (
     <>
       {!selectedSetting ?
-        <PageConfigNetwork onSettingClick={onSettingClick} configObj={{ pluginConfig, selectedNeighbour, handleInputChange, handleConfirm, isModified }} />
+        <PageConfigNetwork onSettingClick={onSettingClick} configObj={{ pluginConfig, selectedNeighbour, handleInputChange, handleConfirm, isModified, mdns: { mdnsConfig, handleInputChangeMDNS, handleConfirmMDNS, isModifiedMDNS } }} />
         : (
           <Modal
             setting={selectedSetting}

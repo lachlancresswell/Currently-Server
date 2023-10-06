@@ -5,16 +5,7 @@ import { Answer } from "dns-packet";
 import { IncomingMessage, ServerResponse } from 'http';
 import { Routing } from './server';
 import { networkInterfaces } from 'os';
-import { ConfigArray, ConfigVariableMetadata, Neighbour, ipaddress } from '../../Types';
-
-
-
-export interface MDNSConfig extends ConfigArray {
-    transmit: ConfigVariableMetadata<boolean>;
-    receive: ConfigVariableMetadata<boolean>;
-    deviceName: ConfigVariableMetadata<string>;
-    txDelay: ConfigVariableMetadata<number>;
-}
+import { ConfigArray, ConfigVariableMetadata, MDNSConfig, Neighbour, ipaddress } from '../../Types';
 
 // Add this constant at the top of the file, after the `import` statements
 export const SERVICE_NAME = 'your-service-name';

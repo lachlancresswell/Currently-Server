@@ -77,6 +77,13 @@ export interface DistroData {
     phases: PhaseData[]
 }
 
+export interface MDNSConfig extends ConfigArray {
+    transmit: ConfigVariableMetadata<boolean>;
+    receive: ConfigVariableMetadata<boolean>;
+    deviceName: ConfigVariableMetadata<string>;
+    txDelay: ConfigVariableMetadata<number>;
+}
+
 /**
  * Options interface for the Warnings plugin.
  */

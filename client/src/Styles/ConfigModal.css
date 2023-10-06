@@ -332,3 +332,23 @@
 .modal-button-x {
     color: red;
 }
+
+.modal-selected {
+    display: inline-block;
+    background-color: #fff;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0% {
+        background-color: #fff;
+    }
+
+    50% {
+        background-color: transparent;
+    }
+
+    100% {
+        background-color: #fff;
+    }
+}

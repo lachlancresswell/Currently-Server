@@ -5,17 +5,19 @@ import SpokeIcon from '@mui/icons-material/Spoke';
 import RouterIcon from '@mui/icons-material/Router';
 import SettingsEthernetIcon from '@mui/icons-material/SettingsEthernet';
 import React from 'react';
-import { ConfigVariableMetadata, EphemeralVariableMetaData, IPOptions, ipaddress, prefix } from '../../../Types';
+import { ConfigVariableMetadata, EphemeralVariableMetaData, IPOptions, MDNSConfig, ipaddress, prefix } from '../../../Types';
 
-export const PageConfigNetwork = ({ onSettingClick, configObj }: { onSettingClick: <T>(setting: ConfigVariableMetadata<T> | EphemeralVariableMetaData<T>, updated?: boolean) => void, configObj: { pluginConfig?: IPOptions, selectedNeighbour: any, handleInputChange: any, handleConfirm: any, isModified: any } }) => {
+export const PageConfigNetwork = ({ onSettingClick, configObj }: { onSettingClick: <T>(setting: ConfigVariableMetadata<T> | EphemeralVariableMetaData<T>, updated?: boolean) => void, configObj: { pluginConfig?: IPOptions, selectedNeighbour: any, handleInputChange: any, handleConfirm: any, isModified: any, mdns: { mdnsConfig?: MDNSConfig, handleInputChangeMDNS: any, handleConfirmMDNS: any, isModifiedMDNS: any } } }) => {
 
-    const { pluginConfig, selectedNeighbour, handleInputChange, handleConfirm, isModified } = configObj;
+    const { pluginConfig, selectedNeighbour, handleInputChange, handleConfirm, isModified, mdns } = configObj;
 
     const isChecked = pluginConfig?.dhcp.value;
 
     return (
         <div className="gridNetwork">
-            <NetworkInput type={'text'} title={'ID'} value={selectedNeighbour?.name} onChange={(e: { target: { value: string | number | boolean | string[] | Date | undefined; }; }) => handleInputChange('name', e.target.value, false, true)} />
+            <NetworkInput type={'text'} title={'ID'} value={mdns?.mdnsConfig?.deviceName.value} onChange={() => {
+                onSettingClick<string>(mdns?.mdnsConfig?.deviceName!)
+            }} />
             <NetworkInput type={'text'} title={<LanguageIcon />} disabled={isChecked} value={pluginConfig?.ipaddress.value} onChange={() => {
                 onSettingClick<ipaddress>(pluginConfig?.ipaddress!)
             }} />
