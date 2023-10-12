@@ -1,23 +1,45 @@
-// src/components/ConfigForm.tsx
-import { useState, useEffect } from 'react';
-import { ConfigArray } from '../../../Types';
-import '../Styles/Config.css';
-import { useNeighbourContext } from './neighbourContext';
-import { useConfigDataContext } from './configContext';
+import { useState, useEffect, createContext, useContext } from 'react';
+import { ConfigArray, PluginJSON } from '../../../Types';
 import axios from 'axios';
 
+const LOCAL_STORAGE_KEY = 'configData';
+
+interface ConfigContextType {
+    savePluginConfig: <T extends ConfigArray[]>(
+        pluginConfig: T,
+        pluginName: string[],
+    ) => void;
+    savePluginVariable: <T extends ConfigArray>(
+        key: keyof T,
+        value: T[keyof T]['value'],
+        pluginName: string,
+    ) => void;
+    getPluginConfig: <T extends ConfigArray>(pluginName: string) => T | undefined;
+}
+
+const ConfigContext = createContext<ConfigContextType>({
+    savePluginConfig: <T extends ConfigArray[]>(
+        pluginConfig: T,
+        pluginName: string[],
+    ) => { },
+    savePluginVariable: <T extends ConfigArray>(
+        key: keyof T,
+        value: T[keyof T]['value'],
+        pluginName: string,
+    ) => { },
+    getPluginConfig: <T extends ConfigArray>(pluginName: string) => undefined
+});
 
 /**
- * Loads the configuration of the requested plugin.
- * @param pluginName Name of the plugin to load the config from.
- * @returns Object containing the plugin configuration
+ * Loads the configuration of all plugins.
+ * @returns Object containing the configuration
  */
-export const loadConfig = async <T extends ConfigArray>(pluginName: string) => {
+const loadConfig = async () => {
     try {
-        const response = await axios.get<ConfigArray>(`/config/${pluginName}`);
-        return response.data as T;
+        const response = await axios.get<PluginJSON>(`/config`);
+        return response.data;
     } catch (error) {
-        console.error(`Error fetching config for plugin ${pluginName}:`, error);
+        console.error(`Error fetching config:`, error);
     }
 }
 
@@ -27,150 +49,157 @@ export const loadConfig = async <T extends ConfigArray>(pluginName: string) => {
  * @param pluginConfig Config to save.
  * @returns void
  */
-export const saveConfig = async (pluginName: string, pluginConfig: ConfigArray) => {
+const pushPluginConfigToRemote = async <T extends ConfigArray>(pluginName: string, pluginConfig: ConfigArray) => {
     try {
-        await axios.put(`/config/${pluginName}`, pluginConfig);
+        const response = await axios.put(`/config/${pluginName}`, pluginConfig);
+        return response.data as T;
     } catch (error) {
         console.error(`Error updating config for plugin ${pluginName}:`, error);
     }
 }
 
-export function useConfig<T extends ConfigArray>(pluginName: string) {
-    const { selectedNeighbour } = useNeighbourContext();
-    const { configData, refresh: refreshConfigData } = useConfigDataContext();
-    const [startPluginConfig, setStartPluginConfig] = useState<T>();
-    const [pluginConfig, setPluginConfig] = useState<T>();
-    const [refresh, setRefresh] = useState<boolean>(true);
-    const [name, setName] = useState<string | undefined>(selectedNeighbour?.name);
+interface props {
+    children: React.ReactNode;
+}
+
+export const ConfigContextProvider: React.FC<props> = ({ children }) => {
+
+    const localConfigData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '') as PluginJSON
+
+    // The latest server config.
+    const [serverConfig, setServerConfig] = useState<PluginJSON | undefined>(localConfigData);
 
     /**
-     * Fetches the plugin config from the database on mount.
+     * Fetches the plugin config from the server and set the state and cache.
      * @returns void
-     * @throws Error if pluginConfig is null.
      */
+    const fetchServerConfig = async () => {
+        const newServerConfig = await loadConfig();
+        setServerConfig(newServerConfig);
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newServerConfig));
+    }
+
+    // On first render, load config
     useEffect(() => {
-        async function fetchPluginConfig() {
-            const serverConfig = await loadConfig<T>(pluginName)
-            setPluginConfig(serverConfig);
-            setStartPluginConfig(serverConfig);
-            refreshConfigData();
-        }
-        fetchPluginConfig();
-    }, [refresh]);
+        // Fetch remote config asynchronously
+        fetchServerConfig();
+    }, []);
 
-    /**
-     * Saves the plugin config to the database.
-     * @returns void
-     */
-    const handleConfirm = async () => {
+    const getPluginConfig = <T extends ConfigArray>(pluginName: string): T | undefined => {
+        // If config has been loaded
+        if (!serverConfig) {
+            throw (new Error('Server config not loaded'));
+        };
 
-        // TODO: Fix this
-        if ((JSON.stringify(newNeighbour) !== JSON.stringify(selectedNeighbour))) {
-            if (configData && configData.MDNSPlugin && configData.MDNSPlugin.config && name) {
-                const deviceName = {
-                    ...configData.MDNSPlugin.config.deviceName,
-                    ...{ value: name }
-                }
-                const config = {
-                    ...configData.MDNSPlugin.config,
-                    ...{ deviceName }
-                }
-                saveConfig('MDNSPlugin', config)
-                setRefresh(!refresh);
-            }
+        const pluginConfig = serverConfig[pluginName].config as T;
+
+        if (!pluginConfig) {
+            throw (new Error(`Plugin config not found for plugin ${pluginName}`));
         }
 
-        if (pluginConfig) {
-            saveConfig(pluginName, pluginConfig)
-            setRefresh(!refresh);
-        }
-    };
+        return pluginConfig;
+    }
 
-    /**
-     * Resets the plugin config to the initial state.
-     * @returns void
-     */
-    const handleCancel = async () => setPluginConfig(startPluginConfig);
+    const savePluginConfig = async<T extends ConfigArray[]>(
+        configs: T,
+        pluginNames: string[],
+    ) => {
+        // If config has been loaded
+        if (!serverConfig) {
+            throw (new Error('Server config not loaded'));
+        };
 
-    function handleInputChange<T extends ConfigArray>(
-        key: keyof T,
-        value: T[keyof T]['value'],
-        save?: boolean,
-        selectedNeighbour?: boolean
-    ) {
-        if (selectedNeighbour) {
-            setName(value as string);
-        } else if (pluginConfig) {
-            // Convert the value to the correct type if necessary.
-            if (pluginConfig[key as string].type === 'number' && typeof (value) !== 'number') {
-                value = parseInt(value as any);
-            }
-
-            // Update the config state with the new value.
-            const newConfig = {
-                [key]: {
-                    ...pluginConfig[key as string],
-                    value,
+        // Convert the value to the correct type if necessary.
+        configs.forEach((pluginConfig) => {
+            Object.keys(pluginConfig).forEach((key) => {
+                if (pluginConfig[key].type === 'number' && typeof (pluginConfig[key].value) !== 'number') {
+                    pluginConfig[key].value = parseInt(pluginConfig[key].value as any);
                 }
-            }
+            });
+        });
 
-            setPluginConfig({
-                ...pluginConfig,
-                ...newConfig
+        const newServerConfig = {
+            ...serverConfig
+        };
+        configs.forEach((pluginConfig, index) => {
+            const pluginName = pluginNames[index];
+            newServerConfig[pluginName].config = pluginConfig;
+        });
+        setServerConfig(newServerConfig);
+
+        // Update remote config
+        configs.forEach(async (pluginConfig, index) => {
+            const pluginName = pluginNames[index];
+
+            const newRemotePluginConfig = await pushPluginConfigToRemote<ConfigArray>(pluginName, { ...pluginConfig })
+
+            if (!newRemotePluginConfig) {
+                throw (new Error(`Error updating config for plugin ${pluginName}`));
+            };
+
+            setServerConfig((prevState) => {
+                if (prevState) {
+                    prevState[pluginName].config = newRemotePluginConfig;
+                }
+
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(prevState));
+
+                return prevState;
             });
 
-            // Save the config to the database immediately if save is true.
-            if (save) {
-                saveConfig(pluginName, { ...newConfig } as ConfigArray)
-                setRefresh(!refresh);
+        });
+    };
+
+
+    const savePluginVariable = async<T extends ConfigArray>(
+        key: keyof T,
+        value: T[keyof T]['value'],
+        pluginName: string,
+    ) => {
+        // If config has been loaded
+        if (!serverConfig) {
+            throw (new Error('Server config not loaded'));
+        };
+
+        const pluginConfig = serverConfig[pluginName].config as T;
+
+        if (!pluginConfig) {
+            throw (new Error(`Plugin config not found for plugin ${pluginName}`));
+        }
+
+        // Convert the value to the correct type if necessary.
+        if (pluginConfig[key].type === 'number' && typeof (value) !== 'number') {
+            value = parseInt(value as any);
+        }
+
+        // Update the config state with the new value.
+        const newPluginConfig = {
+            ...pluginConfig,
+        }
+        pluginConfig[key].value = value;
+
+        const newServerConfig = {
+            ...serverConfig
+        };
+        newServerConfig[pluginName].config = newPluginConfig;
+        setServerConfig(newServerConfig);
+
+        // Update remote config
+        const newRemotePluginConfig = await pushPluginConfigToRemote<T>(pluginName, { ...newPluginConfig } as T)
+
+        if (!newRemotePluginConfig) {
+            throw (new Error(`Error updating config for plugin ${pluginName}`));
+        };
+
+        setServerConfig((prevState) => {
+            if (prevState) {
+                prevState[pluginName].config = newRemotePluginConfig;
             }
-        }
+            return prevState;
+        });
     };
 
-    // TODO Fix this
-    if (name === undefined && selectedNeighbour?.name) {
-        setName(selectedNeighbour.name)
-    }
+    return <ConfigContext.Provider value={{ getPluginConfig, savePluginConfig, savePluginVariable }}> {children} </ConfigContext.Provider>;
+};
 
-    const newNeighbour = {
-        ...selectedNeighbour,
-        ...{ name }
-    };
-
-
-    /**
-     * Checks if the plugin config has been modified.
-     * @param keys Optional array of keys to watch.
-     * @returns boolean
-     */
-    const isModified = (keys?: string[]) => {
-        let filteredStartPluginConfig = startPluginConfig;
-        let filteredPluginConfig = pluginConfig;
-
-        if (keys && startPluginConfig && pluginConfig) {
-            filteredStartPluginConfig = Object.keys(startPluginConfig)
-                .filter((key) => keys.includes(key))
-                .reduce((obj: any, key) => {
-                    obj[key] = startPluginConfig[key];
-                    return obj;
-                }, {});
-
-            filteredPluginConfig = Object.keys(pluginConfig)
-                .filter((key) => keys.includes(key))
-                .reduce((obj: any, key) => {
-                    obj[key] = pluginConfig[key];
-                    return obj;
-                }, {});
-        }
-
-        return (
-            JSON.stringify(filteredStartPluginConfig) !== JSON.stringify(filteredPluginConfig) ||
-            JSON.stringify(newNeighbour) !== JSON.stringify(selectedNeighbour)
-        );
-    };
-
-
-    return {
-        pluginConfig, selectedNeighbour: newNeighbour, handleInputChange, handleConfirm, handleCancel, isModified
-    }
-}
+export const useConfigContext = () => useContext(ConfigContext);

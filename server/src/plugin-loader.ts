@@ -44,7 +44,7 @@ export class PluginLoader {
 
             if (plugin) {
                 const restart = plugin.updateEntireConfig(newConfig);
-                res.status(200).json({ message: 'Plugin configuration updated successfully' });
+                res.status(200).json(_this.pluginConfigs[pluginName].config);
                 if (restart === 'plugin') {
                     plugin.restart();
                 } else if (restart === 'server') {
