@@ -85,7 +85,7 @@ interface props {
 
 export const ConfigContextProvider: React.FC<props> = ({ children }) => {
     // The last cached config.
-    const localConfigData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '') as PluginJSON
+    const localConfigData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '{}') as PluginJSON
 
     // Initial state is the last cached config.
     const [serverConfig, setServerConfig] = useState<PluginJSON | undefined>(localConfigData);

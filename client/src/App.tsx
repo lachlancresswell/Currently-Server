@@ -179,7 +179,11 @@ const AppWrapper = () => {
       console.error(e);
     }
 
-    usePhaseColors(pluginConfigLocale!);
+    usePhaseColors(pluginConfigLocale || {
+      locale: {
+        value: 'au'
+      }
+    } as any);
     return <RouterProvider router={router} />
   }
 
