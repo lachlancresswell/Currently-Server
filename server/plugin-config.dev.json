@@ -945,7 +945,7 @@
       }
     }
   },
-  "locale": {
+  "LocalePlugin": {
     "enabled": true,
     "path": "../locale-plugin",
     "config": {
