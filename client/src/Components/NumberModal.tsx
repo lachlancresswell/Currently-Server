@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import '../Styles/ConfigModal.css'
 import { ConfigVariable } from '../../../Types';
+import { ArrowUp, ArrowDown } from "./CommonUI";
 
 export const NumberModal = ({ setting, onClose, onSubmit, updated }: { setting: ConfigVariable, onClose: () => void, onSubmit: (setting: ConfigVariable) => void, updated?: boolean }) => {
     const [value, setValue] = useState<number>(parseInt(setting.value || '0'));
@@ -42,23 +43,6 @@ export const NumberModal = ({ setting, onClose, onSubmit, updated }: { setting: 
         </div >
     )
 };
-
-
-const ArrowUp = ({ onClick }: { onClick?: React.MouseEventHandler }) => {
-    return <Arrow onClick={onClick} text='⬆' />
-}
-
-const ArrowDown = ({ onClick }: { onClick?: React.MouseEventHandler }) => {
-    return <Arrow onClick={onClick} text='⬇' />
-}
-
-const Arrow = ({ onClick, text }: { onClick?: React.MouseEventHandler, text: string }) => {
-    return (
-        <button className='modal-button-arrow-flex' onClick={onClick}>
-            {text}
-        </button>
-    )
-}
 
 const Value = ({ value, max, onChange }: { value: number | string, max?: number, onChange?: React.ChangeEventHandler<HTMLInputElement> }) => {
     if (!max) max = 254;

@@ -1,9 +1,19 @@
 import { useState } from "react"
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { ConfigVariable } from "../../../Types";
+import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from "./CommonUI";
 
 const MAX_INDEX = 16;
 
+/**
+ * A modal component for editing a string using a virtual keyboard.
+ * @param setting - The configuration variable for the string.
+ * @param onClose - A function to close the modal.
+ * @param onSubmit - A function to submit the updated string.
+ * @param updated - A boolean indicating whether the string has been updated.
+ * @returns A React component.
+ * @todo Add keyboard support.
+ */
 export const KeyboardModal = ({
     setting,
     onClose,
@@ -27,12 +37,6 @@ export const KeyboardModal = ({
         setDeviceName([...deviceName])
     }
 
-    const setLetter = (index: number, value: number) => {
-        deviceName[index] = String.fromCharCode(value);
-        if (deviceName[index].charCodeAt(0) > 'z'.charCodeAt(0)) deviceName[index] = 'A';
-        if (deviceName[index].charCodeAt(0) < 'A'.charCodeAt(0)) deviceName[index] = 'z';
-        setDeviceName([...deviceName])
-    }
 
     const resetValue = () => setDeviceName(deviceNameAsArray);
 
@@ -66,40 +70,6 @@ export const KeyboardModal = ({
             })}>OK</button>
         </div >
     )
-}
-
-const Value = ({ value, onChange }: { value: number | string, onChange?: React.ChangeEventHandler<HTMLInputElement> }) => {
-    return (
-        <div className='span-one-modal' >
-            <input
-                className='modal-input'
-                value={value}
-                onChange={onChange}
-                min="0" max="254"
-            />
-        </div>
-    )
-}
-
-const ArrowRight = ({ onClick }: { onClick?: React.MouseEventHandler }) => {
-    return <Arrow onClick={onClick} text='▶' />
-}
-
-const ArrowLeft = ({ onClick }: { onClick?: React.MouseEventHandler }) => {
-    return <Arrow onClick={onClick} text='◀' />
-}
-
-const ArrowUp = ({ onClick }: { onClick?: React.MouseEventHandler }) => {
-    return <Arrow onClick={onClick} text='⬆' />
-}
-
-const ArrowDown = ({ onClick }: { onClick?: React.MouseEventHandler }) => {
-    return <Arrow onClick={onClick} text='⬇' />
-}
-
-
-const Arrow = ({ onClick, text }: { onClick?: React.MouseEventHandler, text: string }) => {
-    return <button className='span-one-modal modal-button-arrow' onClick={onClick}>{text}</button>
 }
 
 const StringInput = ({ str, index }: { str: string[], index: number }) => {

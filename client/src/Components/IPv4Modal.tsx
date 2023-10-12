@@ -1,6 +1,7 @@
 import { useState } from "react"
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { ConfigVariable, ipaddress } from "../../../Types";
+import { ArrowUp, ArrowDown } from "./CommonUI";
 
 export const IPv4Modal = ({
     setting,
@@ -83,16 +84,4 @@ const Value = ({ value, onChange }: { value: number | string, onChange?: React.C
             />
         </div>
     )
-}
-
-const ArrowUp = ({ onClick }: { onClick?: React.MouseEventHandler }) => {
-    return <Arrow onClick={onClick} text='⬆' />
-}
-
-const ArrowDown = ({ onClick }: { onClick?: React.MouseEventHandler }) => {
-    return <Arrow onClick={onClick} text='⬇' />
-}
-
-const Arrow = ({ onClick, text }: { onClick?: React.MouseEventHandler, text: string }) => {
-    return <button className='span-one-modal modal-button-arrow' onClick={onClick}>{text}</button>
 }
