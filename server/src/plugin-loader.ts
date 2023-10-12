@@ -151,7 +151,7 @@ export class PluginLoader {
 
             // Listen for the configUpdated event
             plugin.on('configUpdated', (key: string, _value: any) => {
-                pluginConfig.config![key] = plugin.configuration[key];
+                this.pluginConfigs[pluginName].config![key] = plugin.configuration[key];
                 this.saveConfigs();
             });
 
