@@ -14,7 +14,6 @@ import {
 } from "react-router-dom";
 import { NeighbourProvider, useNeighbourContext } from './Hooks/neighbourContext';
 import { NeighbourDataProvider } from './Hooks/neighbourDataContext';
-import { ConfigDataProvider } from './Hooks/configContext';
 import './Styles/App.css';
 import './Styles/Page.css';
 import './Styles/Button.css';
@@ -30,11 +29,12 @@ import { LocaleSettings } from './Pages/PageConfigLocale';
 import { VersionSettings } from './Pages/PageConfigVersions';
 import { TimezoneSettings } from './Pages/PageConfigTimezone';
 import { useTheme } from './Hooks/useTheme';
-import { Modal } from './Components/ConfigModal'
 import NetworkSettingsWrapper from './Pages/NetworkSettingsWrapper';
 import { ChartSettings } from './Pages/PageConfigChart';
 import { usePhaseColors } from './Hooks/usePhaseColors';
 import { SystemSettings } from './Pages/PageConfigSystem';
+import { LocaleOptions } from '../../Types';
+import { ConfigContextProvider, useConfigContext } from './Hooks/useConfig';
 
 const NeighbourSelector = () => {
   const { neighbours, selectedNeighbour, setSelectedNeighbour } = useNeighbourContext();
@@ -171,16 +171,24 @@ const AppWrapper = () => {
   }, [selectedNeighbour]);
 
   const AppRouter = () => {
-    usePhaseColors();
+    const { getPluginConfig } = useConfigContext();
+    let pluginConfigLocale: LocaleOptions | undefined;
+    try {
+      pluginConfigLocale = getPluginConfig<LocaleOptions>('LocalePlugin')
+    } catch (e) {
+      console.error(e);
+    }
+
+    usePhaseColors(pluginConfigLocale!);
     return <RouterProvider router={router} />
   }
 
   return (
     <div id='single-page' className='single-page noselect'>
       <NeighbourDataProvider neighbour={selectedNeighbour!}>
-        <ConfigDataProvider>
+        <ConfigContextProvider>
           <AppRouter />
-        </ConfigDataProvider>
+        </ConfigContextProvider>
       </NeighbourDataProvider>
     </div>
   );

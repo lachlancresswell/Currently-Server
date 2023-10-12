@@ -1,38 +1,40 @@
-import { DistroData, ConfigArray, VariableMetadata, ConfigVariableMetadata } from '../../../Types'
-import { useConfigDataContext } from '../Hooks/configContext';
+import { DistroData, ConfigArray, ConfigVariableMetadata, WarningsOptions } from '../../../Types'
+import { useConfigContext } from '../Hooks/useConfig';
 
 export interface Config {
     warnings: ConfigArray
 }
 
-export function Warning({ data, type, phaseIndex }: { data: DistroData, type: 'va' | 'hz' | 'voltage' | 'amperage' | 'pf' | 'kva', phaseIndex?: 0 | 1 | 2 }) {
+const PLUGIN_NAME = 'warnings';
 
-    const { configData } = useConfigDataContext();
+export function Warning({ data, type, phaseIndex }: { data: DistroData, type: 'va' | 'hz' | 'voltage' | 'amperage' | 'pf' | 'kva', phaseIndex?: 0 | 1 | 2 }) {
+    const { getPluginConfig } = useConfigContext();
+
+    const pluginData = getPluginConfig<WarningsOptions>(PLUGIN_NAME);
 
     let colour = '';
-    if (configData && data) {
-
-        const enable = configData!.warnings.config!.enable as ConfigVariableMetadata<boolean>;
+    if (pluginData && data) {
+        const enable = pluginData.enable as ConfigVariableMetadata<boolean>;
         const visible = enable.value;
 
         switch (type) {
             case 'hz':
-                colour = toleranceToColour(configData!.warnings.config!, data, 'hz')
+                colour = toleranceToColour(pluginData, data, 'hz')
                 break;
             case 'va':
-                if (phaseIndex !== undefined && phaseIndex > -1) colour = toleranceToColourVA(configData!.warnings.config!, data, phaseIndex)
+                if (phaseIndex !== undefined && phaseIndex > -1) colour = toleranceToColourVA(pluginData, data, phaseIndex)
                 break;
             case 'voltage':
-                if (phaseIndex !== undefined && phaseIndex > -1) colour = toleranceToColour(configData!.warnings.config!, data, 'voltage', phaseIndex)
+                if (phaseIndex !== undefined && phaseIndex > -1) colour = toleranceToColour(pluginData, data, 'voltage', phaseIndex)
                 break;
             case 'amperage':
-                if (phaseIndex !== undefined && phaseIndex > -1) colour = toleranceToColour(configData!.warnings.config!, data, 'amperage', phaseIndex)
+                if (phaseIndex !== undefined && phaseIndex > -1) colour = toleranceToColour(pluginData, data, 'amperage', phaseIndex)
                 break;
             case 'kva':
-                if (phaseIndex !== undefined && phaseIndex > -1) colour = toleranceToColour(configData!.warnings.config!, data, 'kva', phaseIndex)
+                if (phaseIndex !== undefined && phaseIndex > -1) colour = toleranceToColour(pluginData, data, 'kva', phaseIndex)
                 break;
             case 'pf':
-                if (phaseIndex !== undefined && phaseIndex > -1) colour = toleranceToColour(configData!.warnings.config!, data, 'pf', phaseIndex)
+                if (phaseIndex !== undefined && phaseIndex > -1) colour = toleranceToColour(pluginData, data, 'pf', phaseIndex)
                 break;
         }
 

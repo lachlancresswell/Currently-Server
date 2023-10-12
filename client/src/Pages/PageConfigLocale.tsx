@@ -1,10 +1,15 @@
 import { LocaleOptions } from "../../../Types";
-import { useConfig } from "../Hooks/useConfig";
+import { useConfigContext } from '../Hooks/useConfig';
 import '../Styles/PageConfigLocale.css';
-import { MouseEventHandler } from "react";
+import { MouseEventHandler, useState } from "react";
+
+const PLUGIN_NAME = 'LocalePlugin';
 
 export const LocaleSettings = () => {
-    const { pluginConfig, selectedNeighbour, handleInputChange } = useConfig<LocaleOptions>('LocalePlugin');
+    const { getPluginConfig, isModified, handleInputChange } = useConfigContext();
+
+    const [pluginConfig, setPluginConfig] = useState<LocaleOptions | undefined>(getPluginConfig<LocaleOptions>(PLUGIN_NAME));
+    const [startPluginConfig, setStartPluginConfig] = useState<LocaleOptions | undefined>(getPluginConfig<LocaleOptions>(PLUGIN_NAME));
 
     const getCountryName = (locale?: string): string => {
         switch (locale) {
@@ -21,6 +26,8 @@ export const LocaleSettings = () => {
         }
     }
 
+    const onChange = (key: string, value: any, push = false) => handleInputChange<LocaleOptions>(pluginConfig!, key, value, push, PLUGIN_NAME, [pluginConfig, setPluginConfig], [startPluginConfig, setStartPluginConfig])
+
     const countryString = getCountryName(pluginConfig?.locale.value)
 
     return (
@@ -35,10 +42,10 @@ export const LocaleSettings = () => {
                 Phase Colours
             </div>
             <PhaseTrafficLights locale={pluginConfig?.locale.value} />
-            <PhaseTrafficLights locale={'au'} description='AU/NZ' handleInputChange={() => handleInputChange('locale', 'au', true)} />
-            <PhaseTrafficLights locale={'eu'} description='EU/UK' handleInputChange={() => handleInputChange('locale', 'eu', true)} />
-            <PhaseTrafficLights locale={'us'} description='USA' handleInputChange={() => handleInputChange('locale', 'us', true)} />
-            <PhaseTrafficLights locale={'ca'} description='CAN' handleInputChange={() => handleInputChange('locale', 'ca', true)} />
+            <PhaseTrafficLights locale={'au'} description='AU/NZ' handleInputChange={() => onChange('locale', 'au', true)} />
+            <PhaseTrafficLights locale={'eu'} description='EU/UK' handleInputChange={() => onChange('locale', 'eu', true)} />
+            <PhaseTrafficLights locale={'us'} description='USA' handleInputChange={() => onChange('locale', 'us', true)} />
+            <PhaseTrafficLights locale={'ca'} description='CAN' handleInputChange={() => onChange('locale', 'ca', true)} />
         </div>
     )
 }

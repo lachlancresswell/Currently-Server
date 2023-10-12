@@ -1,9 +1,8 @@
 import { useEffect } from 'react';
-import { useConfigDataContext } from '../Hooks/configContext';
+import { LocaleOptions } from '../../../Types';
 
-export function usePhaseColors() {
-    const { configData } = useConfigDataContext();
+export function usePhaseColors(pluginConfig: LocaleOptions) {
     useEffect(() => {
-        document.body.dataset.locale = configData?.locale?.config?.locale.value as string || 'au';
-    }, [configData])
+        document.body.dataset.locale = pluginConfig?.locale.value as string || 'au';
+    }, [pluginConfig.locale.value])
 }

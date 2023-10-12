@@ -1,20 +1,23 @@
 import { useNeighbourContext } from '../Hooks/neighbourContext';
 import { useNeighbourDataContext } from '../Hooks/neighbourDataContext';
-import { DistroData } from '../../../Types';
+import { DistroData, IPOptions } from '../../../Types';
 import SettingsEthernetIcon from '@mui/icons-material/SettingsEthernet';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import PublicIcon from '@mui/icons-material/Public';
 import { Warning } from '../Components/Warnings';
-import { useConfigDataContext } from '../Hooks/configContext';
+import { useConfigContext } from '../Hooks/useConfig';
 
 interface PageAdvProps {
 }
 
+const PLUGIN_NAME = 'IPPlugin'
+
 export const PageHome = ({ }: PageAdvProps) => {
     const { selectedNeighbour } = useNeighbourContext();
     const { neighbourData } = useNeighbourDataContext();
-    const { configData } = useConfigDataContext();
+    const { getPluginConfig } = useConfigContext();
+    const configData = getPluginConfig<IPOptions>(PLUGIN_NAME);
 
     if (!selectedNeighbour) {
         return null;
@@ -31,7 +34,7 @@ export const PageHome = ({ }: PageAdvProps) => {
                 <SettingsEthernetIcon />
             </div>
             <div>
-                <ValueStatusSymbol status={configData?.IPPlugin?.config?.ipaddress.value} />
+                <ValueStatusSymbol status={configData?.ipaddress.value} />
             </div>
             <PhaseReadout phaseIndex={2} neighbourData={neighbourData} />
             <div className="homeCircle">
@@ -57,7 +60,7 @@ export const PageHome = ({ }: PageAdvProps) => {
                 <PublicIcon />
             </div>
             <div>
-                <ValueStatusSymbol status={configData?.IPPlugin?.config?.internetStatus.value} />
+                <ValueStatusSymbol status={configData?.internetStatus.value} />
             </div>
         </div>
     );

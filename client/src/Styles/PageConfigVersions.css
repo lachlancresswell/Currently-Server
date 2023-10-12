@@ -28,10 +28,6 @@
     grid-column: span 6;
 }
 
-.span-six-versions {
-    grid-column: span 5;
-}
-
 .span-five-versions {
     grid-column: span 5;
 }

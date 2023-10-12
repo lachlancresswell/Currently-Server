@@ -1,20 +1,23 @@
+import { IPOptions } from '../../../Types';
 import { useNeighbourContext } from '../Hooks/neighbourContext';
 import { useNeighbourDataContext } from '../Hooks/neighbourDataContext';
-import { useConfigDataContext } from '../Hooks/configContext';
+import { useConfigContext } from '../Hooks/useConfig';
 
+const PLUGIN_NAME = 'IPPlugin';
 
 export const Status: React.FC = () => {
     const { selectedNeighbour } = useNeighbourContext();
     const { neighbourData } = useNeighbourDataContext();
-    const { configData } = useConfigDataContext();
+    const { getPluginConfig } = useConfigContext();
+    const pluginData = getPluginConfig<IPOptions>(PLUGIN_NAME);
 
     let color = 'grey';
 
-    if (selectedNeighbour) {
+    if (selectedNeighbour && pluginData) {
         color = 'yellow';
         if (neighbourData) {
             color = 'green';
-            if (configData?.IPPlugin?.config?.internetStatus?.value) {
+            if (pluginData.internetStatus?.value) {
                 color = 'purple';
             }
         }

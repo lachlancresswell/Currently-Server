@@ -1,14 +1,18 @@
-// src/components/ConfigForm.tsx
 import '../Styles/PageConfigSystem.css';
 import { SystemOptions } from '../../../Types';
-import { useConfig } from '../Hooks/useConfig';
+import { useConfigContext } from '../Hooks/useConfig';
+import { useState } from 'react';
+
+const PLUGIN_NAME = 'SystemPlugin';
 
 export const SystemSettings = ({ }: {}) => {
-    const { pluginConfig, selectedNeighbour, handleInputChange, handleConfirm, isModified } = useConfig<SystemOptions>('SystemPlugin');
+    const { getPluginConfig, handleInputChange } = useConfigContext();
+
+    const [pluginConfig, setPluginConfig] = useState<SystemOptions | undefined>(getPluginConfig<SystemOptions>(PLUGIN_NAME));
+    const [startPluginConfig, setStartPluginConfig] = useState<SystemOptions | undefined>(getPluginConfig<SystemOptions>(PLUGIN_NAME));
 
     const onClick = () => {
-        pluginConfig!.reboot.value = true;
-        handleConfirm();
+        handleInputChange(pluginConfig!, 'reboot', true, true, PLUGIN_NAME, [pluginConfig, setPluginConfig], [startPluginConfig, setStartPluginConfig]);
     }
 
     return (

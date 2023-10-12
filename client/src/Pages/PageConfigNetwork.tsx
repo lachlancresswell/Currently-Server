@@ -1,44 +1,87 @@
-// src/components/ConfigForm.tsx
 import '../Styles/PageConfigNetwork.css';
 import LanguageIcon from '@mui/icons-material/Language';
 import SpokeIcon from '@mui/icons-material/Spoke';
 import RouterIcon from '@mui/icons-material/Router';
 import SettingsEthernetIcon from '@mui/icons-material/SettingsEthernet';
 import React from 'react';
-import { ConfigVariableMetadata, EphemeralVariableMetaData, IPOptions, MDNSConfig, ipaddress, prefix } from '../../../Types';
+import { ConfigArray, IPOptions, MDNSConfig, ipaddress, prefix } from '../../../Types';
+import { Setting } from './NetworkSettingsWrapper';
 
-export const PageConfigNetwork = ({ onSettingClick, configObj }: { onSettingClick: <T>(setting: ConfigVariableMetadata<T> | EphemeralVariableMetaData<T>, updated?: boolean) => void, configObj: { pluginConfig?: IPOptions, selectedNeighbour: any, handleInputChange: any, handleConfirm: any, isModified: any, mdns: { mdnsConfig?: MDNSConfig, handleInputChangeMDNS: any, handleConfirmMDNS: any, isModifiedMDNS: any } } }) => {
+const PLUGIN_NAME = 'IPPlugin';
 
-    const { pluginConfig, selectedNeighbour, handleInputChange, handleConfirm, isModified, mdns } = configObj;
+export const PageConfigNetwork = ({
+    onSettingClick,
+    handleConfirm,
+    isModified,
+    configObj
+}: {
+    onSettingClick: <T>(setting: Setting<T>, updated?: boolean) => void,
+    handleConfirm: () => void,
+    isModified: (pluginName: string, pluginConfig: IPOptions | MDNSConfig | undefined, keys?: string[]) => boolean,
+    configObj: {
+        ipPluginState?: [IPOptions | undefined, React.Dispatch<React.SetStateAction<IPOptions | undefined>>],
+        mdnsPluginState?: [MDNSConfig | undefined, React.Dispatch<React.SetStateAction<MDNSConfig | undefined>>],
+    }
+}) => {
+    const { ipPluginState, mdnsPluginState } = configObj;
 
-    const isChecked = pluginConfig?.dhcp.value;
+    const [ipPluginConfig, setIpPluginConfig] = ipPluginState!;
+    const [mdnsPluginConfig, setMdnsPluginConfig] = mdnsPluginState!;
+
+    const isChecked = ipPluginConfig?.dhcp.value;
+    const modified = isModified(PLUGIN_NAME, ipPluginConfig) || isModified('MDNSPlugin', mdnsPluginConfig);
+
+    const handleInputChange = (
+        key: keyof ConfigArray,
+        value: ConfigArray[keyof ConfigArray]['value'],
+    ) => {
+        setIpPluginConfig({ ...ipPluginConfig!, ...{ [key]: { ...ipPluginConfig![key], ...{ value: value } } } });
+    }
 
     return (
         <div className="gridNetwork">
-            <NetworkInput type={'text'} title={'ID'} value={mdns?.mdnsConfig?.deviceName.value} onChange={() => {
-                onSettingClick<string>(mdns?.mdnsConfig?.deviceName!)
+            <NetworkInput type={'text'} title={'ID'} value={mdnsPluginConfig?.deviceName.value} onChange={() => {
+                onSettingClick<string>({
+                    pluginName: 'MDNSPlugin',
+                    setting: mdnsPluginConfig?.deviceName!,
+                    key: 'deviceName'
+                })
             }} />
-            <NetworkInput type={'text'} title={<LanguageIcon />} disabled={isChecked} value={pluginConfig?.ipaddress.value} onChange={() => {
-                onSettingClick<ipaddress>(pluginConfig?.ipaddress!)
+            <NetworkInput type={'text'} title={<LanguageIcon />} disabled={isChecked} value={ipPluginConfig?.ipaddress.value} onChange={() => {
+                onSettingClick<ipaddress>({
+                    pluginName: PLUGIN_NAME,
+                    setting: ipPluginConfig?.ipaddress!,
+                    key: 'ipaddress'
+                })
             }} />
-            <NetworkInput type={'text'} title={<SpokeIcon />} disabled={isChecked} value={pluginConfig?.prefix.value?.toString()} onChange={() => {
-                onSettingClick<prefix>(pluginConfig?.prefix!)
+            <NetworkInput type={'text'} title={<SpokeIcon />} disabled={isChecked} value={ipPluginConfig?.prefix.value?.toString()} onChange={() => {
+                onSettingClick<prefix>({
+                    pluginName: PLUGIN_NAME,
+                    setting: ipPluginConfig?.prefix!,
+                    key: 'prefix'
+                })
             }} />
-            <NetworkInput type={'text'} title={<RouterIcon />} disabled={isChecked} value={pluginConfig?.gateway.value} onChange={() => {
-                let gatewayValue = pluginConfig?.gateway.value;
+            <NetworkInput type={'text'} title={<RouterIcon />} disabled={isChecked} value={ipPluginConfig?.gateway.value} onChange={() => {
+                let gatewayValue = ipPluginConfig?.gateway.value;
                 let hasBeenUpdated = false;
                 if (!gatewayValue) {
-                    gatewayValue = guessGatewayFromIpAndPrefix(pluginConfig?.ipaddress.value, pluginConfig?.prefix.value);
+                    gatewayValue = guessGatewayFromIpAndPrefix(ipPluginConfig?.ipaddress.value, ipPluginConfig?.prefix.value);
                     hasBeenUpdated = true;
                 }
-                onSettingClick<ipaddress>({ ...pluginConfig!.gateway, ...{ value: gatewayValue } }, hasBeenUpdated)
+                onSettingClick<ipaddress>({
+                    pluginName: PLUGIN_NAME,
+                    setting: {
+                        ...ipPluginConfig!.gateway, ...{ value: gatewayValue }
+                    },
+                    key: 'gateway'
+                }, hasBeenUpdated)
             }} />
             <CheckBoxInput title={'DHCP'} checked={isChecked} onChange={(e) => handleInputChange('dhcp', e.target.checked)} />
             <div className={`span-two-network network-status`}>
                 <SettingsEthernetIcon />
-                <ValueStatusSymbol status={pluginConfig?.ipaddress.value} />
+                <ValueStatusSymbol status={ipPluginConfig?.ipaddress.value} />
             </div>
-            <ConfirmButton isModified={isModified()} onClick={handleConfirm} />
+            <ConfirmButton isModified={modified} onClick={handleConfirm} />
         </div >
     )
 }

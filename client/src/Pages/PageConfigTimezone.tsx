@@ -1,14 +1,31 @@
 // src/components/ConfigForm.tsx
+import { useState } from 'react';
 import { TZOptions } from '../../../Types';
+import { useConfigContext } from '../Hooks/useConfig';
 import '../Styles/PageConfigTimezone.css';
-import { useConfig } from '../Hooks/useConfig';
+
+const PLUGIN_NAME = 'TimeZonePlugin';
 
 export const TimezoneSettings = () => {
-    const { pluginConfig, handleInputChange, handleConfirm, isModified } = useConfig<TZOptions>('TimeZonePlugin');
+    const { getPluginConfig, isModified, handleInputChange, savePluginConfig } = useConfigContext();
+    const [pluginConfig, setPluginConfig] = useState<TZOptions | undefined>(getPluginConfig<TZOptions>(PLUGIN_NAME));
+    const [startPluginConfig, setStartPluginConfig] = useState<TZOptions | undefined>((() => {
+        const cfg = getPluginConfig<TZOptions>(PLUGIN_NAME);
+        return cfg
+    }));
 
     const selectedCountry = countryFromTimezone(pluginConfig?.timezone.value || '')
     const cities = timezonesFromCountry(selectedCountry, pluginConfig?.timezone.options || []);
     const selectedCity = cityFromTimezone(pluginConfig?.timezone.value || '')
+
+    const onChange = (key: keyof TZOptions, value: any, push = false) => handleInputChange<TZOptions>(pluginConfig!, key, value, push, PLUGIN_NAME, [pluginConfig, setPluginConfig], [startPluginConfig, setStartPluginConfig])
+
+    const modified = isModified<TZOptions>(pluginConfig!, startPluginConfig!, ['timezone']);
+
+    const submit = () => {
+        savePluginConfig<[TZOptions]>([pluginConfig!], [PLUGIN_NAME]);
+        setStartPluginConfig(pluginConfig);
+    }
 
     return (
         <div className="gridTimezone">
@@ -17,7 +34,7 @@ export const TimezoneSettings = () => {
                 <select value={selectedCountry} onChange={(e) => {
                     const possibleTimezones = timezonesFromCountry(e.target.value, pluginConfig?.timezone.options || []);
                     const tz = possibleTimezones ? possibleTimezones[0] : [];
-                    handleInputChange('timezone', tz)
+                    onChange('timezone', tz)
                 }}>
                     {pluginConfig?.timezoneCountry.options?.map(country =>
                         <option key={country} value={country}>
@@ -29,7 +46,7 @@ export const TimezoneSettings = () => {
             <Title title={'City'} />
             <div className={`span-six-timezone timezone-value`}>
                 <select value={selectedCity} onChange={(e) => {
-                    handleInputChange('timezone', `${selectedCountry}/${e.target.value}`)
+                    onChange('timezone', `${selectedCountry}/${e.target.value}`)
                 }}>
                     {cities?.map((timezone) => {
                         const city = cityFromTimezone(timezone)
@@ -46,15 +63,15 @@ export const TimezoneSettings = () => {
             <Title title={'Format'} />
             <div className={`span-six-timezone timezone-value`}>
                 {pluginConfig?.dateFormat.value === 'dmy'}
-                <span className={`${pluginConfig?.dateFormat.value === 'dmy' ? 'timezone-selected' : 'timezone-not-selected'}`} onClick={() => handleInputChange('dateFormat', 'dmy', true)}>DMY</span>
-                <span className={`${pluginConfig?.dateFormat.value === 'mdy' ? 'timezone-selected' : 'timezone-not-selected'}`} onClick={() => handleInputChange('dateFormat', 'mdy', true)}>MDY</span>
-                <span className={`${pluginConfig?.timeFormat.value === '24h' ? 'timezone-selected' : 'timezone-not-selected'}`} onClick={() => handleInputChange('timeFormat', '24h', true)}>24H</span>
-                <span className={`${pluginConfig?.timeFormat.value === '12h' ? 'timezone-selected' : 'timezone-not-selected'}`} onClick={() => handleInputChange('timeFormat', '12h', true)}>12H</span>
+                <span className={`${pluginConfig?.dateFormat.value === 'dmy' ? 'timezone-selected' : 'timezone-not-selected'}`} onClick={() => onChange('dateFormat', 'dmy', true)}>DMY</span>
+                <span className={`${pluginConfig?.dateFormat.value === 'mdy' ? 'timezone-selected' : 'timezone-not-selected'}`} onClick={() => onChange('dateFormat', 'mdy', true)}>MDY</span>
+                <span className={`${pluginConfig?.timeFormat.value === '24h' ? 'timezone-selected' : 'timezone-not-selected'}`} onClick={() => onChange('timeFormat', '24h', true)}>24H</span>
+                <span className={`${pluginConfig?.timeFormat.value === '12h' ? 'timezone-selected' : 'timezone-not-selected'}`} onClick={() => onChange('timeFormat', '12h', true)}>12H</span>
             </div>
             <div className={`span-nine-timezone`} />
             <div className={`span-one-timezone`}>
-                <div className='timezone-accept' onClick={handleConfirm}>
-                    {isModified(['timezone']) ? 'ACCEPT' : ''}
+                <div className='timezone-accept' onClick={submit}>
+                    {modified ? 'ACCEPT' : ''}
                 </div>
             </div>
         </div>

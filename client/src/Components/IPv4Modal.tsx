@@ -2,7 +2,17 @@ import { useState } from "react"
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { ConfigVariable, ipaddress } from "../../../Types";
 
-export const IPv4Modal = ({ setting, onClose, onSubmit, updated }: { setting: ConfigVariable<ipaddress>, onClose: () => void, onSubmit: (setting: ConfigVariable<ipaddress>) => void, updated?: boolean }) => {
+export const IPv4Modal = ({
+    setting,
+    onClose,
+    onSubmit,
+    updated
+}: {
+    setting: ConfigVariable<ipaddress>,
+    onClose: () => void,
+    onSubmit: (setting: ConfigVariable<ipaddress>) => void,
+    updated?: boolean
+}) => {
 
     const ipAddressAsArray = setting.value?.split('.').map((i) => parseInt(i)) || []
     const [address, setAddress] = useState<number[]>(ipAddressAsArray)
