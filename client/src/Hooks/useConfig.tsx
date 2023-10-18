@@ -1,7 +1,7 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { ConfigArray, PluginJSON } from '../../../Types';
 import axios from 'axios';
-import { start } from 'repl';
+import ClientConfig from '../plugin-config.client.dev.json';
 
 const LOCAL_STORAGE_KEY = 'configData';
 
@@ -123,7 +123,13 @@ export const ConfigContextProvider: React.FC<props> = ({ children }) => {
             throw (new Error('Server config not loaded'));
         };
 
-        const pluginConfig = serverConfig[pluginName].config as T;
+        let pluginConfig: T | undefined;
+
+        try {
+            pluginConfig = serverConfig[pluginName].config as T;
+        } catch (e) {
+            console.error(`Error getting config for plugin ${pluginName}:`, e);
+        }
 
         if (!pluginConfig) {
             throw (new Error(`Plugin config not found for plugin ${pluginName}`));
