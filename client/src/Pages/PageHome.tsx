@@ -14,14 +14,9 @@ interface PageAdvProps {
 const PLUGIN_NAME = 'IPPlugin'
 
 export const PageHome = ({ }: PageAdvProps) => {
-    const { selectedNeighbour } = useNeighbourContext();
     const { neighbourData } = useNeighbourDataContext();
     const { getPluginConfig } = useConfigContext();
     const configData = getPluginConfig<IPOptions>(PLUGIN_NAME);
-
-    if (!selectedNeighbour) {
-        return null;
-    }
 
     return (
 
@@ -80,16 +75,26 @@ const PhaseReadout = ({ phaseIndex, neighbourData }: { phaseIndex: number, neigh
     return (
         <>
             <div className={`${'l' + phaseIndex}`}>
-                <span className="value">
-                    {neighbourData?.phases[phaseIndex - 1].voltage}
-                </span>
-                <span className="unit">V</span>
+                {neighbourData?.phases[phaseIndex - 1].voltage !== undefined ?
+                    <>
+                        <span className="value">
+                            {neighbourData?.phases[phaseIndex - 1].voltage}
+                        </span>
+                        <span className="unit">V</span>
+                    </>
+                    : <></>
+                }
             </div>
             <div className={`cellAmperage ${'l' + phaseIndex}`}>
-                <span className="valueAmperage">
-                    {neighbourData?.phases[phaseIndex - 1].amperage}
-                </span>
-                <span className="unit">A</span>
+                {neighbourData?.phases[phaseIndex - 1].amperage !== undefined ?
+                    <>
+                        <span className="valueAmperage">
+                            {neighbourData?.phases[phaseIndex - 1].amperage}
+                        </span>
+                        <span className="unit">A</span>
+                    </>
+                    : <></>
+                }
             </div>
         </>
     )
