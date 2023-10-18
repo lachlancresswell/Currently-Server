@@ -26,6 +26,33 @@ export interface Phase {
  */
 export interface NeighbourDataContextType {
     neighbourData: DistroData | null;
+    history: Phase[];
+}
+
+const mockVoltage = () => 231 + (Math.random() * 5);
+const mockL1Current = () => 3 + (Math.random() * 1.5);
+const mockL2Current = () => 0 + (Math.random() * 1);
+const mockL3Current = () => 4 + (Math.random() * 2);
+
+export const mockPollRange = (): Phase[] => {
+    let phases: Phase[] = [{ voltage: [], amperage: [] }, { voltage: [], amperage: [] }, { voltage: [], amperage: [] }];
+
+    for (let i = 300; i > 0; i--) {
+        const timeSecondsAgo = new Date(Date.now() - i * 1000);
+
+        phases.forEach((phase, i) => {
+            phase.voltage.push({
+                y: mockVoltage(),
+                x: timeSecondsAgo
+            })
+            phase.amperage.push({
+                y: i === 0 ? mockL1Current() : i === 1 ? mockL2Current() : mockL3Current(),
+                x: timeSecondsAgo
+            })
+        })
+    }
+
+    return phases;
 }
 
 /**
@@ -33,6 +60,7 @@ export interface NeighbourDataContextType {
  */
 export const NeighbourDataContext = createContext<NeighbourDataContextType>({
     neighbourData: null,
+    history: mockPollRange(),
 });
 
 interface props {
@@ -48,6 +76,7 @@ export const org = `onestage`;
  */
 export const NeighbourDataProvider: React.FC<props> = ({ neighbour, children }) => {
     const [neighbourData, setNeighbourData] = useState<DistroData | null>(null);
+    const [history, setHistory] = useState<Phase[]>(mockPollRange());
 
     const pollServer = async () => {
         const url = window.location.protocol + '//' + window.location.host + '/influx'
@@ -69,7 +98,28 @@ export const NeighbourDataProvider: React.FC<props> = ({ neighbour, children }) 
             func = pollServer;
         } else {
             func = () => {
-                const data = mockPollServer
+                const data = mockPollServer()
+                setHistory((prevHistory) => {
+                    const newHistory: Phase[] = [
+                        ...prevHistory
+                    ];
+
+                    newHistory.forEach((phase, index) => {
+                        const voltage = {
+                            y: data.phases[index].voltage,
+                            x: new Date()
+                        }
+
+                        const amperage = {
+                            y: data.phases[index].amperage,
+                            x: new Date()
+                        }
+                        phase.voltage.push(voltage)
+                        phase.amperage.push(amperage)
+                    })
+
+                    return newHistory;
+                })
                 setNeighbourData(data);
             }
         }
@@ -81,6 +131,7 @@ export const NeighbourDataProvider: React.FC<props> = ({ neighbour, children }) 
 
     const value = {
         neighbourData,
+        history
     };
 
     return <NeighbourDataContext.Provider value={value}>{children}</NeighbourDataContext.Provider>;
@@ -259,11 +310,6 @@ export const nullPadding = (phase: Phase, start: Date, end: Date) => {
     phase.voltage.splice(phase.voltage.length - 1, 0, endItem);
 }
 
-const mockVoltage = () => 231 + (Math.random() * 5);
-const mockL1Current = () => 3 + (Math.random() / 4);
-const mockL2Current = () => 0 + (Math.random() / 3);
-const mockL3Current = () => 4 + (Math.random() * 2);
-
 const mockPollServer = (): DistroData => {
     const time = new Date()
     const pf = 0;
@@ -290,25 +336,4 @@ const mockPollServer = (): DistroData => {
         hz,
         phases
     };
-}
-
-export const mockPollRange = (): Phase[] => {
-    let phases: Phase[] = [{ voltage: [], amperage: [] }, { voltage: [], amperage: [] }, { voltage: [], amperage: [] }];
-
-    for (let i = 300; i > 0; i--) {
-        const timeSecondsAgo = new Date(Date.now() - i * 1000);
-
-        phases.forEach((phase, i) => {
-            phase.voltage.push({
-                y: mockVoltage(),
-                x: timeSecondsAgo
-            })
-            phase.amperage.push({
-                y: i === 0 ? mockL1Current() : i === 1 ? mockL2Current() : mockL3Current(),
-                x: timeSecondsAgo
-            })
-        })
-    }
-
-    return phases;
 }

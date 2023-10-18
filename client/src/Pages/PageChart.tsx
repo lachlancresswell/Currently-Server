@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { InfluxDB } from '@influxdata/influxdb-client-browser';
 import ReactApexChart from "react-apexcharts";
 import { ApexOptions } from "apexcharts";
-import { mockPollRange, org, token } from '../Hooks/neighbourDataContext';
+import { org, token, useNeighbourDataContext } from '../Hooks/neighbourDataContext';
 import TuneIcon from '@mui/icons-material/Tune';
 import '../Styles/PageChart.css'
 import { KeyboardDoubleArrowLeft, KeyboardDoubleArrowRight } from '@mui/icons-material';
@@ -138,12 +138,21 @@ const initialOptions = (endDate: number) => {
         forceNiceScale: true
     }
 
-    const datetimeFormatter = (value: any, timestamp: any) => {
-        const startDate = new Date(value as any).getTime();
+    const datetimeFormatter = (value: string, timestamp: any) => {
+        const startDate = new Date(value).getTime();
         const seconds = ((endDate - startDate) / 1000)
         let diff = ((endDate - startDate) / 1000);
-        let str = `0:${diff < 10 ? '0' + diff.toFixed(0) : diff.toFixed(0)}`;
 
+        /**
+         * Round diff to a multiple of ten if within +/- 1
+         */
+        if (diff % 10 >= 9) {
+            diff = Math.ceil(diff);
+        } else if (diff % 10 <= 1) {
+            diff = Math.floor(diff);
+        }
+
+        let str = `0:${diff < 10 ? '0' + diff.toFixed(0) : diff.toFixed(0)}`;
         if (diff > 59) {
             const minutes = Math.floor(Math.round(seconds) / 60)
             str = `${minutes}`
@@ -156,7 +165,7 @@ const initialOptions = (endDate: number) => {
             }
         }
 
-        return str;
+        return `-${str}`;
     }
 
 
@@ -211,28 +220,45 @@ const initialOptions = (endDate: number) => {
 
 
 const MyComponent: React.FC<Props> = () => {
+    const { history } = useNeighbourDataContext();
+
     const WINDOW_SIZE = parseInt(localStorage.getItem('CHART_WINDOW_PERIOD') || '60'); // Distance to display in seconds
     const SCROLL_SIZE = WINDOW_SIZE / 2; // Distance to scroll in seconds
 
-    const [plotData, setPlotData] = useState<Phase[]>([]);
+    /**
+     * Data to display on the plot
+     */
+    const [plotData, setPlotData] = useState<Phase[]>(history);
     const [dataEndDate, _setDataEndDate] = useState<Date>(new Date());
     const [plotViewStartDate, setPlotViewStartDate] = useState<Date>(new Date(dataEndDate.getTime() - (WINDOW_SIZE * 1000)));
     const [plotViewEndDate, setPlotViewEndDate] = useState<Date>(new Date(dataEndDate.getTime()));
     const [legendViewStatus, setLegendViewStatus] = useState<{ [index: string]: boolean }[]>(legendStartState);
-    const [plotOptions, _setPlotOptions] = useState<ApexOptions>(initialOptions(dataEndDate.getTime()))
+    const [plotOptions, setPlotOptions] = useState<ApexOptions>(initialOptions(dataEndDate.getTime()))
+
+    /**
+     * Whether the user has scrolled away from the latest data point
+     */
+    const [scrolled, setScrolled] = useState<boolean>(false);
 
     useEffect(() => {
         localStorage.setItem('CHART_WINDOW_PERIOD', WINDOW_SIZE.toString())
-
-        const hostUrl = window.location.protocol + '//' + window.location.host;
-        const databaseUrl = hostUrl + '/influx'
-        collectData(hostUrl, databaseUrl).then((res) => {
-            setPlotData(res)
-        }, (text) => {
-            setPlotData(mockPollRange())
-            // setOptions({ ...options, noData: { text } })
-        })
     }, []);
+
+    useEffect(() => {
+        const newEndDate = history[0].voltage[history[0].voltage.length - 1].x;
+        const newStartDate = new Date(history[0].voltage[history[0].voltage.length - 1].x.getTime() - (WINDOW_SIZE * 1000));
+
+        if (!scrolled) {
+            setPlotData(history)
+            setPlotViewEndDate(newEndDate);
+            setPlotViewStartDate(newStartDate)
+        }
+
+        /**
+         * Update the displayed plot dates to be relative to the latest measured date
+         */
+        setPlotOptions(initialOptions(newEndDate.getTime()));
+    }, [history])
 
 
     const toggleLegendElement = (phaseIndex: 1 | 2 | 3, category: "Voltage" | "Current") => {
@@ -252,6 +278,7 @@ const MyComponent: React.FC<Props> = () => {
         if (plotViewStartDate.getTime() > plotData[0].voltage[0].x.getTime()) {
             setPlotViewStartDate(new Date(plotViewStartDate.getTime() - (SCROLL_SIZE * 1000)));
             setPlotViewEndDate(new Date(plotViewEndDate.getTime() - (SCROLL_SIZE * 1000)));
+            setScrolled(true);
         }
     }
 
@@ -292,6 +319,8 @@ const MyComponent: React.FC<Props> = () => {
                     if (plotViewEndDate.getTime() < dataEndDate.getTime()) {
                         setPlotViewStartDate(new Date(plotViewStartDate.getTime() + (SCROLL_SIZE * 1000)));
                         setPlotViewEndDate(new Date(plotViewEndDate.getTime() + (SCROLL_SIZE * 1000)));
+                    } else {
+                        setScrolled(false);
                     }
                 }}>
                     <KeyboardDoubleArrowRight />
