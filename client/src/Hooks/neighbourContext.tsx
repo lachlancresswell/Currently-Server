@@ -31,16 +31,20 @@ export const NeighbourProvider: React.FC<props> = ({ children }) => {
   const [selectedNeighbour, setSelectedNeighbour] = useState<Neighbour | null>(null);
 
   useEffect(() => {
+    const fetchNeighbours = async () => {
+      const response = await fetch(`/neighbours`)
+      const newNeighbours = await response.json();
+      if (!neighbours.length) {
+        setNeighbours(newNeighbours)
+        if (!selectedNeighbour) {
+          setSelectedNeighbour(newNeighbours[0]);
+        }
+      }
+    }
+    fetchNeighbours();
     const interval = setInterval(async () => {
       try {
-        const response = await fetch(`/neighbours`)
-        const newNeighbours = await response.json();
-        if (!neighbours.length) {
-          setNeighbours(newNeighbours)
-          if (!selectedNeighbour) {
-            setSelectedNeighbour(newNeighbours[0]);
-          }
-        }
+        fetchNeighbours();
       } catch (error) {
         console.error(error);
       }
