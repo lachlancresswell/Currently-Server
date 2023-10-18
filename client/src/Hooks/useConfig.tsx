@@ -85,19 +85,34 @@ interface props {
 }
 
 export const ConfigContextProvider: React.FC<props> = ({ children }) => {
+    /**
+     * The default configuration used if nothing is found in local storage.
+     */
     const defaultConfigData = ClientConfig as any as PluginJSON;
+
+    /**
+     * The default configuration ephemeral variables are reset to.
+     */
     const resetConfigData = ResetConfig as any as PluginJSON;
 
-    // The last cached config.
+    /**
+     * Last cached configuration in local storage.
+     */
     const localConfigData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '{}') as PluginJSON
 
+
+    /**
+     * Heirarchy:
+     * 1. Default config
+     * 2. Cached config
+     * 3. Reset config
+     */
     const startConfigData = {
         ...defaultConfigData,
         ...localConfigData,
         ...resetConfigData
     }
 
-    // Initial state is the last cached config.
     const [serverConfig, setServerConfig] = useState<PluginJSON | undefined>(startConfigData);
 
     /**
