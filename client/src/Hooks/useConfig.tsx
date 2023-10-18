@@ -2,6 +2,7 @@ import { useState, useEffect, createContext, useContext } from 'react';
 import { ConfigArray, PluginJSON } from '../../../Types';
 import axios from 'axios';
 import ClientConfig from '../plugin-config.client.dev.json';
+import ResetConfig from '../plugin-config.client.reset.dev.json';
 
 const LOCAL_STORAGE_KEY = 'configData';
 
@@ -85,13 +86,15 @@ interface props {
 
 export const ConfigContextProvider: React.FC<props> = ({ children }) => {
     const defaultConfigData = ClientConfig as any as PluginJSON;
+    const resetConfigData = ResetConfig as any as PluginJSON;
 
     // The last cached config.
     const localConfigData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '{}') as PluginJSON
 
     const startConfigData = {
         ...defaultConfigData,
-        ...localConfigData
+        ...localConfigData,
+        ...resetConfigData
     }
 
     // Initial state is the last cached config.
