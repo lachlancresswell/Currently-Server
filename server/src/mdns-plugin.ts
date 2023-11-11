@@ -41,7 +41,7 @@ class MDNSPlugin extends Plugin<MDNSConfig> {
         super.unload()
 
         if (this.interval) {
-            clearInterval(this.interval);
+            clearInterval(this.interval as NodeJS.Timeout);
             this.interval = undefined;
         }
         if (this.mdns) {
