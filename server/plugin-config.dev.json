@@ -107,7 +107,7 @@
   },
   "IPPlugin": {
     "path": "../ip-plugin",
-    "enabled": true,
+    "enabled": false,
     "config": {
       "ipaddress": {
         "priority": 1,
@@ -178,7 +178,7 @@
   },
   "TimeZonePlugin": {
     "path": "../timezone-plugin",
-    "enabled": true,
+    "enabled": false,
     "config": {
       "date": {
         "priority": 0,
