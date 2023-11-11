@@ -1,0 +1,31 @@
+version: '3.4'
+services:
+  server:
+    image: server
+    build:
+      context: server
+      dockerfile: ./Dockerfile
+    environment:
+      NODE_ENV: development
+    user: "0:20" # Podman mounts volume as root
+    volumes:
+      - ./server:/usr/src/server
+    ports:
+      - 8001:8001
+      - 9229:9229
+    command: [ "npm", "run", "watch" ]
+
+  client:
+    image: client
+    build:
+      context: client
+      dockerfile: ./Dockerfile
+    environment:
+      NODE_ENV: development
+    volumes:
+      - ./client:/usr/src/client
+    user: "0:20" # Podman mounts volume as root
+    ports:
+      - 3000:3000
+    links:
+      - server

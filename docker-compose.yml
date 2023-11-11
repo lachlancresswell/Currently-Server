@@ -1,5 +1,23 @@
-version: '2.1'
+version: '3.4'
 services:
+  server:
+    image: server
+    build:
+      context: server
+      dockerfile: ./Dockerfile
+    environment:
+      NODE_ENV: production
+    ports:
+      - 8001:8001
+
+  client:
+    image: client
+    build:
+      context: client
+      dockerfile: ./Dockerfile
+    environment:
+      NODE_ENV: production
+
   telegraf:
     build: ./telegraf
     environment:
