@@ -29,3 +29,43 @@ services:
       - 3000:3000
     links:
       - server
+
+  influxdb:
+    build: ./influxdb
+    volumes:
+      - 'influxdb_data:/var/lib/influxdb2'
+    environment:
+      - INFLUXDB_HTTP_HTTPS_ENABLED=true
+      - INFLUXDB_HTTP_HTTPS_CERTIFICATE=/etc/ssl/influxdb-selfsigned.crt
+      - INFLUXDB_HTTP_HTTPS_PRIVATE_KEY=/etc/ssl/influxdb-selfsigned.key
+      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUX_USERNAME}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUX_PASSWORD}
+      - DOCKER_INFLUXDB_INIT_ORG=${INFLUX_ORG}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUX_BUCKET}
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUX_TOKEN}
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+    ports:
+      - '8086:8086'
+
+  telegraf:
+    build: ./telegraf
+    environment:
+      - INFLUX_ADDRESS=influxdb:8086
+      - MODBUS_GATEWAY_IP=192.168.1.63
+      - INFLUX_ORG=${INFLUX_ORG}
+      - INFLUX_BUCKET=${INFLUX_BUCKET}
+      - INFLUX_TOKEN=${INFLUX_TOKEN}
+      - L1_NAME=L1
+      - L2_NAME=L2
+      - L3_NAME=L3
+    depends_on:
+      - influxdb
+    links:
+      - influxdb
+    ports:
+      - '8125:8125/udp'
+    cap_add:
+      - CAP_NET_RAW # https://github.com/influxdata/influxdata-docker/issues/646
+
+volumes:
+  influxdb_data: {}
