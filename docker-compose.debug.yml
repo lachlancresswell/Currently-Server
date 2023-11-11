@@ -29,6 +29,11 @@ services:
       - 3000:3000
     links:
       - server
+    ulimits:
+      # Prevent "Error: EMFILE: too many open files" error
+      nofile:
+        soft: 5000
+        hard: 5000
 
   influxdb:
     build: ./influxdb

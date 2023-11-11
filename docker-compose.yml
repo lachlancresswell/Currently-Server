@@ -17,6 +17,11 @@ services:
       dockerfile: ./Dockerfile
     environment:
       NODE_ENV: production
+    ulimits:
+      # Prevent "Error: EMFILE: too many open files" error
+      nofile:
+        soft: 5000
+        hard: 5000
 
   influxdb:
     build: ./influxdb
