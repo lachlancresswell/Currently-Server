@@ -1,0 +1,73 @@
+{
+  "IPPlugin": {
+    "path": "../ip-plugin",
+    "enabled": true,
+    "config": {
+      "ipaddress": {
+        "priority": 1,
+        "display": true,
+        "readableName": "IP Address",
+        "type": "ipaddress",
+        "restart": "plugin"
+      },
+      "gateway": {
+        "priority": 1,
+        "display": true,
+        "readableName": "Gateway",
+        "type": "ipaddress",
+        "restart": "plugin"
+      },
+      "prefix": {
+        "priority": 1,
+        "display": true,
+        "readableName": "Prefix",
+        "type": "number",
+        "restart": "plugin",
+        "max": 32,
+        "min": 1
+      },
+      "dhcp": {
+        "priority": 1,
+        "display": false,
+        "readableName": "DHCP",
+        "type": "boolean",
+        "restart": "plugin"
+      },
+      "dns": {
+        "priority": 1,
+        "display": false,
+        "readableName": "DNS Servers",
+        "type": "strings",
+        "restart": "plugin"
+      },
+      "iface": {
+        "priority": 1,
+        "display": false,
+        "readableName": "Interface",
+        "type": "string",
+        "value": "enp0s2"
+      },
+      "filePath": {
+        "priority": 1,
+        "display": false,
+        "readableName": "Systemd Config Filepath",
+        "type": "string",
+        "value": "/test.txt"
+      },
+      "internetStatus": {
+        "priority": 1,
+        "display": false,
+        "readableName": "Internet Connected",
+        "type": "boolean",
+        "value": true
+      },
+      "internetPollMs": {
+        "priority": 1,
+        "display": false,
+        "readableName": "Internet Poll Frequency",
+        "type": "number",
+        "value": 2000
+      }
+    }
+  }
+}
