@@ -59,7 +59,7 @@ export class PluginLoader {
     /**
      * Loads the plugin configurations from a JSON file.
      */
-    private loadConfigs(): void {
+    private loadConfigs(): Record<string, PluginConfig> | undefined {
         const p = path.join(__dirname, this.configFilePath)
         console.log(`Loading config from ${p}`)
         if (fs.existsSync(p)) {
@@ -79,8 +79,12 @@ export class PluginLoader {
                     }
                 }
             }
+
+            return this.pluginConfigs;
         } else {
             console.log(`Config does not exist: ${p}`)
+            // TODO: throw error? throwing error causes tests to fail
+            return undefined;
         }
     }
 
@@ -120,6 +124,10 @@ export class PluginLoader {
         };
 
         const configFileContent = JSON.stringify(this.pluginConfigs, replacer, 2);
+        if (configFileContent === '{}') {
+            console.log(`Plugin config is empty, skipping save.`);
+            return;
+        }
         const p = path.join(__dirname, this.configFilePath);
         fs.writeFileSync(p, configFileContent, 'utf8');
         console.log(`Config written to ${p}`)
