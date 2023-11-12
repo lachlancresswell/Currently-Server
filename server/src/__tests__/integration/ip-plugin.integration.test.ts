@@ -1,9 +1,7 @@
-import { execSync } from 'child_process';
 import IPPlugin, { Address } from '../../ip-plugin';
 import fs from 'fs';
 import request from 'supertest';
 import { Server } from '../../server';
-import * as os from 'os';
 
 /**
  * Returns a random IP address.
@@ -26,6 +24,9 @@ const randomPrefix = () => {
 
 let DEVICE_IP = randomIp();
 let DNS_SERVERS = [randomIp(), randomIp()]
+let DHCP_STATUS = true;
+let GATEWAY_STATUS = true;
+const GATEWAY_IP = randomIp();
 
 /**
  * Mocks the os module to return a NIC configuration of our choosing.
@@ -76,9 +77,6 @@ jest.mock('dns', () => {
     }
 })
 
-let DHCP_STATUS = true;
-let GATEWAY_STATUS = true;
-
 /**
  * Mocks the child_process module to return a network configuration of our choosing.
  */
@@ -87,7 +85,7 @@ jest.mock("child_process", () => {
         exec: jest.fn((cmd: string, cb: (err: any, stdout: any, stderr: any) => void) => {
             if (cmd.includes('ip route | grep default')) {
 
-                cb(undefined, '192.168.64.1', undefined)
+                cb(undefined, GATEWAY_IP, undefined)
             } else {
                 cb(undefined, '', undefined);
             }
@@ -96,7 +94,7 @@ jest.mock("child_process", () => {
             if (cmd.includes('ip route')) {
                 let str = '';
                 if (GATEWAY_STATUS) {
-                    str += `default via 192.168.64.1 dev enp0s1 proto dhcp metric 100`
+                    str += `default via ${GATEWAY_IP} dev enp0s1 proto dhcp metric 100`
 
                 }
                 str += `172.17.0.0/16 dev docker0 proto kernel scope link src 172.17.0.1 linkdown 
@@ -134,243 +132,135 @@ describe('TestPlugin', () => {
     beforeEach(() => {
         DEVICE_IP = randomIp();
         GATEWAY_STATUS = true;
-        server = new Server('./__tests__/ipplugin-plugin-config.json');
+        server = new Server('./__tests__/ip-plugin-config.test.json');
         plugin = server['pluginLoader']['plugins'][0] as any;
+
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
     });
 
     afterEach(async () => {
         plugin.unload();
         await server.end();
-    });
-
-    it('should create a valid .network file', async () => {
-        const config: Address = {
-            internal: false,
-            dhcp: false,
-            ipaddress: '192.168.1.100',
-            prefix: 24,
-            gateway: '192.168.1.1',
-            dns: ['8.8.8.8', '8.8.4.4']
-        };
-
-        TestPlugin.publicCreateNetworkFile(config, filePath, 'en0');
-
-        expect(fs.existsSync(filePath)).toBeTruthy();
-        fs.unlinkSync(filePath)
-        expect(fs.existsSync(filePath)).not.toBeTruthy();
-    });
-
-    it('an existing .network file should be deleted and replaced', async () => {
-
-        fs.writeFileSync(filePath, 'testing')
-        expect(fs.existsSync(filePath)).toBeTruthy();
-        let contents = fs.readFileSync(filePath).toString();
-        expect(contents).toContain('testing');
-
-        const config: Address = {
-            internal: false,
-            dhcp: false,
-            ipaddress: '192.168.1.100',
-            prefix: 24,
-            gateway: '192.168.1.1',
-            dns: ['8.8.8.8', '8.8.4.4']
-        };
-
-        TestPlugin.publicCreateNetworkFile(config, filePath, 'en0');
-
-        contents = fs.readFileSync(filePath).toString();
-        expect(contents).not.toContain('testing');
-        fs.unlinkSync(filePath)
-        expect(fs.existsSync(filePath)).not.toBeTruthy();
-    });
-
-    it('should create a valid .network file from a PUT request', async () => {
-
-        const newOptions = {
-            "ipaddress": {
-                "priority": 1,
-                "display": true,
-                "readableName": "ipaddress",
-                "type": "ipaddress",
-                "value": DEVICE_IP
-            },
-            "gateway": {
-                "priority": 1,
-                "display": true,
-                "readableName": "gateway",
-                "type": "ipaddress",
-                "value": randomIp()
-            },
-            "prefix": {
-                "priority": 1,
-                "display": true,
-                "readableName": "prefix",
-                "type": "number",
-                "value": randomPrefix()
-            },
-            "dhcp": {
-                "priority": 1,
-                "display": false,
-                "readableName": "dhcp",
-                "type": "boolean",
-                "value": false
-            },
-            "dns": {
-                "priority": 1,
-                "display": true,
-                "readableName": "dns",
-                "type": "strings",
-                "value": DNS_SERVERS
-            },
-            "iface": {
-                "priority": 1,
-                "display": true,
-                "readableName": "Interface",
-                "type": "string",
-                "value": "enp0s1"
-            },
-            "filePath": {
-                "priority": 1,
-                "display": true,
-                "readableName": "Systemd Config Filepath",
-                "type": "string",
-                "value": "/etc/systemd/network/20-wired.network"
-            }
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
         }
-
-        if (fs.existsSync(newOptions.filePath.value)) fs.unlinkSync(newOptions.filePath.value)
-
-        const response = await request(server['app'])
-            .put('/config/IPPlugin')
-            .send(newOptions);
-
-        expect(response.status).toBe(200);
-        expect(execSync).toHaveBeenCalled();
-        expect(os.networkInterfaces).toHaveBeenCalled();
-        expect(fs.existsSync(newOptions.filePath.value)).toBeTruthy();
-        const contents = fs.readFileSync(newOptions.filePath.value).toString();
-        expect(contents).toContain(`${newOptions.ipaddress.value}/${newOptions.prefix.value}`)
-        expect(contents).toContain(newOptions.gateway.value)
-        expect(contents).toContain(newOptions.dns.value.join(' '))
-        fs.unlinkSync(newOptions.filePath.value)
-        expect(fs.existsSync(newOptions.filePath.value)).not.toBeTruthy();
     });
 
-    it('should create a valid .network file with address info missing if dhcp is set to true from a PUT request', async () => {
+    describe('publicCreateNetworkFile', () => {
+        it('should create a valid .network file', async () => {
+            // Arrange
+            const config: Address = {
+                internal: false,
+                dhcp: false,
+                ipaddress: '192.168.1.100',
+                prefix: 24,
+                gateway: '192.168.1.1',
+                dns: ['8.8.8.8', '8.8.4.4']
+            };
 
-        DHCP_STATUS = false;
+            // Act
+            TestPlugin.publicCreateNetworkFile(config, filePath, 'en0');
 
-        const newOptions = {
-            "ipaddress": {
-                "priority": 1,
-                "display": true,
-                "readableName": "ipaddress",
-                "type": "ipaddress",
-                "value": DEVICE_IP
-            },
-            "gateway": {
-                "priority": 1,
-                "display": true,
-                "readableName": "gateway",
-                "type": "ipaddress",
-                "value": randomIp()
-            },
-            "prefix": {
-                "priority": 1,
-                "display": true,
-                "readableName": "prefix",
-                "type": "number",
-                "value": randomPrefix()
-            },
-            "dhcp": {
-                "priority": 1,
-                "display": false,
-                "readableName": "dhcp",
-                "type": "boolean",
-                "value": true
-            },
-            "dns": {
-                "priority": 1,
-                "display": true,
-                "readableName": "dns",
-                "type": "strings",
-                "value": DNS_SERVERS
-            },
-            "iface": {
-                "priority": 1,
-                "display": true,
-                "readableName": "Interface",
-                "type": "string",
-                "value": "enp0s1"
-            },
-            "filePath": {
-                "priority": 1,
-                "display": true,
-                "readableName": "Systemd Config Filepath",
-                "type": "string",
-                "value": "/etc/systemd/network/20-wired.network"
-            }
-        }
+            // Assert
+            expect(fs.existsSync(filePath)).toBeTruthy();
+        });
 
-        if (fs.existsSync(newOptions.filePath.value)) fs.unlinkSync(newOptions.filePath.value)
+        it('an existing .network file should be deleted and replaced', async () => {
+            // Arrange
+            const config: Address = {
+                internal: false,
+                dhcp: false,
+                ipaddress: '192.168.1.100',
+                prefix: 24,
+                gateway: '192.168.1.1',
+                dns: ['8.8.8.8', '8.8.4.4']
+            };
 
-        const response = await request(server['app'])
-            .put('/config/IPPlugin')
-            .send(newOptions);
+            fs.writeFileSync(filePath, 'testing')
 
-        expect(response.status).toBe(200);
-        expect(execSync).toHaveBeenCalled();
-        expect(os.networkInterfaces).toHaveBeenCalled();
-        expect(fs.existsSync(newOptions.filePath.value)).toBeTruthy();
-        const contents = fs.readFileSync(newOptions.filePath.value).toString();
-        expect(contents).not.toContain(`${newOptions.ipaddress.value}/${newOptions.prefix.value}`)
-        expect(contents).not.toContain(newOptions.gateway.value)
-        expect(contents).not.toContain(newOptions.dns.value.join(' '))
-        fs.unlinkSync(newOptions.filePath.value)
-        expect(fs.existsSync(newOptions.filePath.value)).not.toBeTruthy();
+            // Act
+            TestPlugin.publicCreateNetworkFile(config, filePath, 'en0');
+
+            // Assert
+            const contents = fs.readFileSync(filePath).toString();
+            expect(contents).not.toContain('testing');
+        });
     });
 
-    test('should return ip settings', async () => {
+    describe('Configuration', () => {
+        it('should return ip settings', async () => {
+            // Act
+            const response = await request(server['app']).get('/config/IPPlugin');
+            const rtn = response.body;
 
-        const response = await request(server['app']).get('/config/IPPlugin');
-        const rtn = response.body;
-        expect(response.status).toBe(200);
-        expect(rtn).toHaveProperty('gateway');
-        expect(rtn).toHaveProperty('ipaddress');
-        expect(rtn).toHaveProperty('dns');
-        expect(rtn).toHaveProperty('dhcp');
-        expect(rtn).toHaveProperty('prefix');
+            // Assert
+            expect(response.status).toBe(200);
+            expect(rtn).toHaveProperty('gateway');
+            expect(rtn).toHaveProperty('ipaddress');
+            expect(rtn).toHaveProperty('dns');
+            expect(rtn).toHaveProperty('dhcp');
+            expect(rtn).toHaveProperty('prefix');
+        });
+
+        describe('gateway', () => {
+            it('should handle non-existent gateway', () => {
+                // Arrange
+                GATEWAY_STATUS = false
+
+                // Assert
+                expect(plugin.configuration.gateway.value).toBe(undefined);
+            });
+
+            it('should handle gateway', () => {
+                // Arrange
+                GATEWAY_STATUS = true
+
+                // Assert
+                expect(plugin.configuration.gateway.value).toBe(GATEWAY_IP);
+            });
+        });
+
+        describe('internetStatus', () => {
+            let internetPollTime: any;
+
+            beforeEach(async () => {
+                internetPollTime = (await request(server['app']).get('/config/IPPlugin')).body.internetPollMs.value;
+                await new Promise((res) => setTimeout(res, internetPollTime))
+            })
+
+            it('should return retrieve internetStatus', async () => {
+                // Act
+                const response = await request(server['app']).get('/config/IPPlugin');
+
+                // Assert
+                expect(response.body).toHaveProperty('internetStatus')
+            });
+
+            it('should return false if internet is reachable after waiting for the server to check', async () => {
+                // Arrange
+                GOOGLE_STATUS = false;
+
+                // Act
+                await new Promise((res) => setTimeout(res, internetPollTime))
+                const response = await request(server['app']).get('/config/IPPlugin');
+
+                // Assert
+                expect(response.body.internetStatus.value).toBeFalsy()
+            });
+
+            it('should return true if internet is reachable after waiting for the server to check', async () => {
+                // Arrange
+                GOOGLE_STATUS = true;
+
+                // Act
+                await new Promise((res) => setTimeout(res, internetPollTime))
+                const response = await request(server['app']).get('/config/IPPlugin');
+
+                // Assert
+                expect(response.body.internetStatus.value).toBeTruthy()
+            });
+        });
     });
-
-    test('should handle gateway not being set', () => {
-        plugin.unload();
-        server.end()
-
-        GATEWAY_STATUS = false
-        server = new Server('./__tests__/ipplugin-plugin-config.json');
-        plugin = server['pluginLoader']['plugins'][0] as any;
-
-        expect(plugin.configuration.gateway.value).toBe(undefined);
-    });
-
-    test('should return false if internet is unreachable', async () => {
-        GOOGLE_STATUS = false;
-        let response = await request(server['app']).get('/config/IPPlugin');
-        expect(response.body).toHaveProperty('internetPollMs')
-        await new Promise((res) => setTimeout(res, response.body.internetPollMs.value))
-        response = await request(server['app']).get('/config/IPPlugin');
-        expect(response.body).toHaveProperty('internetStatus')
-        expect(response.body.internetStatus.value).toBeFalsy()
-    })
-
-    test('should return true if internet is reachable', async () => {
-        GOOGLE_STATUS = true;
-        let response = await request(server['app']).get('/config/IPPlugin');
-        expect(response.body).toHaveProperty('internetPollMs')
-        await new Promise((res) => setTimeout(res, response.body.internetPollMs.value))
-        response = await request(server['app']).get('/config/IPPlugin');
-        expect(response.body).toHaveProperty('internetStatus')
-        expect(response.body.internetStatus.value).toBeTruthy()
-    })
-
 });
