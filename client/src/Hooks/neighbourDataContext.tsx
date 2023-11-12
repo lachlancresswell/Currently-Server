@@ -34,6 +34,8 @@ const mockL1Current = () => 3 + (Math.random() * 1.5);
 const mockL2Current = () => 0 + (Math.random() * 1);
 const mockL3Current = () => 4 + (Math.random() * 2);
 
+const MOCK = false;
+
 export const mockPollRange = (): Phase[] => {
     let phases: Phase[] = [{ voltage: [], amperage: [] }, { voltage: [], amperage: [] }, { voltage: [], amperage: [] }];
 
@@ -95,33 +97,36 @@ export const NeighbourDataProvider: React.FC<props> = ({ neighbour, children }) 
 
     useEffect(() => {
         let func: () => void;
-        if (false) {
-            func = pollServer;
-        } else {
-            func = () => {
-                const data = mockPollServer()
-                setHistory((prevHistory) => {
-                    const newHistory: Phase[] = [
-                        ...prevHistory
-                    ];
 
-                    newHistory.forEach((phase, index) => {
-                        const voltage = {
-                            y: data.phases[index].voltage,
-                            x: new Date()
-                        }
+        const feedHistory = (data: DistroData | undefined) => {
+            setHistory((prevHistory) => {
+                const newHistory: Phase[] = [
+                    ...prevHistory
+                ];
 
-                        const amperage = {
-                            y: data.phases[index].amperage,
-                            x: new Date()
-                        }
-                        phase.voltage.push(voltage)
-                        phase.amperage.push(amperage)
-                    })
+                newHistory.forEach((phase, index) => {
+                    const voltage = {
+                        y: data!.phases[index].voltage,
+                        x: new Date()
+                    }
 
-                    return newHistory;
+                    const amperage = {
+                        y: data!.phases[index].amperage,
+                        x: new Date()
+                    }
+                    phase.voltage.push(voltage)
+                    phase.amperage.push(amperage)
                 })
-                setNeighbourData(data);
+
+                return newHistory;
+            })
+        }
+        func = () => {
+            if (!MOCK) {
+                pollServer().then(feedHistory);
+            } else {
+                const data = mockPollServer()
+                feedHistory(data);
             }
         }
         const interval = setInterval(() => {
