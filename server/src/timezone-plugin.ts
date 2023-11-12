@@ -90,8 +90,6 @@ class TimeZonePlugin extends Plugin<TZOptions> {
             rtn = `${day < 10 ? '0' : ''}${day}/${month < 10 ? '0' : ''}${month}/${year}`;
         } else if (format === 'mdy') {
             rtn = `${month < 10 ? '0' : ''}${month}/${day < 10 ? '0' : ''}${day}/${year}`;
-        } else {
-            throw new Error(`Invalid format: ${format}`);
         }
 
         return rtn;
@@ -132,8 +130,6 @@ class TimeZonePlugin extends Plugin<TZOptions> {
             rtn = `${hours < 10 ? '0' : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds} ${period}`;
         } else if (timeFormat === '24h') {
             rtn = `${hours < 10 ? '0' : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-        } else {
-            throw new Error(`Invalid time format: ${timeFormat}`);
         }
 
         return rtn;
