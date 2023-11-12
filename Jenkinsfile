@@ -11,5 +11,10 @@ pipeline {
                 sh 'cd server && npm run build' 
             }
         }
+        stage('Unit Tests') { 
+            steps {
+                sh 'cd server && npx jest unit.test' 
+            }
+        }
     }
 }
