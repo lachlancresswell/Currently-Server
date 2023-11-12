@@ -18,7 +18,7 @@ class TestServer extends Server {
     public publicPluginLoader = this.pluginLoader;
 }
 
-const configPath = './__tests__/plugin-config.integration.test.json';
+const configPath = './__tests__/plugin-config.test.json';
 
 /**
  * PluginLoader test suite.
