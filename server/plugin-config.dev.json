@@ -94,7 +94,7 @@
         "display": true,
         "readableName": "Database Domain",
         "type": "string",
-        "value": "192.168.128.1"
+        "value": "localhost"
       },
       "rxDelay": {
         "priority": 1,
