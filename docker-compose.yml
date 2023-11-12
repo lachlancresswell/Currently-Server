@@ -1,32 +1,5 @@
 version: '3.4'
 services:
-  server:
-    image: server
-    build:
-      context: server
-      dockerfile: ./Dockerfile
-    environment:
-      NODE_ENV: production
-    ports:
-      - 8001:8001
-
-  client:
-    image: client
-    build:
-      context: client
-      dockerfile: ./Dockerfile
-    environment:
-      NODE_ENV: production
-    ports:
-      - 3000:3000
-    links:
-      - server
-    ulimits:
-      # Prevent "Error: EMFILE: too many open files" error
-      nofile:
-        soft: 5000
-        hard: 5000
-
   influxdb:
     build: ./influxdb
     volumes:
