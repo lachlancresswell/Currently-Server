@@ -190,6 +190,13 @@ export abstract class Plugin<T> extends EventEmitter {
         return rtn;
     }
 
+
+    /**
+     * Updates the entire configuration with a new configuration object.
+     * @param newConfig - The new configuration object.
+     * @param save - Whether or not to save the configuration changes. Defaults to true.
+     * @returns A string indicating whether to restart the plugin, server, or neither.
+     */
     updateEntireConfig(newConfig: ConfigArray, save = true) {
         let restart: 'plugin' | 'server' | undefined;
         let pluginsToRestart: string[] = []
