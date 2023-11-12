@@ -1,8 +1,8 @@
-import Influx, { InfluxOptions } from '../influx-plugin';
+import Influx, { InfluxOptions } from '../../influx-plugin';
 import express, { Express, Request, Response } from 'express';
 import request from 'supertest';
 import http from 'http';
-import * as Server from '../server'
+import * as Server from '../../server'
 
 const testConfig: InfluxOptions = {
     databasePort: {
@@ -10,18 +10,21 @@ const testConfig: InfluxOptions = {
         readableName: 'Influx Port',
         type: 'number',
         value: 4000,
+        key: 'databasePort'
     },
     databaseDomain: {
         priority: 1,
         readableName: 'Influx Domain',
         type: 'string',
         value: 'localhost',
+        key: 'databaseDomain'
     },
     rxDelay: {
         priority: 1,
         readableName: 'Request Period',
         type: 'number',
         value: 1000,
+        key: 'rxDelay'
     }
 }
 
