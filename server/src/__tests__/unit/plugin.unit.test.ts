@@ -272,20 +272,19 @@ describe('Plugin', () => {
     });
 
     describe('updateEntireConfig', () => {
-        // TODO: Must be run by itself for some reason?
         it('should update the configuration variables with the new values', () => {
             // Arrange
             const newConfig: ConfigArray = {
-                testVar1: { ...mockPluginConfig.plugin1.config!.testVar1 },
+                testVar2: { ...mockPluginConfig.plugin1.config!.testVar1 },
             }
-            newConfig.testVar1.value = 10;
+            newConfig.testVar2.value = 10;
 
             // Act
             const restart = plugin.updateEntireConfig(newConfig);
 
             // Assert
-            expect(restart).toBe(mockPluginConfig.plugin1.config!.testVar1.restart);
-            expect(plugin['configuration']['testVar1'].value).toBe(10);
+            expect(restart).toBe(mockPluginConfig.plugin1.config!.testVar2.restart);
+            expect(plugin.configuration.testVar2.value).toBe(10);
         });
 
         it('should should throw if new value is wrong type', () => {
