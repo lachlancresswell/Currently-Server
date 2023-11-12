@@ -16,5 +16,10 @@ pipeline {
                 sh 'cd server && npx jest unit.test' 
             }
         }
+        stage('Integration Tests') { 
+            steps {
+                sh 'cd server && npx jest ip-plugin.integration.test --detectOpenHandles' 
+            }
+        }
     }
 }
