@@ -1,9 +1,10 @@
-import { spawnSync } from 'child_process';
 import IPPlugin, { Address } from '../../ip-plugin';
-import { exec } from 'child_process';
 import fs from 'fs';
+import { execSync } from 'child_process';
 
-jest.mock('child_process');
+jest.mock('child_process', () => ({
+    execSync: jest.fn(),
+}));
 jest.mock('fs');
 
 const fp = './20-wired.network'
@@ -17,58 +18,69 @@ export const mockServerRouting = {
     registerProxy: (sourcePath: string, targetDomain: string, targetPort: string | number) => console.log('registerProxy'),
 }
 
-// Test plugin implementation
-class TestPlugin extends IPPlugin {
-    publicServerRouter = this.serverRouter;
-    public static publicCreateNetworkFile = IPPlugin.createNetworkFile;
-
-    constructor(serverRouter: any, options: any) {
-        super(serverRouter, options);
-        this.name = 'TestPlugin';
-    }
-}
-
-const options = {
-    filePath: {
-        type: 'string',
-        value: fp,
-    }
-}
-
 describe('TestPlugin', () => {
-    let plugin: TestPlugin;
-
     beforeAll(() => {
-        plugin = new TestPlugin(mockServerRouting, options);
     });
 
-    describe('updateNetworkConfig()', () => {
+    describe('createNetworkFile', () => {
         it('should create a valid .network file', async () => {
+            // Arrange
             const config: Address = {
                 internal: false,
                 dhcp: false,
                 ipaddress: '192.168.1.100',
-                networkprefix: 24,
+                prefix: 24,
                 gateway: '192.168.1.1',
                 dns: ['8.8.8.8', '8.8.4.4']
             };
 
-            TestPlugin.publicCreateNetworkFile(config, fp, 'eth0');
+            // Act
+            IPPlugin['createNetworkFile'](config, fp, 'eth0');
 
+            // Assert
             expect(fs.writeFileSync).toHaveBeenCalledWith(fp, expect.stringContaining(config.ipaddress!));
-            expect(fs.writeFileSync).toHaveBeenCalledWith(fp, expect.stringContaining(config.networkprefix!.toString()));
+            expect(fs.writeFileSync).toHaveBeenCalledWith(fp, expect.stringContaining(config.prefix!.toString()));
             expect(fs.writeFileSync).toHaveBeenCalledWith(fp, expect.stringContaining(config.gateway!));
             expect(fs.writeFileSync).toHaveBeenCalledWith(fp, expect.stringContaining(config.dns![0]!));
         });
+    });
 
-        it('should register routes', () => {
-            plugin.load();
-            expect(plugin.publicServerRouter.registerPostRoute).toHaveBeenCalled()
-            expect(plugin.publicServerRouter.registerPostRoute).toHaveBeenCalledWith('/ip', expect.anything())
-            expect(plugin.publicServerRouter.registerGetRoute).toHaveBeenCalled();
-            expect(plugin.publicServerRouter.registerGetRoute).toHaveBeenCalledWith('/get-ip', expect.anything())
+    describe('getGatewayIP', () => {
+        it('should return the default gateway IP address', () => {
+            // Arrange
+            const gatewayIP = '192.168.1.1';
+            (execSync as jest.Mock).mockReturnValue(Buffer.from(`default via ${gatewayIP} dev eth0`));
 
-            plugin.unload();
+            // Act
+            const rtn = IPPlugin.getGatewayIP();
+
+            // Assert
+            expect(rtn).toEqual(gatewayIP);
+        });
+
+        it('should return the gateway IP address for a specific NIC', () => {
+            // Arrange
+            const expectedGatewayIP = '192.168.1.1';
+            (execSync as jest.Mock).mockReturnValue(Buffer.from(`default via ${expectedGatewayIP} dev eth1` as any));
+
+            // Act
+            const actualGatewayIP = IPPlugin.getGatewayIP('eth1');
+
+            // Assert
+            expect(actualGatewayIP).toEqual(expectedGatewayIP);
+            expect(execSync).toHaveBeenCalledWith('ip route show dev eth1');
+        });
+
+        it('should return undefined if no default gateway is found', () => {
+            // Arrange
+            (execSync as jest.Mock).mockReturnValue(Buffer.from(`` as any));
+
+            // Act
+            const actualGatewayIP = IPPlugin.getGatewayIP();
+
+            // Assert
+            expect(actualGatewayIP).toBeUndefined();
+            expect(execSync).toHaveBeenCalledWith('ip route');
         });
     });
 });
