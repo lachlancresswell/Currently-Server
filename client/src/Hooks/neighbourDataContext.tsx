@@ -90,6 +90,7 @@ export const NeighbourDataProvider: React.FC<props> = ({ neighbour, children }) 
 
         const data = await pollInflux(queryApi, 'mybucket')
         setNeighbourData(data!);
+        return data
     };
 
     useEffect(() => {
