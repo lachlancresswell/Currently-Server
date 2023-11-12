@@ -17,6 +17,10 @@ services:
       dockerfile: ./Dockerfile
     environment:
       NODE_ENV: production
+    ports:
+      - 3000:3000
+    links:
+      - server
     ulimits:
       # Prevent "Error: EMFILE: too many open files" error
       nofile:
