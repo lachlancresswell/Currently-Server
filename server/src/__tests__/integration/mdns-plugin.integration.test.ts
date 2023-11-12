@@ -2,12 +2,13 @@
 /**
  * Some tests will fail unless run by themselves.
  */
-import MDNSPlugin, { MDNSConfig } from '../../mdns-plugin';
+import MDNSPlugin from '../../mdns-plugin';
 import { Socket } from "net";
 import { IncomingMessage, ServerResponse } from 'http';
 import { Server } from "../../server";
 import request from 'supertest';
 import structuredClone from '@ungap/structured-clone';
+import { MDNSConfig } from '../../../../Types';
 
 const defaultConfig: MDNSConfig = {
     transmit: {
@@ -15,25 +16,29 @@ const defaultConfig: MDNSConfig = {
         readableName: 'Transmit',
         type: 'boolean',
         value: true,
+        key: 'transmit'
     },
     receive: {
         priority: 1,
         readableName: 'Receive',
         type: 'boolean',
         value: true,
+        key: 'receive'
     },
     deviceName: {
         priority: 1,
         readableName: 'Device Name',
         type: 'string',
         value: 'test device',
+        key: 'deviceName'
     },
     txDelay: {
         priority: 1,
         readableName: 'Discovery Period',
         type: 'number',
         value: 500,
-        restart: "plugin"
+        restart: "plugin",
+        key: 'txDelay'
     }
 }
 

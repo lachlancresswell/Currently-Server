@@ -153,7 +153,7 @@ describe('TestPlugin', () => {
             dns: ['8.8.8.8', '8.8.4.4']
         };
 
-        TestPlugin.publicCreateNetworkFile(config, filePath);
+        TestPlugin.publicCreateNetworkFile(config, filePath, 'en0');
 
         expect(fs.existsSync(filePath)).toBeTruthy();
         fs.unlinkSync(filePath)
@@ -176,7 +176,7 @@ describe('TestPlugin', () => {
             dns: ['8.8.8.8', '8.8.4.4']
         };
 
-        TestPlugin.publicCreateNetworkFile(config, filePath);
+        TestPlugin.publicCreateNetworkFile(config, filePath, 'en0');
 
         contents = fs.readFileSync(filePath).toString();
         expect(contents).not.toContain('testing');
