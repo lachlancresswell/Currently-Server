@@ -102,6 +102,8 @@ export class Server {
             proms.push(p);
         }
 
+        this.pluginLoader.unloadPlugins();
+
         return Promise.all(proms);
     };
 
