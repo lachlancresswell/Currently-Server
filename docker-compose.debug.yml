@@ -1,5 +1,13 @@
 version: '3.4'
 services:
+  # workspace:
+  #   image: workspace
+  #   volumes:
+  #     - ./:/app
+  #   build:
+  #     context: /Users/lachlancresswell/Dev/local-distro-ui/
+  #     dockerfile: ./Dockerfile
+
   server:
     image: server
     build:
