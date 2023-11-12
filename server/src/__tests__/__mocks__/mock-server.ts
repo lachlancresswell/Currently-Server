@@ -2,12 +2,13 @@ import { Server, Routing } from '../../server'
 import express, { Express, Request, Response } from 'express';
 
 export const mockServerRouting: Routing = {
-    registerGetRoute: (path: string, handler: (req: any, res: any) => void) => console.log('registerGetRoute'),
-    registerPostRoute: (path: string, handler: (req: any, res: any) => void) => console.log('registerPostRoute'),
-    registerAllRoute: (path: string, handler: (req: any, res: any) => void) => console.log('registerPostRoute'),
-    registerPutRoute: (path: string, handler: (req: any, res: any) => void) => console.log('registerPutRoute'),
-    removeRoute: (path: string) => console.log('removeRoute'),
-    registerProxy: (sourcePath: string, targetDomain: string, targetPort: string | number) => console.log('registerProxy'),
+    registerGetRoute: jest.fn((path: string, handler: (req: any, res: any) => void) => console.log('registerGetRoute')),
+    registerPostRoute: jest.fn((path: string, handler: (req: any, res: any) => void) => console.log('registerPostRoute')),
+    registerAllRoute: jest.fn((path: string, handler: (req: any, res: any) => void) => console.log('registerPostRoute')),
+    registerPutRoute: jest.fn((path: string, handler: (req: any, res: any) => void) => console.log('registerPutRoute')),
+    removeRoute: jest.fn((path: string) => console.log('removeRoute')),
+    registerProxy: jest.fn((sourcePath: string, targetDomain: string, targetPort: string | number) => console.log('registerProxy')),
+    reloadPlugin: jest.fn((pluginName: string) => true),
 }
 
 export default class MockServer {
@@ -30,6 +31,7 @@ export default class MockServer {
             registerPutRoute: jest.fn(),
             removeRoute: jest.fn(),
             registerProxy: jest.fn(),
+            reloadPlugin: jest.fn(),
         };
 
         // Mock the httpServer and httpsServer creation and listeners

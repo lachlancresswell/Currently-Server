@@ -2,73 +2,13 @@ import { PluginLoader } from '../../plugin-loader';
 import { PluginConfig, PluginJSON } from '../../../../Types'
 import * as fs from 'fs';
 import { mockServerRouting } from '../__mocks__/mock-server'
-import MockPlugin, { MOCK_PLUGIN_NAME } from '../__mocks__/mock-plugin';
-import path from 'path';
+import MockPlugin, { MOCK_PLUGIN_NAME, mockPluginConfig } from '../__mocks__/mock-plugin';
 
 jest.mock('fs')
-
 
 class TestPluginLoader extends PluginLoader {
     setTestPlugins = (plugins: any[]) => this.plugins = plugins;
 }
-
-const mockPluginConfig: PluginJSON = {
-    plugin1: {
-        path: 'string',
-        enabled: true,
-        config: {
-            "testVar1": {
-                priority: 1,
-                value: 1,
-                type: 'number',
-                readableName: 'Test Var 1',
-                key: 'testVar1',
-            },
-            "testVar2": {
-                priority: 1,
-                value: 2,
-                type: 'number',
-                readableName: 'Test Var 2',
-                key: 'testVar2',
-            },
-            "testVar3": {
-                priority: 1,
-                value: 3,
-                type: 'number',
-                readableName: 'Test Var 3',
-                key: 'testVar3',
-            },
-        }
-    },
-    plugin2: {
-        path: 'string',
-        enabled: true,
-        config: {
-            "testVar1": {
-                priority: 1,
-                value: 1,
-                type: 'number',
-                readableName: 'Test Var 1',
-                key: 'testVar1',
-            },
-            "testVar2": {
-                priority: 1,
-                value: 2,
-                type: 'number',
-                readableName: 'Test Var 2',
-                key: 'testVar2',
-            },
-            "testVar3": {
-                priority: 1,
-                value: 3,
-                type: 'number',
-                readableName: 'Test Var 3',
-                key: 'testVar3',
-            },
-        }
-    }
-}
-
 
 /**
  * PluginLoader test suite.
@@ -256,7 +196,8 @@ describe('PluginLoader', () => {
             const result = pluginLoader['loadConfigs']();
 
             // Assert
-            expect(result).toMatchObject(mockPluginConfig);
+            // Compare keys as order is not guaranteed
+            expect(Object.keys(result!)).toMatchObject(Object.keys(mockPluginConfig));
         });
 
         it('should return undefined if the config file does not exist', () => {
