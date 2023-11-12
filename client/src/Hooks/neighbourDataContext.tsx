@@ -158,12 +158,20 @@ export interface influxRtn {
 
 export const pollInflux = async (db: QueryApi, bucket: string) => {
 
-    const query = `from(bucket: "modbus")
-    |> range(start: -10s)
-    |> filter(fn: (r) => r["_measurement"] == "cpu")
-  |> filter(fn: (r) => r["_field"] == "usage_idle" or r["_field"] == "usage_nice" or r["_field"] == "usage_system" or r["_field"] == "usage_user")
-  |> filter(fn: (r) => r["cpu"] == "cpu0" or r["cpu"] == "cpu1" or r["cpu"] == "cpu2" or r["cpu"] == "cpu-total" or r["cpu"] == "cpu3")
-    |> yield(name: "mean")`;
+    const query = `from(bucket: "mybucket")
+    |> range(start: -60s)
+    |> filter(fn: (r) => r["_measurement"] == "mock")
+    |> filter(fn: (r) => r["_field"] == "Grid Frequency" 
+                      or r["_field"] == "Power Factor"
+                      or r["_field"] == "Total Active Energy"
+                      or r["_field"] == "L1 Voltage"
+                      or r["_field"] == "L2 Voltage"
+                      or r["_field"] == "L3 Voltage"
+                      or r["_field"] == "L1 Current"
+                      or r["_field"] == "L2 Current"
+                      or r["_field"] == "L3 Current"
+                      )
+    |> last()`;
 
     try {
         const data: influxRtn[] = await db.collectRows(query)
@@ -172,20 +180,20 @@ export const pollInflux = async (db: QueryApi, bucket: string) => {
         if (data && data.length) {
             const phaseData: DistroData = {
                 time: new Date(data[0]._time),
-                pf: parseInt(data.find((d) => d._field === 'usage_system')!._value.toFixed(0)),
-                kva: parseInt(data.find((d) => d._field === 'usage_system')!._value.toFixed(0)),
-                hz: parseInt(data.find((d) => d._field === 'usage_system')!._value.toFixed(0)),
+                pf: parseInt(data.find((d) => d._field === 'Power Factor')!._value.toFixed(0)),
+                kva: parseInt(data.find((d) => d._field === 'Total Active Energy')!._value.toFixed(0)),
+                hz: parseInt(data.find((d) => d._field === 'Grid Frequency')!._value.toFixed(0)),
                 phases: [{
-                    voltage: parseInt(data.find((d) => d._field === 'usage_user')!._value.toFixed(0)),
-                    amperage: parseInt(data.find((d) => d._field === 'usage_idle')!._value.toFixed(0)),
+                    voltage: parseInt(data.find((d) => d._field === 'L1 Voltage')!._value.toFixed(0)),
+                    amperage: parseInt(data.find((d) => d._field === 'L1 Current')!._value.toFixed(0)),
                     phase: 1,
                 }, {
-                    voltage: parseInt(data.find((d) => d._field === 'usage_user')!._value.toFixed(0)),
-                    amperage: parseInt(data.find((d) => d._field === 'usage_idle')!._value.toFixed(0)),
+                    voltage: parseInt(data.find((d) => d._field === 'L2 Voltage')!._value.toFixed(0)),
+                    amperage: parseInt(data.find((d) => d._field === 'L2 Current')!._value.toFixed(0)),
                     phase: 2,
                 }, {
-                    voltage: parseInt(data.find((d) => d._field === 'usage_user')!._value.toFixed(0)),
-                    amperage: parseInt(data.find((d) => d._field === 'usage_idle')!._value.toFixed(0)),
+                    voltage: parseInt(data.find((d) => d._field === 'L3 Voltage')!._value.toFixed(0)),
+                    amperage: parseInt(data.find((d) => d._field === 'L3 Current')!._value.toFixed(0)),
                     phase: 3,
                 }]
             }
