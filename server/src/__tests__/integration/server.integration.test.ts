@@ -1,7 +1,7 @@
 // server.test.ts
 import { Server, Routing } from '../../server';
 import { PluginLoader } from '../../plugin-loader'
-import express, { Request, Response } from 'express';
+import { Request, Response } from 'express';
 import supertest from 'supertest';
 
 describe('Server', () => {
@@ -9,7 +9,7 @@ describe('Server', () => {
     let server: Server;
 
     beforeEach(() => {
-        server = new Server('../plugin-config.json');
+        server = new Server('./__tests__/plugin-config.test.json');
     })
 
     afterEach(async () => {
@@ -17,9 +17,9 @@ describe('Server', () => {
     })
 
     test('loadPlugins should call loadPlugin for each enabled plugin in the config', async () => {
-        pluginLoader = server.pluginLoader;
+        pluginLoader = server['pluginLoader'];
 
-        expect(pluginLoader.plugins.length).toBeGreaterThanOrEqual(1)
+        expect(pluginLoader['plugins'].length).toBeGreaterThanOrEqual(1)
     });
 
     test('registerGetRoute() registers a GET route', async () => {
