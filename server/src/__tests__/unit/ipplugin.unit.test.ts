@@ -1,5 +1,5 @@
 import { spawnSync } from 'child_process';
-import IPPlugin, { Address, IPOptions } from '../../ip-plugin';
+import IPPlugin, { Address } from '../../ip-plugin';
 import { exec } from 'child_process';
 import fs from 'fs';
 
@@ -20,8 +20,6 @@ export const mockServerRouting = {
 // Test plugin implementation
 class TestPlugin extends IPPlugin {
     publicServerRouter = this.serverRouter;
-    public publicIpHandler = this.ipHandler;
-    public publicGetIpHandler = this.getIpHandler;
     public static publicCreateNetworkFile = IPPlugin.createNetworkFile;
 
     constructor(serverRouter: any, options: any) {
@@ -55,7 +53,7 @@ describe('TestPlugin', () => {
                 dns: ['8.8.8.8', '8.8.4.4']
             };
 
-            TestPlugin.publicCreateNetworkFile(config, fp);
+            TestPlugin.publicCreateNetworkFile(config, fp, 'eth0');
 
             expect(fs.writeFileSync).toHaveBeenCalledWith(fp, expect.stringContaining(config.ipaddress!));
             expect(fs.writeFileSync).toHaveBeenCalledWith(fp, expect.stringContaining(config.networkprefix!.toString()));
