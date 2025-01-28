@@ -353,6 +353,8 @@ const configureData = (data: Phase[] | undefined | null, startDate: Date, endDat
         }] as any
     }
 
+    data![0].voltage.splice(0, 0, { x: startDate, y: 0 }); // Set minimum window width
+
     const getValuesBetweenDates = (phases: Phase[], startDate: Date, endDate: Date): Phase[] => {
         const filteredPhases: Phase[] = [];
 
