@@ -12,6 +12,11 @@
     font-style: italic;
 }
 
+.gridWarnings>* {
+    min-height: 0;
+    min-width: 0;
+}
+
 .span-ten-warnings {
     grid-column: span 10;
 }

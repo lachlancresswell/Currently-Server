@@ -1,0 +1,11 @@
+.value,
+.valueAmperage {
+    display: inline-block;
+    text-align: right;
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+.unit {
+    font-weight: bolder;
+}

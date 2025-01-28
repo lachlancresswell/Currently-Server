@@ -6,7 +6,7 @@
     align-items: center;
     height: 70%;
     /* gap: 10px; */
-    font-size: 16vh;
+    font-size: 14vh;
 }
 
 .span-ten-adv {
@@ -17,9 +17,28 @@
     margin-right: 0.5em;
 }
 
+.span-seven-adv {
+    width: 100%;
+    display: flex;
+    justify-content: end;
+    grid-column: span 7;
+    align-items: end;
+}
+
 .span-six-adv {
+    width: 100%;
+    display: flex;
+    justify-content: end;
     grid-column: span 6;
-    /* padding-left: 1em; */
+    align-items: end;
+}
+
+.span-five-adv {
+    width: 100%;
+    display: flex;
+    justify-content: end;
+    grid-column: span 5;
+    align-items: end;
 }
 
 .span-four-adv {

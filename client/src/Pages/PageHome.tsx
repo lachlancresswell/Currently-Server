@@ -7,6 +7,7 @@ import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import PublicIcon from '@mui/icons-material/Public';
 import { Warning } from '../Components/Warnings';
 import { useConfigContext } from '../Hooks/useConfig';
+import '../Styles/PageHome.css'
 
 interface PageAdvProps {
 }
@@ -47,7 +48,12 @@ export const PageHome = ({ }: PageAdvProps) => {
                 <RemoveCircleOutlineIcon />
             </div>
             <div>✓</div>
-            <div className="span-two hz">50 HZ</div>
+            <div className='span-two'>
+                <span className="value hz">
+                    {neighbourData?.hz}
+                </span>
+                <span className="unit hz">HZ</span>
+            </div>
             <div className="homeCircle">
                 <Warning data={neighbourData!} type={'hz'} />
             </div>

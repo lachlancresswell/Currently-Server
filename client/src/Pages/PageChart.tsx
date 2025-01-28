@@ -288,7 +288,7 @@ const MyComponent: React.FC<Props> = () => {
             <div style={{
                 position: 'absolute',
                 top: '11vh',
-                height: '79vh',
+                height: '75vh',
                 width: '100%',
                 zIndex: -1, // This is to prevent the chart from being clickable
             }}>

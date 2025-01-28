@@ -31,12 +31,19 @@ export const PageAdv = ({ }: PageAdvProps) => {
 const PhaseRow = ({ phaseIndex, neighbourData }: { phaseIndex: 0 | 1 | 2, neighbourData: DistroData | null }) => {
     return (
         <>
+            <div className={`span-seven-adv ${'l' + (phaseIndex + 1)}`}>
+                <div>
+                    <span className="valueAdv">
                         {(neighbourData?.phases[phaseIndex]!.voltage! > -1 && (Math.round((neighbourData?.phases[phaseIndex]!.voltage || 0) * 100) / 100).toFixed(1))}
-                </span>
-                <span className="unitBasic">
-                    v
-                </span>
+                    </span>
+                    <span className="unitBasic">
+                        v
+                    </span>
+                </div>
             </div>
+            <div className={`span-five-adv ${'l' + (phaseIndex + 1)}`}>
+                <div>
+                    <span className="valueAdvAmperage">
                         {(neighbourData?.phases[phaseIndex]!.amperage! > -1 && (Math.round((neighbourData?.phases[phaseIndex]!.amperage || 0) * 100) / 100).toFixed(1))}
                     </span>
                     <span className="unitBasic">
@@ -51,15 +58,17 @@ const PhaseRow = ({ phaseIndex, neighbourData }: { phaseIndex: 0 | 1 | 2, neighb
 const AdvRow = ({ className, prefix, neighbourData }: { className: string, prefix: string, neighbourData: DistroData | null }) => {
     return (
         <>
-            <div className={`span-ten-adv ${className}`}>
-                <span className="valueBasic">
+            <div className={`span-seven-adv ${className}`}>
+                <div>
+                    <span className="valueBasic">
                         {prefix === 'pf' ? Math.round((neighbourData?.pf || 0) * 1000) / 1000
                             : prefix === 'kVA' ? Math.round((neighbourData?.kva || 0) * 100) / 100
                                 : Math.round((neighbourData?.hz || 0) * 100) / 100}
-                </span>
-                <span className="unitBasic">
-                    {prefix}
-                </span>
+                    </span>
+                    <span className="unitBasic">
+                        {prefix}
+                    </span>
+                </div>
             </div>
         </>
     )
