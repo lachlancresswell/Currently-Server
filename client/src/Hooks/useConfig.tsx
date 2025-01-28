@@ -144,7 +144,7 @@ export const ConfigContextProvider: React.FC<props> = ({ children }) => {
         let pluginConfig: T | undefined;
 
         try {
-            pluginConfig = serverConfig[pluginName].config as T;
+            pluginConfig = { ...serverConfig[pluginName].config, enabled: serverConfig[pluginName].enabled } as unknown as T;
         } catch (e) {
             console.error(`Error getting config for plugin ${pluginName}:`, e);
         }
