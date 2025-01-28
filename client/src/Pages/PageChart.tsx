@@ -197,6 +197,7 @@ const initialOptions = (endDate: number) => {
             showNullDataPoints: false,
         },
         xaxis: {
+            type: 'datetime',
             labels: {
                 formatter: datetimeFormatter,
                 rotate: 0,
