@@ -3,7 +3,7 @@ import { useConfigContext } from '../Hooks/useConfig';
 import '../Styles/PageConfigLocale.css';
 import { MouseEventHandler, useState } from "react";
 
-const PLUGIN_NAME = 'LocalePlugin';
+export const PLUGIN_NAME = 'LocalePlugin';
 
 export const LocaleSettings = () => {
     const { getPluginConfig, isModified, handleInputChange } = useConfigContext();

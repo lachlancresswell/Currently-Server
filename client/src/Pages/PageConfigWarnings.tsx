@@ -4,7 +4,7 @@ import { WarningsOptions } from '../../../Types';
 import { useConfigContext } from '../Hooks/useConfig';
 import '../Styles/PageConfigWarnings.css';
 
-const PLUGIN_NAME = 'warnings';
+export const PLUGIN_NAME = 'warnings';
 export const WarningSettings = () => {
     const { getPluginConfig, handleInputChange } = useConfigContext();
 

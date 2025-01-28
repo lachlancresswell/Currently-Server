@@ -3,7 +3,7 @@ import { SystemOptions } from '../../../Types';
 import { useConfigContext } from '../Hooks/useConfig';
 import '../Styles/PageConfigVersions.css';
 
-const PLUGIN_NAME = 'SystemPlugin';
+export const PLUGIN_NAME = 'SystemPlugin';
 
 export const VersionSettings = () => {
     const { getPluginConfig } = useConfigContext();

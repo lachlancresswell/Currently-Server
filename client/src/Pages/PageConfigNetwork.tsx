@@ -7,7 +7,7 @@ import React from 'react';
 import { ConfigArray, IPOptions, MDNSConfig, ipaddress, prefix } from '../../../Types';
 import { Setting } from './NetworkSettingsWrapper';
 
-const PLUGIN_NAME = 'IPPlugin';
+export const PLUGIN_NAME = 'IPPlugin';
 
 export const PageConfigNetwork = ({
     onSettingClick,

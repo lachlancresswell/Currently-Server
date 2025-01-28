@@ -4,7 +4,7 @@ import { TZOptions } from '../../../Types';
 import { useConfigContext } from '../Hooks/useConfig';
 import '../Styles/PageConfigTimezone.css';
 
-const PLUGIN_NAME = 'TimeZonePlugin';
+export const PLUGIN_NAME = 'TimeZonePlugin';
 
 export const TimezoneSettings = () => {
     const { getPluginConfig, isModified, handleInputChange, savePluginConfig } = useConfigContext();
