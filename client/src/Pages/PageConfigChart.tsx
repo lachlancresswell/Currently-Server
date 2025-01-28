@@ -2,7 +2,6 @@
 import '../Styles/PageConfigChart.css';
 import { useState } from "react";
 import { Phase, collectData } from './PageChart';
-import { mockPollRange } from '../Hooks/neighbourDataContext';
 
 const CHART_WINDOW_PERIOD = 'CHART_WINDOW_PERIOD';
 
@@ -47,7 +46,16 @@ export const ChartSettings = () => {
         const databaseUrl = hostUrl + '/influx'
         collectData(hostUrl, databaseUrl).then((res) => {
         }, (text) => {
-            const phases = mockPollRange();
+            const phases = [{
+                voltage: [],
+                amperage: []
+            }, {
+                voltage: [],
+                amperage: []
+            }, {
+                voltage: [],
+                amperage: []
+            }];
             downloadPhasesAsCsv(phases, 'phases.csv');
         })
     };

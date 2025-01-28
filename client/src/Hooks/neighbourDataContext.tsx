@@ -1,6 +1,157 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { DistroData, Neighbour, PhaseData } from '../../../Types';
 import { ClientOptions, InfluxDB, QueryApi } from '@influxdata/influxdb-client-browser'
+import { connect } from 'simpleiot-js';
+
+interface Point {
+    type: string;
+    value: number | string;
+    time: string;
+    text: string;
+    key: string;
+    origin: string;
+}
+
+interface Manifest {
+    type: string;
+    key: string;
+    event?: (i: Point[]) => unknown;
+}
+
+interface Node {
+    id: string;
+    type: string;
+    hash: string;
+    parent: string;
+    origin?: string;
+    pointsList: Point[];
+}
+
+interface Message {
+    nodeID: string;
+    parentID: string | undefined;
+    points: Point[];
+    subject: string;
+}
+
+const appendData = (point: Point, prevData: DistroData) => {
+    const newData: DistroData = prevData ? { ...prevData } : {
+        time: new Date(),
+        hz: -1,
+        pf: -1,
+        kva: -1,
+        phases: [{
+            voltage: -1,
+            amperage: -1,
+            phase: 1,
+        }, {
+            voltage: -1,
+            amperage: -1,
+            phase: 2,
+        }, {
+            voltage: -1,
+            amperage: -1,
+            phase: 3,
+        }]
+    };
+
+    let phase = 0;
+
+    switch (point.type) {
+        case 'L1':
+            phase = 0;
+            break;
+        case 'L2':
+            phase = 1;
+            break;
+        case 'L3':
+            phase = 2;
+            break;
+    }
+
+    switch (point.key) {
+        case 'voltage':
+            newData.phases[phase].voltage = point.value as number;
+            break;
+        case 'amperage':
+            newData.phases[phase].amperage = point.value as number;
+            break;
+        case 'frequency':
+            newData.hz = point.value as number;
+            break;
+        case 'power-factor':
+            newData.pf = point.value as number;
+            break
+        case 'kva':
+            newData.kva = point.value as number;
+    }
+
+    return newData;
+}
+
+const appendToHistory = (point: Point, prevHistory: Phase[]) => {
+    const newHistory: Phase[] = [
+        ...prevHistory
+    ];
+
+    let phase = 0;
+
+    switch (point.type) {
+        case 'L1':
+            phase = 0;
+            break;
+        case 'L2':
+            phase = 1;
+            break;
+        case 'L3':
+            phase = 2;
+            break;
+    }
+    const val = {
+        y: point.value,
+        x: new Date()
+    }
+    if (point.key === 'voltage') {
+        newHistory[phase].voltage.push(val)
+    }
+    if (point.key === 'amperage') {
+        newHistory[phase].amperage.push(val)
+    }
+
+    return newHistory;
+}
+
+const filterPointsByManifest = async (
+    nc: any,
+    manifest: Manifest[],
+    parentType?: string
+): Promise<Point[]> => {
+    const allNodes: Node[] = (
+        (await nc.getNodeChildren("root", { recursive: "flat" })) as Node[]
+    ).filter((n) => n.type === parentType || true);
+
+    return allNodes
+        .map((n) =>
+            n.pointsList.filter((p) =>
+                manifest.find((item) => {
+                    if (item.type === p.type) {
+                        if (item.event && p.origin) {
+                            (async () => {
+                                for await (const point of nc.subscribePoints(p.origin)) {
+                                    const m = point as Message;
+                                    if (item.event) item.event(m.points);
+                                }
+                            })();
+                        }
+                        return true;
+                    }
+                    return false;
+                })
+            )
+        )
+        .filter((n) => n.length)
+        .flat();
+};
 
 interface FluxQuery {
     result: string;
@@ -29,40 +180,24 @@ export interface NeighbourDataContextType {
     history: Phase[];
 }
 
-const mockVoltage = () => 231 + (Math.random() * 5);
-const mockL1Current = () => 3 + (Math.random() * 1.5);
-const mockL2Current = () => 0 + (Math.random() * 1);
-const mockL3Current = () => 4 + (Math.random() * 2);
-
-const MOCK = false;
-
-export const mockPollRange = (): Phase[] => {
-    let phases: Phase[] = [{ voltage: [], amperage: [] }, { voltage: [], amperage: [] }, { voltage: [], amperage: [] }];
-
-    for (let i = 300; i > 0; i--) {
-        const timeSecondsAgo = new Date(Date.now() - i * 1000);
-
-        phases.forEach((phase, i) => {
-            phase.voltage.push({
-                y: mockVoltage(),
-                x: timeSecondsAgo
-            })
-            phase.amperage.push({
-                y: i === 0 ? mockL1Current() : i === 1 ? mockL2Current() : mockL3Current(),
-                x: timeSecondsAgo
-            })
-        })
-    }
-
-    return phases;
-}
+const BLANK_HISTORY = [{
+    voltage: [],
+    amperage: []
+}, {
+    voltage: [],
+    amperage: []
+},
+{
+    voltage: [],
+    amperage: []
+}]
 
 /**
  * Context object that provides the data from the currently selected neighbour.
  */
 export const NeighbourDataContext = createContext<NeighbourDataContextType>({
     neighbourData: null,
-    history: mockPollRange(),
+    history: [...BLANK_HISTORY],
 });
 
 interface props {
@@ -78,62 +213,85 @@ export const org = `onestage`;
  */
 export const NeighbourDataProvider: React.FC<props> = ({ neighbour, children }) => {
     const [neighbourData, setNeighbourData] = useState<DistroData | null>(null);
-    const [history, setHistory] = useState<Phase[]>(mockPollRange());
+    const [history, setHistory] = useState<Phase[]>([...BLANK_HISTORY]);
 
-    const pollServer = async () => {
-        const url = window.location.protocol + '//' + window.location.host + '/influx'
-        const hostConfig: ClientOptions = {
-            url,
-            token,
-        };
+    const distroValues: Manifest[] = [
+        {
+            type: "distro",
+            key: "frequency",
+            event: (points) => {
+                setNeighbourData((prevData) => appendData(points[0], prevData!))
+                setHistory((prevHistory) => appendToHistory(points[0], prevHistory))
+            },
+        },
+        {
+            type: "distro",
+            key: "kva",
+            event: (points) => {
+                setNeighbourData((prevData) => appendData(points[0], prevData!))
+                setHistory((prevHistory) => appendToHistory(points[0], prevHistory))
+            },
+        },
+        {
+            type: "distro",
+            key: "power-factor",
+            event: (points) => {
+                setNeighbourData((prevData) => appendData(points[0], prevData!))
+                setHistory((prevHistory) => appendToHistory(points[0], prevHistory))
+            },
+        },
+        {
+            type: "L1",
+            key: "voltage",
+            event: (points) => {
+                setNeighbourData((prevData) => appendData(points[0], prevData!))
+                setHistory((prevHistory) => appendToHistory(points[0], prevHistory))
+            },
+        },
+        {
+            type: "L1",
+            key: "amperage",
+            event: (points) => {
+                setNeighbourData((prevData) => appendData(points[0], prevData!))
+                setHistory((prevHistory) => appendToHistory(points[0], prevHistory))
+            },
+        },
+        {
+            type: "L2",
+            key: "voltage",
+            event: (points) => {
+                setNeighbourData((prevData) => appendData(points[0], prevData!))
+                setHistory((prevHistory) => appendToHistory(points[0], prevHistory))
+            },
+        },
+        {
+            type: "L2",
+            key: "amperage",
+            event: (points) => {
+                setNeighbourData((prevData) => appendData(points[0], prevData!))
+                setHistory((prevHistory) => appendToHistory(points[0], prevHistory))
+            },
+        },
+        {
+            type: "L3",
+            key: "voltage",
+            event: (points) => {
+                setNeighbourData((prevData) => appendData(points[0], prevData!))
+                setHistory((prevHistory) => appendToHistory(points[0], prevHistory))
+            },
+        },
+        {
+            type: "L3",
+            key: "amperage",
+            event: (points) => {
+                setNeighbourData((prevData) => appendData(points[0], prevData!))
+                setHistory((prevHistory) => appendToHistory(points[0], prevHistory))
+            },
+        },
+    ];
 
-        const influxClient = new InfluxDB(hostConfig);
-        const queryApi = influxClient.getQueryApi(org);
 
-        const data = await pollInflux(queryApi, 'mybucket')
-        setNeighbourData(data!);
-        return data
-    };
-
-    useEffect(() => {
-        let func: () => void;
-
-        const feedHistory = (data: DistroData | undefined) => {
-            setHistory((prevHistory) => {
-                const newHistory: Phase[] = [
-                    ...prevHistory
-                ];
-
-                newHistory.forEach((phase, index) => {
-                    const voltage = {
-                        y: data!.phases[index].voltage,
-                        x: new Date()
-                    }
-
-                    const amperage = {
-                        y: data!.phases[index].amperage,
-                        x: new Date()
-                    }
-                    phase.voltage.push(voltage)
-                    phase.amperage.push(amperage)
-                })
-
-                return newHistory;
-            })
-        }
-        func = () => {
-            if (!MOCK) {
-                pollServer().then(feedHistory);
-            } else {
-                const data = mockPollServer()
-                feedHistory(data);
-            }
-        }
-        const interval = setInterval(() => {
-            func();
-        }, 1000); // poll every 5 seconds
-        return () => clearInterval(interval);
-    }, [neighbour]);
+    useEffect(() => { connect({ servers: [`ws://${window.location.host.split(":")[0]}:9222`] }).then((newNc: unknown) => filterPointsByManifest(newNc, distroValues)) }, [neighbour]);
 
     const value = {
         neighbourData,
@@ -322,32 +480,4 @@ export const nullPadding = (phase: Phase, start: Date, end: Date) => {
     phase.amperage.splice(phase.amperage.length - 1, 0, endItem);
     phase.voltage.splice(0, 0, startItem);
     phase.voltage.splice(phase.voltage.length - 1, 0, endItem);
-}
-
-const mockPollServer = (): DistroData => {
-    const time = new Date()
-    const pf = 0;
-    const kva = 0;
-    const hz = 50;
-    const phases: PhaseData[] = [{
-        voltage: parseInt(mockVoltage().toFixed(0)),
-        amperage: parseInt(mockL1Current().toFixed(0)),
-        phase: 1
-    }, {
-        voltage: parseInt(mockVoltage().toFixed(0)),
-        amperage: parseInt(mockL2Current().toFixed(0)),
-        phase: 2
-    }, {
-        voltage: parseInt(mockVoltage().toFixed(0)),
-        amperage: parseInt(mockL3Current().toFixed(0)),
-        phase: 3
-    }]
-
-    return {
-        time,
-        pf,
-        kva,
-        hz,
-        phases
-    };
 }
