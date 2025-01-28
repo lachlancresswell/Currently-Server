@@ -290,12 +290,17 @@ DNS=${ipSettings.dns?.join(' ')}`
         if (nic) {
             cmd += ' show dev ' + nic;
         }
-        const stdout = execSync(cmd).toString()
-        const defaultRouteMatch = stdout.match(/^default\s+via\s+(\S+)\s+/m);
+        try {
+            const stdout = execSync(cmd).toString()
+            const defaultRouteMatch = stdout.match(/^default\s+via\s+(\S+)\s+/m);
 
-        if (defaultRouteMatch && defaultRouteMatch.length > 1) {
-            return defaultRouteMatch[1]
-        } else {
+            if (defaultRouteMatch && defaultRouteMatch.length > 1) {
+                return defaultRouteMatch[1]
+            } else {
+                return undefined;
+            }
+        } catch (e) {
+            console.error((e as Error).message)
             return undefined;
         }
     };
