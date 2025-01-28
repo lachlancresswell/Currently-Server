@@ -1,0 +1,141 @@
+{
+    "MDNSPlugin": {
+        "path": "../mdns-plugin",
+        "enabled": true,
+        "config": {
+            "deviceName": {
+                "priority": 1,
+                "display": true,
+                "readableName": "Device Name",
+                "type": "string",
+                "value": "",
+                "restart": "plugin"
+            }
+        }
+    },
+    "IPPlugin": {
+        "path": "../ip-plugin",
+        "enabled": true,
+        "config": {}
+    },
+    "warnings": {
+        "path": "../warnings",
+        "enabled": true,
+        "config": {
+            "enable": {
+                "readableName": "Enable",
+                "value": true,
+                "display": true,
+                "type": "boolean"
+            },
+            "vSet": {
+                "readableName": "V Set",
+                "value": 230,
+                "min": 0,
+                "max": 300,
+                "display": true
+            },
+            "vmax": {
+                "readableName": "V Max",
+                "value": 10,
+                "min": 0,
+                "max": 300,
+                "display": false
+            },
+            "vmin": {
+                "readableName": "V Min",
+                "value": 10,
+                "min": 0,
+                "max": 300,
+                "display": false
+            },
+            "amax": {
+                "readableName": "A Max",
+                "value": "100",
+                "min": 0,
+                "max": 300,
+                "display": true
+            },
+            "HZset": {
+                "readableName": "HZ Set",
+                "value": 50,
+                "min": 0,
+                "max": 100,
+                "display": true
+            },
+            "hzmax": {
+                "readableName": "HZ Max",
+                "value": 1,
+                "min": 0,
+                "max": 100,
+                "display": false
+            },
+            "hzmin": {
+                "readableName": "HZ Min",
+                "value": 1,
+                "min": 0,
+                "max": 100,
+                "display": false
+            },
+            "kvaSet": {
+                "readableName": "kVA Set",
+                "value": "1",
+                "min": 0,
+                "max": 100,
+                "display": true
+            },
+            "kvamax": {
+                "readableName": "kVA Max",
+                "value": 1,
+                "min": 0,
+                "max": 100,
+                "display": false
+            },
+            "kvamin": {
+                "readableName": "kVA Min",
+                "value": 0,
+                "min": 0,
+                "max": 100,
+                "display": false
+            },
+            "pfSet": {
+                "readableName": "PF Set",
+                "value": "1",
+                "min": 0,
+                "max": 100,
+                "display": true
+            },
+            "pfmax": {
+                "readableName": "PF Max",
+                "value": 1,
+                "min": 0,
+                "max": 100,
+                "display": false
+            },
+            "pfmin": {
+                "readableName": "PF Set",
+                "value": 0,
+                "min": 0,
+                "max": 100,
+                "display": false
+            }
+        }
+    },
+    "LocalePlugin": {
+        "enabled": true,
+        "path": "../locale-plugin",
+        "config": {
+            "locale": {
+                "readableName": "Locale",
+                "display": true,
+                "value": "au",
+                "options": [
+                    "au",
+                    "eu",
+                    "us",
+                    "ca"
+                ]
+            }
+        }
+    }
+}
