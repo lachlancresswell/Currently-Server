@@ -1,0 +1,23 @@
+{
+    "IPPlugin": {
+        "path": "../ip-plugin",
+        "enabled": true,
+        "config": {
+            "ipaddress": {
+                "priority": 1,
+                "display": true,
+                "readableName": "IP Address",
+                "type": "ipaddress",
+                "restart": "plugin",
+                "value": ""
+            },
+            "internetStatus": {
+                "priority": 1,
+                "display": false,
+                "readableName": "Internet Connected",
+                "type": "boolean",
+                "value": false
+            }
+        }
+    }
+}
