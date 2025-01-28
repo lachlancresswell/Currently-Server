@@ -31,18 +31,13 @@ export const PageAdv = ({ }: PageAdvProps) => {
 const PhaseRow = ({ phaseIndex, neighbourData }: { phaseIndex: 0 | 1 | 2, neighbourData: DistroData | null }) => {
     return (
         <>
-            <div className={`span-six-adv ${'l' + (phaseIndex + 1)}`}>
-                <span className="valueBasic">
-                    {(neighbourData?.phases[phaseIndex]!.voltage! > -1 && neighbourData?.phases[phaseIndex]!.voltage)}
+                        {(neighbourData?.phases[phaseIndex]!.voltage! > -1 && (Math.round((neighbourData?.phases[phaseIndex]!.voltage || 0) * 100) / 100).toFixed(1))}
                 </span>
                 <span className="unitBasic">
                     v
                 </span>
             </div>
-            <div className={`span-four-adv ${'l' + (phaseIndex + 1)}`}>
-                <div className='basicAmperage'>
-                    <span className="valueBasicAmperage">
-                        {(neighbourData?.phases[phaseIndex]!.amperage! > -1 ? neighbourData?.phases[phaseIndex]!.amperage : '-')}
+                        {(neighbourData?.phases[phaseIndex]!.amperage! > -1 && (Math.round((neighbourData?.phases[phaseIndex]!.amperage || 0) * 100) / 100).toFixed(1))}
                     </span>
                     <span className="unitBasic">
                         a
@@ -58,9 +53,9 @@ const AdvRow = ({ className, prefix, neighbourData }: { className: string, prefi
         <>
             <div className={`span-ten-adv ${className}`}>
                 <span className="valueBasic">
-                    {prefix === 'pf' ? neighbourData?.pf
-                        : prefix === 'kVA' ? neighbourData?.kva
-                            : neighbourData?.hz}
+                        {prefix === 'pf' ? Math.round((neighbourData?.pf || 0) * 1000) / 1000
+                            : prefix === 'kVA' ? Math.round((neighbourData?.kva || 0) * 100) / 100
+                                : Math.round((neighbourData?.hz || 0) * 100) / 100}
                 </span>
                 <span className="unitBasic">
                     {prefix}

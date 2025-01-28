@@ -78,7 +78,7 @@ const PhaseReadout = ({ phaseIndex, neighbourData }: { phaseIndex: number, neigh
                 {neighbourData?.phases[phaseIndex - 1].voltage !== undefined ?
                     <>
                         <span className="value">
-                            {neighbourData?.phases[phaseIndex - 1].voltage}
+                            {Math.round(neighbourData?.phases[phaseIndex - 1].voltage)}
                         </span>
                         <span className="unit">V</span>
                     </>
@@ -89,7 +89,7 @@ const PhaseReadout = ({ phaseIndex, neighbourData }: { phaseIndex: number, neigh
                 {neighbourData?.phases[phaseIndex - 1].amperage !== undefined ?
                     <>
                         <span className="valueAmperage">
-                            {neighbourData?.phases[phaseIndex - 1].amperage}
+                            {Math.round(neighbourData?.phases[phaseIndex - 1].amperage)}
                         </span>
                         <span className="unit">A</span>
                     </>
