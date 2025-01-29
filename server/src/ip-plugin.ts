@@ -225,7 +225,7 @@ DNS=${ipSettings.dns?.join(' ')}`
      * Restarts the systemd-networkd service.
      */
     protected restartNetworkD = () => {
-        const cmd = 'sudo systemctl restart systemd-networkd.service'
+        const cmd = 'systemctl restart systemd-networkd.service'
         execSync(cmd);
     }
 

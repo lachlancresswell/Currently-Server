@@ -31,7 +31,7 @@ class SystemPlugin extends Plugin<SystemOptions> {
      * Restarts the Linux system.
      */
     restartSystem = () => {
-        exec('sudo reboot -h now', (error, stdout, stderr) => {
+        exec('reboot -h now', (error, stdout, stderr) => {
             if (error) {
                 console.error(`exec error: ${error}`);
                 return;

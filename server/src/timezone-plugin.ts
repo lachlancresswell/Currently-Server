@@ -35,7 +35,7 @@ class TimeZonePlugin extends Plugin<TZOptions> {
         try {
             // Throws if the timezone is invalid
             execSync(`timedatectl list-timezones | grep ${timezone}`);
-            execSync(`sudo timedatectl set-timezone ${timezone}`);
+            execSync(`timedatectl set-timezone ${timezone}`);
             console.log(`Configured timezone to ${timezone}`);
         } catch (error) {
             console.error(`Error configuring timezone: ${(error as Error).message}`);
