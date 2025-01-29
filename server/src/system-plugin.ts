@@ -57,7 +57,7 @@ class SystemPlugin extends Plugin<SystemOptions> {
      * @returns Object containing total disk space and available disk space
      */
     getDiskStats = () => {
-        const buffer = execSync(`df | grep ${this.configuration.diskPath.value} | awk \'{print $4, $3}\'`);
+        const buffer = execSync(`df | grep ${this.configuration.diskPath.value} | awk \'{print $2, $4}\'`);
         const [total, available] = buffer.toString().split(' ');
 
         return { total, available };
