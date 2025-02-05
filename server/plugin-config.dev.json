@@ -73,7 +73,12 @@
         "priority": 1,
         "display": false,
         "readableName": "Path to Disk",
-        "value": "/dev/vda2",
+        "type": "string"
+      },
+      "systemVersion": {
+        "priority": 1,
+        "display": true,
+        "readableName": "System Version",
         "type": "string"
       }
     }

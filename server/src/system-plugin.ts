@@ -2,6 +2,7 @@ import { Plugin } from './plugin';
 import { Routing } from './server';
 import { SystemOptions } from '../../Types';
 import { exec, execSync } from 'child_process';
+import { readFileSync } from 'fs';
 
 /**
  * Plugin for interfacing with the underlying linux system.
@@ -25,6 +26,7 @@ class SystemPlugin extends Plugin<SystemOptions> {
         this.setEphemeralVariable(this.configuration.memAvailable, () => _this.getMemoryStats().available, () => false);
         this.setEphemeralVariable(this.configuration.diskTotal, () => _this.getDiskStats().total, () => false);
         this.setEphemeralVariable(this.configuration.diskAvailable, () => _this.getDiskStats().available, () => false);
+        this.setEphemeralVariable(this.configuration.systemVersion, () => _this.getSystemVersion(), () => false);
     }
 
     /**
@@ -61,6 +63,25 @@ class SystemPlugin extends Plugin<SystemOptions> {
         const [total, available] = buffer.toString().split(' ');
 
         return { total, available };
+    }
+
+    /**
+     * Gets the current software version
+     * @returns The current version of the system
+     */
+    getSystemVersion = () => {
+        const f = readFileSync('/etc/os-release').toString();
+
+        // Regular expression to match the VERSION_ID line and capture its value
+        const versionIdRegex = /VERSION_ID=(.*)$/m;
+
+        // Execute the regex on the file content
+        const match = f.match(versionIdRegex);
+
+        // Extract the version ID if a match is found
+        const versionId = match ? match[1].replace('"', '').replace('"', '') : null;
+
+        return versionId;
     }
 }
 
