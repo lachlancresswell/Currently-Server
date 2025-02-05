@@ -17,7 +17,7 @@ export interface Address {
     dns?: string[];
 }
 
-type NetFileSection = 'Address' | 'Gateway' | 'DNS' | 'DHCP';
+type NetFileSection = 'Address' | 'Gateway' | 'DNS' | 'DHCP' | 'Name';
 
 class IPPlugin extends Plugin<IPOptions> {
     name = 'IPPlugin';
@@ -72,9 +72,12 @@ class IPPlugin extends Plugin<IPOptions> {
         );
 
         // DHCP
-        this.setEphemeralVariable(this.configuration.dhcp, () => IPPlugin.hasDynamicIpAddress(_this.configuration.iface.value!),
+        this.setEphemeralVariable(this.configuration.dhcp, () => this.netGetter('DHCP', this.configuration.iface.value!),
 
-            (dhcp: boolean) => this.netSetter(dhcp, 'dhcp', 'DHCP', dhcp ? 'yes' : 'no')
+            (dhcp: boolean) => {
+                this.netSetter(this.configuration.iface.value, 'iface', 'Name', this.configuration.iface.value);
+                this.netSetter(dhcp, 'dhcp', 'DHCP', dhcp ? 'yes' : 'no')
+            }
         );
 
 
@@ -109,6 +112,8 @@ class IPPlugin extends Plugin<IPOptions> {
 
         this.restartNetworkD()
     }
+
+    netGetter = (netFileKey: NetFileSection, iface: string) => IPPlugin.readSystemdNetworkFile(netFileKey, this.configuration.filePath.value!, iface);
 
     // Ensure DHCP is configured first
     sort = (keys: string[]) => keys.sort();
@@ -148,11 +153,25 @@ DNS=${ipSettings.dns?.join(' ')}`
         // Split the network file contents into lines
         let lines = networkFileContents.split('\n');
 
+        // Find the index of the [Match] section
+        const matchSectionIndex = lines.findIndex(line => line.trim() === '[Match]');
+
+
         // Find the index of the [Network] section
         const networkSectionIndex = lines.findIndex(line => line.trim() === '[Network]');
 
-        // If the [Network] section isn't present in the file, add it to the end of the file
-        if (networkSectionIndex === -1) {
+        // Handle interface name
+        if (field === 'Name') {
+            const fieldIndex = lines.findIndex(
+                (line, index) =>
+                    index > matchSectionIndex &&
+                    line.trim().startsWith(field) &&
+                    !line.trim().startsWith('#')
+            );
+
+            lines[fieldIndex] = `${field}=${value}`;
+        } else if (networkSectionIndex === -1) { // If the [Network] section isn't present in the file, add it to the end of the file
+
             lines.push('[Network]');
             lines.push(`${field}=${value}`);
         } else {
@@ -191,6 +210,59 @@ DNS=${ipSettings.dns?.join(' ')}`
 
         // Write the updated network file contents back to the file
         fs.writeFileSync(filePath, lines.join('\n'), 'utf8');
+    }
+
+    protected static readSystemdNetworkFile = (field: NetFileSection, filePath: string, iface?: string) => {
+        // Read the contents of the network file
+        const networkFileContents = fs.readFileSync(filePath, 'utf8');
+
+        // Split the network file contents into lines
+        let lines = networkFileContents.split('\n');
+
+        // Find the index of the [Match] section
+        const matchSectionIndex = lines.findIndex(line => line.trim() === '[Match]');
+
+        if (matchSectionIndex < 0) {
+            return undefined;
+        }
+
+        // Find the index of the [Network] section
+        const networkSectionIndex = lines.findIndex(line => line.trim() === '[Network]');
+
+        const interfaceIndex = iface ? lines.findIndex(
+            (line, index) =>
+                index > matchSectionIndex &&
+                index > networkSectionIndex &&
+                line.trim().includes(iface) &&
+                !line.trim().startsWith('#')
+        ) : -1;
+
+        if ((interfaceIndex < 0 && iface)
+            || networkSectionIndex
+        ) {
+            return undefined;
+        }
+
+        const fieldIndex = lines.findIndex(
+            (line, index) =>
+                index > networkSectionIndex &&
+                line.trim().startsWith(field) &&
+                !line.trim().startsWith('#')
+        );
+
+        // If the field isn't present in the file, insert it into the [Network] section
+        if (fieldIndex === -1) {
+            return undefined;
+        }
+
+        if (lines[fieldIndex].split("=")[1].toLowerCase() === 'yes') {
+            return true;
+        }
+        if (lines[fieldIndex].split("=")[1].toLowerCase() === 'no') {
+            return false;
+        }
+
+        return lines[fieldIndex].split("=")[1]
     }
 
     /**
